@@ -1,0 +1,212 @@
+{
+  parserClass="com.github.aleksandrsl.intellijluau.parser.LuauParser"
+
+  extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+  psiClassPrefix="Luau"
+  psiImplClassSuffix="Impl"
+  psiPackage="com.github.aleksandrsl.intellijluau.psi"
+  psiImplPackage="com.github.aleksandrsl.intellijluau.psi.impl"
+
+  elementTypeHolderClass="com.github.aleksandrsl.intellijluau.psi.LuauTypes"
+  elementTypeClass="com.github.aleksandrsl.intellijluau.psi.LuauElementType"
+  tokenTypeClass="com.github.aleksandrsl.intellijluau.psi.LuauTokenType"
+
+  tokens = [
+          space = "regexp:\s+"
+          /* Keywords */
+          AND = "and"
+          BREAK = "break"
+          DO = "do"
+          ELSE = "else"
+          ELSEIF = "elseif"
+          END = "end"
+          FALSE = "false"
+          FOR = "for"
+          FUNCTION = "function"
+          IF = "if"
+          IN = "in"
+          LOCAL = "local"
+          NIL = "nil"
+          NOT = "not"
+          OR = "or"
+          REPEAT = "repeat"
+          RETURN = "return"
+          THEN = "then"
+          TRUE = "true"
+          UNTIL = "until"
+          WHILE = "while"
+          REGION = "REGION"
+          ENDREGION = "ENDREGION"
+
+          SHEBANG = "#!"
+          SHEBANG_CONTENT = "SHEBANG_CONTENT"
+          ELLIPSIS = "..."
+          CONCAT = ".."
+          EQ = "=="
+          GE = ">="
+          LE = "<="
+          NE = "~="
+          MINUS = "-"
+          PLUS = "+"
+          MULT = "*"
+          MOD = "%"
+          DIV = "/"
+          ASSIGN = "="
+          GT = ">"
+          LT = "<"
+          LPAREN = "("
+          RPAREN = ")"
+          LBRACK = "["
+          RBRACK = "]"
+          LCURLY = "{"
+          RCURLY = "}"
+          GETN = "#"
+          COMMA = ","
+          SEMI = ";"
+          COLON = ":"
+          DOT = "."
+          EXP = "^"
+          QUESTION = "?"
+
+          SHORT_COMMENT="SHORT_COMMENT"
+          DOC_BLOCK_COMMENT="DOC_BLOCK_COMMENT"
+          DOC_COMMENT="DOC_COMMENT"
+          BLOCK_COMMENT="BLOCK_COMMENT"
+          ID="regexp:[A-Za-z_][A-Za-z0-9_]*"
+          NUMBER="regexp:[0-9]+"
+          STRING = "regexp:\"\S*\""
+
+          //lua 5.3
+          DOUBLE_COLON = "::"
+          GOTO = "goto"
+          BIT_OR = "|"
+          BIT_AND = "&"
+          BIT_LTLT = "<<"
+          BIT_RTRT = ">>"
+          BIT_TILDE = "~"
+          DOUBLE_DIV = "//"
+    ]
+
+//    hooks("localDefStat|assignmentStatement|tableField") = [leftBinder="MY_LEFT_COMMENT_BINDER" rightBinder="MY_RIGHT_COMMENT_BINDER"]
+//    hooks("fieldList") = [leftBinder="GREEDY_LEFT_BINDER" rightBinder="GREEDY_RIGHT_BINDER"]
+//    implements(".*Attribute") = "com.tang.intellij.lua.psi.LuaAttribute"
+//    implements(".*Stat") = "com.tang.intellij.lua.psi.LuaStatement"
+//    hooks(".*Expr") = [leftBinder="MY_LEFT_COMMENT_BINDER"]
+//    hooks("expList") = [leftBinder="MY_LEFT_COMMENT_BINDER"]
+//    hooks(".*Statement") = [leftBinder="MY_LEFT_COMMENT_BINDER"]
+}
+
+
+luaFile ::= shebang_line? block
+shebang_line ::= SHEBANG SHEBANG_CONTENT
+
+//private stat_semi ::= <<parseStatement>>
+
+block ::= (statement ';'?)* (lastStatement ';'?)?
+statement ::=
+     assignmentStatement
+     | expressionStatement
+     | functioncall
+     | doStatement
+     | whileStatement
+     | repeatStatement
+     | ifStatement
+     | classicForStatement
+     | foreachStatement
+     | defStatement
+     | ['export'] 'type' ID ['<' GenericTypeListWithDefaults '>'] '=' Type
+
+doStatement ::= 'do' block 'end'
+whileStatement ::= 'while' expression 'do' block 'end'
+repeatStatement ::= 'repeat' block 'until' expression
+ifStatement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
+classicForStatement ::= 'for' binding '=' expression ',' expression [',' expression] 'do' block 'end'
+foreachStatement ::= 'for' bindingList 'in' expList 'do' block 'end'
+assignmentStatement ::= bindingList '=' expList | 'local' bindingList ['=' expList] | var compoundop expression
+expressionStatement ::= expression
+private defStatement ::= classMethodDefStat | funcDefStat | localFuncDefStat
+lastStatement ::= 'return' expList? | 'break' | 'continue'
+
+funcDefStat ::= 'function' funcname funcBody
+//classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
+//classMethodDefStat ::= 'function' classMethodName funcBody
+localFuncDefStat ::= 'local' 'function' funcname funcBody
+
+funcname ::= ID ('.' ID)* (':' ID)?
+funcBody ::= ('<' GenericTypeList '>')? '(' [parlist] ')' (':' ReturnType)? block 'end'
+parlist ::= bindingList (',' '...')? | '...' (':' (Type | GenericTypePack))?
+
+expList ::= (expression ',')* expression
+namelist ::= ID (',' ID)*
+
+binding ::= ID (':' Type)?
+bindingList ::= binding (',' bindingList)? // equivalent of Lua 5.1 'namelist', except with optional type annotations
+
+var ::= simpleVar postfixExp*
+simpleVar ::= ID | '(' expression ')'
+prefixExp ::= (var | '(' expression ')') postfixExp*
+postfixExp ::= funcargs | ':' ID funcargs | '[' expression ']' | '.' ID
+functioncall ::= prefixExp postfixExp
+
+expression ::= simpleExp | asExp | unaryExp | binaryExp
+// See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
+unaryExp ::= unop expression {extends=expression}
+binaryExp ::= expression binop expression {extends=expression}
+ifelseexp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
+asExp ::= simpleExp '::' Type {extends=expression}
+stringinterp ::= INTERP_BEGIN expression { INTERP_MID expression } INTERP_END
+simpleExp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | tableconstructor | closureExpr | prefixExp | ifelseexp | stringinterp {extends=expression}
+funcargs ::=  '(' [expList] ')' | tableconstructor | STRING
+
+closureExpr ::= 'function' funcBody
+
+tableconstructor ::= '{' fieldlist? '}'
+fieldlist ::= field (fieldsep field)* fieldsep?
+field ::= '[' expression ']' '=' expression | ID '=' expression | expression
+// Why the fuck they allow two separators
+fieldsep ::= ',' | ';'
+
+compoundop ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..='
+binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
+unop ::= '-' | 'not' | '#'
+
+SimpleType ::=
+    'nil' |
+    SingletonType |
+    ID ['.' ID] [ '<' [TypeParams] '>' ] |
+    'typeof' '(' expression ')' |
+    TableType |
+    FunctionType |
+    '(' Type ')'
+
+SingletonType ::= STRING | 'true' | 'false'
+
+// Why ? is used in UnionSuffix only, is it not possible to use with &? I'll move it for now.
+UnionSuffix ::= ('|' SimpleType '?')+
+IntersectionSuffix ::= ('&' SimpleType)+
+Type ::= SimpleType '?'? (UnionSuffix | IntersectionSuffix)*
+
+GenericTypePackParameter ::= ID '...'
+GenericTypeList ::= ID [',' GenericTypeList] | GenericTypePackParameter {',' GenericTypePackParameter}
+
+GenericTypePackParameterWithDefault ::= ID '...' '=' (TypePack | VariadicTypePack | GenericTypePack)
+GenericTypeListWithDefaults ::=
+    GenericTypeList {',' GenericTypePackParameterWithDefault} |
+    ID {',' ID} {',' ID '=' Type} {',' GenericTypePackParameterWithDefault} |
+    ID '=' Type {',' GenericTypePackParameterWithDefault} |
+    GenericTypePackParameterWithDefault {',' GenericTypePackParameterWithDefault}
+
+TypeList ::= Type [',' TypeList] | '...' Type
+BoundTypeList ::= [ID ':'] Type [',' BoundTypeList] | '...' Type
+TypeParams ::= (Type | TypePack | VariadicTypePack | GenericTypePack) [',' TypeParams]
+TypePack ::= '(' [TypeList] ')'
+GenericTypePack ::= ID '...'
+VariadicTypePack ::= '...' Type
+ReturnType ::= Type | TypePack
+TableIndexer ::= '[' Type ']' ':' Type
+TableProp ::= ID ':' Type
+TablePropOrIndexer ::= TableProp | TableIndexer
+PropList ::= TablePropOrIndexer {fieldsep TablePropOrIndexer} [fieldsep]
+TableType ::= '{' Type '}' | '{' [PropList] '}'
+FunctionType ::= ['<' GenericTypeList '>'] '(' [BoundTypeList] ')' '->' ReturnType
