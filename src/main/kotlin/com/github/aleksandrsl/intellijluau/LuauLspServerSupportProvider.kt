@@ -24,8 +24,7 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
     override fun createCommandLine(): GeneralCommandLine {
         val lsp = PluginPathManager.getPluginResource(javaClass, "languageServer/luau-lsp.exe")
         if (lsp == null || !lsp.exists()) {
-            // broken plugin installation?
-            throw ExecutionException("TODO")
+            throw ExecutionException(LuauBundle.message("prisma.language.server.not.found"))
         }
         return GeneralCommandLine().apply {
             withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
