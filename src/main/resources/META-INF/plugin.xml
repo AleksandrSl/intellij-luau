@@ -7,7 +7,7 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>com.intellij.modules.ultimate</depends>
 
-    <resource-bundle>messages.MyBundle</resource-bundle>
+    <resource-bundle>messages.LuauBundle</resource-bundle>
 
     <extensions defaultExtensionNs="com.intellij">
         <fileType name="Luau File"
@@ -49,8 +49,4 @@
 <!--        />-->
         <platform.lsp.serverSupportProvider implementation="com.github.aleksandrsl.intellijluau.LuauLspServerSupportProvider"/>
     </extensions>
-
-    <applicationListeners>
-        <listener class="com.github.aleksandrsl.intellijluau.listeners.MyApplicationActivationListener" topic="com.intellij.openapi.application.ApplicationActivationListener"/>
-    </applicationListeners>
 </idea-plugin>
