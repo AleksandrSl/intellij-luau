@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
+    id("org.jetbrains.grammarkit") version "2022.3.2.2"
 }
 
 group = properties("pluginGroup").get()
@@ -56,9 +57,42 @@ koverReport {
     }
 }
 
+grammarKit {
+    jflexRelease.set("1.9.2")
+    grammarKitRelease.set("2022.3.2")
+}
+
+sourceSets["main"].java.srcDirs("src/main/gen")
+
 tasks {
     wrapper {
         gradleVersion = properties("gradleVersion").get()
+    }
+
+    buildSearchableOptions {
+        enabled = false
+    }
+
+    generateLexer {
+        sourceFile.set(file("src/main/grammar/Luau.flex"))
+        targetOutputDir.set(file("src/main/gen/com/github/aleksandrsl/intellijluau/lexer"))
+        purgeOldFiles.set(true)
+    }
+
+    generateParser {
+        // source bnf file
+        sourceFile.set(file("src/main/grammar/Luau.bnf"))
+
+        // optional, task-specific root for the generated files. Default: none
+        targetRootOutputDir.set(file("src/main/gen"))
+
+        pathToParser.set("/com/github/aleksandrsl/intellijluau/parser/LuauParserGenerated.java")
+
+        // path to a directory with generated psi files, relative to the targetRoot
+        pathToPsiRoot.set("/com/github/aleksandrsl/intellijluau/psi")
+
+        // if set, plugin will remove a parser output file and psi output directory before generating new ones. Default: false
+        purgeOldFiles.set(true)
     }
 
     patchPluginXml {
