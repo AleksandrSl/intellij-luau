@@ -43,7 +43,6 @@ public interface LuauTypes {
   IElementType INTERSECTION_SUFFIX = new LuauElementType("INTERSECTION_SUFFIX");
   IElementType LAST_STATEMENT = new LuauElementType("LAST_STATEMENT");
   IElementType LOCAL_FUNC_DEF_STAT = new LuauElementType("LOCAL_FUNC_DEF_STAT");
-  IElementType NAMELIST = new LuauElementType("NAMELIST");
   IElementType PARLIST = new LuauElementType("PARLIST");
   IElementType POSTFIX_EXP = new LuauElementType("POSTFIX_EXP");
   IElementType PREFIX_EXP = new LuauElementType("PREFIX_EXP");
@@ -63,6 +62,7 @@ public interface LuauTypes {
   IElementType TABLE_PROP_OR_INDEXER = new LuauElementType("TABLE_PROP_OR_INDEXER");
   IElementType TABLE_TYPE = new LuauElementType("TABLE_TYPE");
   IElementType TYPE = new LuauElementType("TYPE");
+  IElementType TYPE_DECLARATION_STATEMENT = new LuauElementType("TYPE_DECLARATION_STATEMENT");
   IElementType TYPE_LIST = new LuauElementType("TYPE_LIST");
   IElementType TYPE_PACK = new LuauElementType("TYPE_PACK");
   IElementType TYPE_PARAMS = new LuauElementType("TYPE_PARAMS");
@@ -71,6 +71,7 @@ public interface LuauTypes {
   IElementType UNOP = new LuauElementType("UNOP");
   IElementType VAR = new LuauElementType("VAR");
   IElementType VARIADIC_TYPE_PACK = new LuauElementType("VARIADIC_TYPE_PACK");
+  IElementType VAR_LIST = new LuauElementType("VAR_LIST");
   IElementType WHILE_STATEMENT = new LuauElementType("WHILE_STATEMENT");
 
   IElementType AND = new LuauTokenType("and");
@@ -86,6 +87,7 @@ public interface LuauTypes {
   IElementType COLON = new LuauTokenType(":");
   IElementType COMMA = new LuauTokenType(",");
   IElementType CONCAT = new LuauTokenType("..");
+  IElementType CONTINUE = new LuauTokenType("continue");
   IElementType DIV = new LuauTokenType("/");
   IElementType DO = new LuauTokenType("do");
   IElementType DOC_BLOCK_COMMENT = new LuauTokenType("DOC_BLOCK_COMMENT");
@@ -142,6 +144,7 @@ public interface LuauTypes {
   IElementType STRING = new LuauTokenType("STRING");
   IElementType THEN = new LuauTokenType("then");
   IElementType TRUE = new LuauTokenType("true");
+  IElementType TYPE = new LuauTokenType("type");
   IElementType UNTIL = new LuauTokenType("until");
   IElementType WHILE = new LuauTokenType("while");
 
@@ -250,9 +253,6 @@ public interface LuauTypes {
       else if (type == LOCAL_FUNC_DEF_STAT) {
         return new LuauLocalFuncDefStatImpl(node);
       }
-      else if (type == NAMELIST) {
-        return new LuauNamelistImpl(node);
-      }
       else if (type == PARLIST) {
         return new LuauParlistImpl(node);
       }
@@ -310,6 +310,9 @@ public interface LuauTypes {
       else if (type == TYPE) {
         return new LuauTypeImpl(node);
       }
+      else if (type == TYPE_DECLARATION_STATEMENT) {
+        return new LuauTypeDeclarationStatementImpl(node);
+      }
       else if (type == TYPE_LIST) {
         return new LuauTypeListImpl(node);
       }
@@ -333,6 +336,9 @@ public interface LuauTypes {
       }
       else if (type == VARIADIC_TYPE_PACK) {
         return new LuauVariadicTypePackImpl(node);
+      }
+      else if (type == VAR_LIST) {
+        return new LuauVarListImpl(node);
       }
       else if (type == WHILE_STATEMENT) {
         return new LuauWhileStatementImpl(node);

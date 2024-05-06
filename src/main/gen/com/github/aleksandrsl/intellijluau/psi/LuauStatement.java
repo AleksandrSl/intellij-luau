@@ -8,12 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface LuauStatement extends PsiElement {
 
   @Nullable
-  LuauGenericTypeListWithDefaults getGenericTypeListWithDefaults();
-
-  @Nullable
-  LuauType getType();
-
-  @Nullable
   LuauAssignmentStatement getAssignmentStatement();
 
   @Nullable
@@ -44,9 +38,9 @@ public interface LuauStatement extends PsiElement {
   LuauRepeatStatement getRepeatStatement();
 
   @Nullable
-  LuauWhileStatement getWhileStatement();
+  LuauTypeDeclarationStatement getTypeDeclarationStatement();
 
   @Nullable
-  PsiElement getId();
+  LuauWhileStatement getWhileStatement();
 
 }

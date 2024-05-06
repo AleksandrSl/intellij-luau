@@ -79,6 +79,7 @@ class LuauParserDefinition : ParserDefinition {
             LuauTypes.THEN,
             LuauTypes.UNTIL,
             LuauTypes.WHILE,
+            LuauTypes.TYPE,
             // Luau type cast operator
             LuauTypes.DOUBLE_COLON,
             // Lua 5.2+

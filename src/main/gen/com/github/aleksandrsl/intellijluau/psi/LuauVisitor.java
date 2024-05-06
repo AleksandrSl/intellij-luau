@@ -203,10 +203,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitNamelist(@NotNull LuauNamelist o) {
-    visitPsiElement(o);
-  }
-
   public void visitParlist(@NotNull LuauParlist o) {
     visitPsiElement(o);
   }
@@ -247,6 +243,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitTypeDeclarationStatement(@NotNull LuauTypeDeclarationStatement o) {
+    visitPsiElement(o);
+  }
+
   public void visitUnaryExp(@NotNull LuauUnaryExp o) {
     visitExpression(o);
   }
@@ -256,6 +256,10 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitVar(@NotNull LuauVar o) {
+    visitPsiElement(o);
+  }
+
+  public void visitVarList(@NotNull LuauVarList o) {
     visitPsiElement(o);
   }
 

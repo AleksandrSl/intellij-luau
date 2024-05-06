@@ -29,18 +29,6 @@ public class LuauStatementImpl extends ASTWrapperPsiElement implements LuauState
 
   @Override
   @Nullable
-  public LuauGenericTypeListWithDefaults getGenericTypeListWithDefaults() {
-    return findChildByClass(LuauGenericTypeListWithDefaults.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauType getType() {
-    return findChildByClass(LuauType.class);
-  }
-
-  @Override
-  @Nullable
   public LuauAssignmentStatement getAssignmentStatement() {
     return findChildByClass(LuauAssignmentStatement.class);
   }
@@ -101,14 +89,14 @@ public class LuauStatementImpl extends ASTWrapperPsiElement implements LuauState
 
   @Override
   @Nullable
-  public LuauWhileStatement getWhileStatement() {
-    return findChildByClass(LuauWhileStatement.class);
+  public LuauTypeDeclarationStatement getTypeDeclarationStatement() {
+    return findChildByClass(LuauTypeDeclarationStatement.class);
   }
 
   @Override
   @Nullable
-  public PsiElement getId() {
-    return findChildByType(ID);
+  public LuauWhileStatement getWhileStatement() {
+    return findChildByClass(LuauWhileStatement.class);
   }
 
 }
