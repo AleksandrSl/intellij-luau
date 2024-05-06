@@ -87,8 +87,10 @@ public interface LuauTypes {
   IElementType COLON = new LuauTokenType(":");
   IElementType COMMA = new LuauTokenType(",");
   IElementType CONCAT = new LuauTokenType("..");
+  IElementType CONCAT_EQ = new LuauTokenType("..=");
   IElementType CONTINUE = new LuauTokenType("continue");
   IElementType DIV = new LuauTokenType("/");
+  IElementType DIV_EQ = new LuauTokenType("/=");
   IElementType DO = new LuauTokenType("do");
   IElementType DOC_BLOCK_COMMENT = new LuauTokenType("DOC_BLOCK_COMMENT");
   IElementType DOC_COMMENT = new LuauTokenType("DOC_COMMENT");
@@ -102,6 +104,7 @@ public interface LuauTypes {
   IElementType ENDREGION = new LuauTokenType("ENDREGION");
   IElementType EQ = new LuauTokenType("==");
   IElementType EXP = new LuauTokenType("^");
+  IElementType EXP_EQ = new LuauTokenType("^=");
   IElementType FALSE = new LuauTokenType("false");
   IElementType FOR = new LuauTokenType("for");
   IElementType FUNCTION = new LuauTokenType("function");
@@ -122,14 +125,18 @@ public interface LuauTypes {
   IElementType LPAREN = new LuauTokenType("(");
   IElementType LT = new LuauTokenType("<");
   IElementType MINUS = new LuauTokenType("-");
+  IElementType MINUS_EQ = new LuauTokenType("-=");
   IElementType MOD = new LuauTokenType("%");
+  IElementType MOD_EQ = new LuauTokenType("%=");
   IElementType MULT = new LuauTokenType("*");
+  IElementType MULT_EQ = new LuauTokenType("*=");
   IElementType NE = new LuauTokenType("~=");
   IElementType NIL = new LuauTokenType("nil");
   IElementType NOT = new LuauTokenType("not");
   IElementType NUMBER = new LuauTokenType("NUMBER");
   IElementType OR = new LuauTokenType("or");
   IElementType PLUS = new LuauTokenType("+");
+  IElementType PLUS_EQ = new LuauTokenType("+=");
   IElementType QUESTION = new LuauTokenType("?");
   IElementType RBRACK = new LuauTokenType("]");
   IElementType RCURLY = new LuauTokenType("}");
@@ -144,7 +151,7 @@ public interface LuauTypes {
   IElementType STRING = new LuauTokenType("STRING");
   IElementType THEN = new LuauTokenType("then");
   IElementType TRUE = new LuauTokenType("true");
-  IElementType TYPE = new LuauTokenType("type");
+  IElementType TYPE_KEYWORD = new LuauTokenType("type");
   IElementType UNTIL = new LuauTokenType("until");
   IElementType WHILE = new LuauTokenType("while");
 

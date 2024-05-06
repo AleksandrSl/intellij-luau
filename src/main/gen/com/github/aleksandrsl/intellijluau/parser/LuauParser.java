@@ -1121,13 +1121,13 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(builder_, level_, "compoundop")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, COMPOUNDOP, "<compoundop>");
-    result_ = consumeToken(builder_, "+=");
-    if (!result_) result_ = consumeToken(builder_, "-=");
-    if (!result_) result_ = consumeToken(builder_, "*=");
-    if (!result_) result_ = consumeToken(builder_, "/=");
-    if (!result_) result_ = consumeToken(builder_, "%=");
-    if (!result_) result_ = consumeToken(builder_, "^=");
-    if (!result_) result_ = consumeToken(builder_, "..=");
+    result_ = consumeToken(builder_, PLUS_EQ);
+    if (!result_) result_ = consumeToken(builder_, MINUS_EQ);
+    if (!result_) result_ = consumeToken(builder_, MULT_EQ);
+    if (!result_) result_ = consumeToken(builder_, DIV_EQ);
+    if (!result_) result_ = consumeToken(builder_, MOD_EQ);
+    if (!result_) result_ = consumeToken(builder_, EXP_EQ);
+    if (!result_) result_ = consumeToken(builder_, CONCAT_EQ);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
@@ -1951,7 +1951,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, TYPE_DECLARATION_STATEMENT, "<type declaration statement>");
     result_ = typeDeclarationStatement_0(builder_, level_ + 1);
-    result_ = result_ && consumeTokens(builder_, 0, TYPE, ID);
+    result_ = result_ && consumeTokens(builder_, 0, TYPE_KEYWORD, ID);
     result_ = result_ && typeDeclarationStatement_3(builder_, level_ + 1);
     result_ = result_ && consumeToken(builder_, ASSIGN);
     result_ = result_ && Type(builder_, level_ + 1);
