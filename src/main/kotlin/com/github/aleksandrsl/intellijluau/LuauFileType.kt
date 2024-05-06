@@ -3,7 +3,7 @@ package com.github.aleksandrsl.intellijluau
 import com.intellij.openapi.fileTypes.LanguageFileType
 import javax.swing.Icon
 
-class LuauFileType private constructor() : LanguageFileType(LuauLanguage.INSTANCE) {
+object LuauFileType: LanguageFileType(LuauLanguage.INSTANCE) {
     override fun getName(): String {
         return "Luau File"
     }
@@ -18,9 +18,5 @@ class LuauFileType private constructor() : LanguageFileType(LuauLanguage.INSTANC
 
     override fun getIcon(): Icon {
         return LuauIcons.FILE
-    }
-
-    companion object {
-        val INSTANCE = LuauFileType()
     }
 }

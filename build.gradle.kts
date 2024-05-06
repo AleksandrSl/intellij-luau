@@ -95,6 +95,15 @@ tasks {
         purgeOldFiles.set(true)
     }
 
+    prepareSandbox {
+        doLast {
+            copy {
+                from("${project.projectDir}/src/main/languageServer")
+                into("${destinationDir.path}/${properties("pluginName").get()}/languageServer")
+            }
+        }
+    }
+
     patchPluginXml {
         version = properties("pluginVersion")
         sinceBuild = properties("pluginSinceBuild")
