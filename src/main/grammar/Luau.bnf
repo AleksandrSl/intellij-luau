@@ -40,7 +40,7 @@
           ENDREGION = "ENDREGION"
 
           CONTINUE = "continue"
-          TYPE = "type"
+          TYPE_KEYWORD = "type"
 
           SHEBANG = "#!"
           SHEBANG_CONTENT = "SHEBANG_CONTENT"

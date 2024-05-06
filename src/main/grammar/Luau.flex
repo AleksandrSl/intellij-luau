@@ -141,7 +141,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
     "or"                        { return OR; }
     "repeat"                    { return REPEAT; }
     "return"                    { return RETURN; }
-      "type"                    { return TYPE; }
+      "type"                    { return TYPE_KEYWORD; }
     "then"                      { return THEN; }
     "true"                      { return TRUE; }
     "until"                     { return UNTIL; }

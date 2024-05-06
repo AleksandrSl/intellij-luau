@@ -1075,7 +1075,7 @@ class LuauLexer implements FlexLexer {
           // fall through
           case 143: break;
           case 66:
-            { return TYPE;
+            { return TYPE_KEYWORD;
             }
           // fall through
           case 144: break;
