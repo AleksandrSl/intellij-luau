@@ -22,4 +22,7 @@ public interface LuauAssignmentStatement extends PsiElement {
   @Nullable
   LuauVar getVar();
 
+  @Nullable
+  LuauVarList getVarList();
+
 }

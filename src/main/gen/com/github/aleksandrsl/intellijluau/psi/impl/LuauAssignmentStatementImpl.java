@@ -57,4 +57,10 @@ public class LuauAssignmentStatementImpl extends ASTWrapperPsiElement implements
     return findChildByClass(LuauVar.class);
   }
 
+  @Override
+  @Nullable
+  public LuauVarList getVarList() {
+    return findChildByClass(LuauVarList.class);
+  }
+
 }

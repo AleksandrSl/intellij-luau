@@ -39,6 +39,9 @@
           REGION = "REGION"
           ENDREGION = "ENDREGION"
 
+          CONTINUE = "continue"
+          TYPE = "type"
+
           SHEBANG = "#!"
           SHEBANG_CONTENT = "SHEBANG_CONTENT"
           ELLIPSIS = "..."
@@ -68,6 +71,14 @@
           DOT = "."
           EXP = "^"
           QUESTION = "?"
+
+          PLUS_EQ = "+="
+          MINUS_EQ = "-="
+          MULT_EQ = "*="
+          DIV_EQ = "/="
+          MOD_EQ = "%="
+          EXP_EQ = "^="
+          CONCAT_EQ = "..="
 
           SHORT_COMMENT="SHORT_COMMENT"
           DOC_BLOCK_COMMENT="DOC_BLOCK_COMMENT"
@@ -115,7 +126,8 @@ statement ::=
      | classicForStatement
      | foreachStatement
      | defStatement
-     | ['export'] 'type' ID ['<' GenericTypeListWithDefaults '>'] '=' Type
+     | typeDeclarationStatement
+
 
 doStatement ::= 'do' block 'end'
 whileStatement ::= 'while' expression 'do' block 'end'
@@ -123,10 +135,11 @@ repeatStatement ::= 'repeat' block 'until' expression
 ifStatement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
 classicForStatement ::= 'for' binding '=' expression ',' expression [',' expression] 'do' block 'end'
 foreachStatement ::= 'for' bindingList 'in' expList 'do' block 'end'
-assignmentStatement ::= bindingList '=' expList | 'local' bindingList ['=' expList] | var compoundop expression
+assignmentStatement ::= varList '=' expList | 'local' bindingList ['=' expList] | var compoundop expression
 expressionStatement ::= expression
 private defStatement ::= classMethodDefStat | funcDefStat | localFuncDefStat
 lastStatement ::= 'return' expList? | 'break' | 'continue'
+typeDeclarationStatement ::= ['export'] 'type' ID ['<' GenericTypeListWithDefaults '>'] '=' Type
 
 funcDefStat ::= 'function' funcname funcBody
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
@@ -138,11 +151,12 @@ funcBody ::= ('<' GenericTypeList '>')? '(' [parlist] ')' (':' ReturnType)? bloc
 parlist ::= bindingList (',' '...')? | '...' (':' (Type | GenericTypePack))?
 
 expList ::= (expression ',')* expression
-namelist ::= ID (',' ID)*
 
+// Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
 binding ::= ID (':' Type)?
 bindingList ::= binding (',' bindingList)? // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
+varList ::= var (',' var)*
 var ::= simpleVar postfixExp*
 simpleVar ::= ID | '(' expression ')'
 prefixExp ::= (var | '(' expression ')') postfixExp*
