@@ -10,7 +10,7 @@ class LuauFile(viewProvider: FileViewProvider) :
     PsiFileBase(viewProvider, LuauLanguage.INSTANCE) {
 
     override fun getFileType(): FileType {
-        return LuauFileType.INSTANCE
+        return LuauFileType
     }
 
     override fun toString(): String {

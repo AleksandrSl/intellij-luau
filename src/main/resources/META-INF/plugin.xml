@@ -5,6 +5,7 @@
     <vendor url="https://github.com/AleksandrSl" email="sl.aleksandr28@gmail.com">aleksandrsl</vendor>
 
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.ultimate</depends>
 
     <resource-bundle>messages.MyBundle</resource-bundle>
 
@@ -46,6 +47,7 @@
 <!--                language="luau"-->
 <!--                implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"-->
 <!--        />-->
+        <platform.lsp.serverSupportProvider implementation="com.github.aleksandrsl.intellijluau.LuauLspServerSupportProvider"/>
     </extensions>
 
     <applicationListeners>
