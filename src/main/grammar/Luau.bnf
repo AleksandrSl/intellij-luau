@@ -166,8 +166,8 @@ unaryExp ::= unop expression {extends=expression}
 binaryExp ::= expression binop expression {extends=expression}
 ifelseexp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
 asExp ::= simpleExp '::' Type {extends=expression}
-stringinterp ::= INTERP_BEGIN expression ( INTERP_MID expression )* INTERP_END
-simpleExp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | tableconstructor | closureExpr | prefixExp | ifelseexp | stringinterp {extends=expression}
+templateString ::= TEMPLATE_STRING_SQUOTE (STRING? '{' expression '}' STRING?)* TEMPLATE_STRING_EQUOTE
+simpleExp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | tableconstructor | closureExpr | prefixExp | ifelseexp | templateString {extends=expression}
 funcargs ::=  '(' expList? ')' | tableconstructor | STRING
 
 closureExpr ::= 'function' funcBody
