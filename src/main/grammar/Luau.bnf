@@ -39,9 +39,6 @@
           REGION = "REGION"
           ENDREGION = "ENDREGION"
 
-          CONTINUE = "continue"
-          TYPE_KEYWORD = "type"
-
           SHEBANG = "#!"
           SHEBANG_CONTENT = "SHEBANG_CONTENT"
           ELLIPSIS = "..."
@@ -79,6 +76,7 @@
           MOD_EQ = "%="
           EXP_EQ = "^="
           CONCAT_EQ = "..="
+          ARROW = "->"
 
           SHORT_COMMENT="SHORT_COMMENT"
           DOC_BLOCK_COMMENT="DOC_BLOCK_COMMENT"
@@ -112,34 +110,33 @@
 luaFile ::= shebang_line? block
 shebang_line ::= SHEBANG SHEBANG_CONTENT
 
-//private stat_semi ::= <<parseStatement>>
-
 block ::= (statement ';'?)* (lastStatement ';'?)?
 statement ::=
      assignmentStatement
-     | expressionStatement
+     | typeDeclarationStatement
      | functioncall
      | doStatement
      | whileStatement
      | repeatStatement
      | ifStatement
+     // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
+     // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
+     | expressionStatement
      | classicForStatement
      | foreachStatement
      | defStatement
-     | typeDeclarationStatement
-
 
 doStatement ::= 'do' block 'end'
 whileStatement ::= 'while' expression 'do' block 'end'
 repeatStatement ::= 'repeat' block 'until' expression
 ifStatement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
-classicForStatement ::= 'for' binding '=' expression ',' expression [',' expression] 'do' block 'end'
+classicForStatement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end'
 foreachStatement ::= 'for' bindingList 'in' expList 'do' block 'end'
-assignmentStatement ::= varList '=' expList | 'local' bindingList ['=' expList] | var compoundop expression
+assignmentStatement ::= varList '=' expList | 'local' bindingList ('=' expList)? | var compoundop expression
 expressionStatement ::= expression
 private defStatement ::= classMethodDefStat | funcDefStat | localFuncDefStat
 lastStatement ::= 'return' expList? | 'break' | 'continue'
-typeDeclarationStatement ::= ['export'] 'type' ID ['<' GenericTypeListWithDefaults '>'] '=' Type
+typeDeclarationStatement ::= 'export'? 'type' ID ('<' GenericTypeListWithDefaults '>')? '=' Type
 
 funcDefStat ::= 'function' funcname funcBody
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
@@ -147,7 +144,7 @@ funcDefStat ::= 'function' funcname funcBody
 localFuncDefStat ::= 'local' 'function' funcname funcBody
 
 funcname ::= ID ('.' ID)* (':' ID)?
-funcBody ::= ('<' GenericTypeList '>')? '(' [parlist] ')' (':' ReturnType)? block 'end'
+funcBody ::= ('<' GenericTypeList '>')? '(' parlist? ')' (':' ReturnType)? block 'end'
 parlist ::= bindingList (',' '...')? | '...' (':' (Type | GenericTypePack))?
 
 expList ::= (expression ',')* expression
@@ -169,9 +166,9 @@ unaryExp ::= unop expression {extends=expression}
 binaryExp ::= expression binop expression {extends=expression}
 ifelseexp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
 asExp ::= simpleExp '::' Type {extends=expression}
-stringinterp ::= INTERP_BEGIN expression { INTERP_MID expression } INTERP_END
+stringinterp ::= INTERP_BEGIN expression ( INTERP_MID expression )* INTERP_END
 simpleExp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | tableconstructor | closureExpr | prefixExp | ifelseexp | stringinterp {extends=expression}
-funcargs ::=  '(' [expList] ')' | tableconstructor | STRING
+funcargs ::=  '(' expList? ')' | tableconstructor | STRING
 
 closureExpr ::= 'function' funcBody
 
@@ -188,7 +185,7 @@ unop ::= '-' | 'not' | '#'
 SimpleType ::=
     'nil' |
     SingletonType |
-    ID ['.' ID] [ '<' [TypeParams] '>' ] |
+    ID ('.' ID)? ('<' TypeParams? '>')? |
     'typeof' '(' expression ')' |
     TableType |
     FunctionType |
@@ -197,30 +194,30 @@ SimpleType ::=
 SingletonType ::= STRING | 'true' | 'false'
 
 // Why ? is used in UnionSuffix only, is it not possible to use with &? I'll move it for now.
-UnionSuffix ::= ('|' SimpleType '?')+
+UnionSuffix ::= ('|' SimpleType '?'?)+
 IntersectionSuffix ::= ('&' SimpleType)+
 Type ::= SimpleType '?'? (UnionSuffix | IntersectionSuffix)*
 
 GenericTypePackParameter ::= ID '...'
-GenericTypeList ::= ID [',' GenericTypeList] | GenericTypePackParameter {',' GenericTypePackParameter}
+GenericTypeList ::= ID (',' GenericTypeList)? | GenericTypePackParameter (',' GenericTypePackParameter)*
 
 GenericTypePackParameterWithDefault ::= ID '...' '=' (TypePack | VariadicTypePack | GenericTypePack)
 GenericTypeListWithDefaults ::=
-    GenericTypeList {',' GenericTypePackParameterWithDefault} |
-    ID {',' ID} {',' ID '=' Type} {',' GenericTypePackParameterWithDefault} |
-    ID '=' Type {',' GenericTypePackParameterWithDefault} |
-    GenericTypePackParameterWithDefault {',' GenericTypePackParameterWithDefault}
+    GenericTypeList (',' GenericTypePackParameterWithDefault)*
+    | ID (',' ID)* (',' ID '=' Type)* (',' GenericTypePackParameterWithDefault)*
+    | ID '=' Type (',' GenericTypePackParameterWithDefault)*
+    | GenericTypePackParameterWithDefault (',' GenericTypePackParameterWithDefault)*
 
-TypeList ::= Type [',' TypeList] | '...' Type
-BoundTypeList ::= [ID ':'] Type [',' BoundTypeList] | '...' Type
-TypeParams ::= (Type | TypePack | VariadicTypePack | GenericTypePack) [',' TypeParams]
-TypePack ::= '(' [TypeList] ')'
+TypeList ::= Type (',' TypeList)? | '...' Type
+BoundTypeList ::= (ID ':')? Type (',' BoundTypeList)? | '...' Type
+TypeParams ::= (Type | TypePack | VariadicTypePack | GenericTypePack) (',' TypeParams)?
+TypePack ::= '(' TypeList? ')'
 GenericTypePack ::= ID '...'
 VariadicTypePack ::= '...' Type
 ReturnType ::= Type | TypePack
 TableIndexer ::= '[' Type ']' ':' Type
 TableProp ::= ID ':' Type
 TablePropOrIndexer ::= TableProp | TableIndexer
-PropList ::= TablePropOrIndexer {fieldsep TablePropOrIndexer} [fieldsep]
-TableType ::= '{' Type '}' | '{' [PropList] '}'
-FunctionType ::= ['<' GenericTypeList '>'] '(' [BoundTypeList] ')' '->' ReturnType
+PropList ::= TablePropOrIndexer (fieldsep TablePropOrIndexer)* fieldsep?
+TableType ::= '{' Type '}' | '{' PropList? '}'
+FunctionType ::= ('<' GenericTypeList '>')? '(' BoundTypeList? ')' '->' ReturnType
