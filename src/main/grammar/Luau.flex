@@ -95,6 +95,7 @@ DOC_COMMENT=----*[^\r\n]*(\r?\n{LINE_WS}*----*[^\r\n]*)*
 //Strings
 DOUBLE_QUOTED_STRING=\"([^\\\"]|\\\S|\\[\r\n])*\"?  //\"([^\\\"\r\n]|\\[^\r\n])*\"?
 SINGLE_QUOTED_STRING='([^\\\']|\\\S|\\[\r\n])*'?    //'([^\\'\r\n]|\\[^\r\n])*'?
+TEMPLATE_QUOTED_STRING=([^\`\r\n\{])*
 //[[]]
 LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
@@ -104,11 +105,12 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 %state xBLOCK_STRING
 %state xCOMMENT
 %state xBLOCK_COMMENT
+%state xTEMPLATE_STRING
+%state xTEMPLATE_STRING_EXPRESSION
 
 %%
 
-<YYINITIAL> {
-
+<YYINITIAL, xTEMPLATE_STRING_EXPRESSION> {
    {WHITE_SPACE}               { return TokenType.WHITE_SPACE; }
      {REGION_START}              { return REGION; }
      {REGION_END}                { return ENDREGION; }
@@ -122,8 +124,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
               }
               else { yypushback(yylength()); yybegin(xCOMMENT); }
          }
-
-   "and"                       { return AND; }
+    "and"                       { return AND; }
     "break"                     { return BREAK; }
     "do"                        { return DO; }
     "else"                      { return ELSE; }
@@ -178,7 +179,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
      }
      "]"                         { return RBRACK; }
      "{"                         { return LCURLY; }
-     "}"                         { return RCURLY; }
+     "}"                         { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { yybegin(xTEMPLATE_STRING); }; return RCURLY; }
      "#"                         { return GETN; }
      ","                         { return COMMA; }
      ";"                         { return SEMI; }
@@ -203,6 +204,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
      "\""                        { yybegin(xDOUBLE_QUOTED_STRING); yypushback(yylength()); }
      "'"                         { yybegin(xSINGLE_QUOTED_STRING); yypushback(yylength()); }
+     "`"                         { yybegin(xTEMPLATE_STRING); return TEMPLATE_STRING_SQUOTE; }
 
      {ID}                        { return ID; }
      {NUMBER}                    { return NUMBER; }
@@ -225,4 +227,11 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
 <xSINGLE_QUOTED_STRING> {
     {SINGLE_QUOTED_STRING}    { yybegin(YYINITIAL); return STRING; }
+}
+
+<xTEMPLATE_STRING> {
+   "{" { yybegin(xTEMPLATE_STRING_EXPRESSION); return LCURLY; }
+   "`" { yybegin(YYINITIAL); return TEMPLATE_STRING_EQUOTE; }
+   {EOL} { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
+   {TEMPLATE_QUOTED_STRING}  { return STRING; }
 }
