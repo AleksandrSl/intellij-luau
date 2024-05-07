@@ -125,7 +125,6 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
    "and"                       { return AND; }
     "break"                     { return BREAK; }
-    "continue"                     { return CONTINUE; }
     "do"                        { return DO; }
     "else"                      { return ELSE; }
     "elseif"                    { return ELSEIF; }
@@ -141,7 +140,6 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
     "or"                        { return OR; }
     "repeat"                    { return REPEAT; }
     "return"                    { return RETURN; }
-      "type"                    { return TYPE_KEYWORD; }
     "then"                      { return THEN; }
     "true"                      { return TRUE; }
     "until"                     { return UNTIL; }
@@ -197,6 +195,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
      "%="                        { return MOD_EQ; }
      "^="                        { return EXP_EQ; }
      "..="                       { return CONCAT_EQ; }
+     "->"                        { return ARROW; }
 
      "~"                         { return BIT_TILDE; } //lua5.2
      "&"                         { return BIT_AND; } //lua5.2
