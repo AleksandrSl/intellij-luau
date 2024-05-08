@@ -48,5 +48,12 @@
 <!--                implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"-->
 <!--        />-->
         <platform.lsp.serverSupportProvider implementation="com.github.aleksandrsl.intellijluau.LuauLspServerSupportProvider"/>
+        <projectConfigurable
+                    parentId="language"
+                    instance="com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable"
+                    id="settings.luau"
+                    displayName="Luau"
+                    nonDefaultProject="true"
+        />
     </extensions>
 </idea-plugin>
