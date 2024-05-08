@@ -77,11 +77,6 @@ public interface LuauTypes {
   IElementType AND = new LuauTokenType("and");
   IElementType ARROW = new LuauTokenType("->");
   IElementType ASSIGN = new LuauTokenType("=");
-  IElementType BIT_AND = new LuauTokenType("&");
-  IElementType BIT_LTLT = new LuauTokenType("<<");
-  IElementType BIT_OR = new LuauTokenType("|");
-  IElementType BIT_RTRT = new LuauTokenType(">>");
-  IElementType BIT_TILDE = new LuauTokenType("~");
   IElementType BLOCK_COMMENT = new LuauTokenType("BLOCK_COMMENT");
   IElementType BREAK = new LuauTokenType("break");
   IElementType CLASSMETHODDEFSTAT = new LuauTokenType("classMethodDefStat");
@@ -97,6 +92,7 @@ public interface LuauTypes {
   IElementType DOT = new LuauTokenType(".");
   IElementType DOUBLE_COLON = new LuauTokenType("::");
   IElementType DOUBLE_DIV = new LuauTokenType("//");
+  IElementType DOUBLE_DIV_EQ = new LuauTokenType("//=");
   IElementType ELLIPSIS = new LuauTokenType("...");
   IElementType ELSE = new LuauTokenType("else");
   IElementType ELSEIF = new LuauTokenType("elseif");
@@ -110,11 +106,11 @@ public interface LuauTypes {
   IElementType FUNCTION = new LuauTokenType("function");
   IElementType GE = new LuauTokenType(">=");
   IElementType GETN = new LuauTokenType("#");
-  IElementType GOTO = new LuauTokenType("goto");
   IElementType GT = new LuauTokenType(">");
   IElementType ID = new LuauTokenType("ID");
   IElementType IF = new LuauTokenType("if");
   IElementType IN = new LuauTokenType("in");
+  IElementType INTERSECTION = new LuauTokenType("&");
   IElementType LBRACK = new LuauTokenType("[");
   IElementType LCURLY = new LuauTokenType("{");
   IElementType LE = new LuauTokenType("<=");
@@ -150,6 +146,7 @@ public interface LuauTypes {
   IElementType TEMPLATE_STRING_SQUOTE = new LuauTokenType("TEMPLATE_STRING_SQUOTE");
   IElementType THEN = new LuauTokenType("then");
   IElementType TRUE = new LuauTokenType("true");
+  IElementType UNION = new LuauTokenType("|");
   IElementType UNTIL = new LuauTokenType("until");
   IElementType WHILE = new LuauTokenType("while");
 

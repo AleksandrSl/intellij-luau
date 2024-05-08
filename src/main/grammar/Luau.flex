@@ -150,16 +150,13 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
   ".."                        { return CONCAT; }
   "=="                        { return EQ; }
   ">="                        { return GE; }
-  ">>"                        { return BIT_RTRT; } //lua5.2
   "<="                        { return LE; }
-  "<<"                        { return BIT_LTLT; } //lua5.2
   "~="                        { return NE; }
-  "~"                         { return BIT_TILDE; } //lua5.2
   "-"                         { return MINUS; }
   "+"                         { return PLUS; }
   "*"                         { return MULT; }
   "%"                         { return MOD; }
-  "//"                        { return DOUBLE_DIV; } //lua5.2
+  "//"                        { return DOUBLE_DIV; }
   "/"                         { return DIV; }
   "="                         { return ASSIGN; }
   ">"                         { return GT; }
@@ -183,7 +180,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
      "#"                         { return GETN; }
      ","                         { return COMMA; }
      ";"                         { return SEMI; }
-     "::"                        { return DOUBLE_COLON; } //lua5.2 and type casts
+     "::"                        { return DOUBLE_COLON; } // type casts
      ":"                         { return COLON; }
      "."                         { return DOT; }
      "^"                         { return EXP; }
@@ -193,14 +190,14 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
      "-="                        { return MINUS_EQ; }
      "*="                        { return MULT_EQ; }
      "/="                        { return DIV_EQ; }
+     "//="                       { return DOUBLE_DIV_EQ; }
      "%="                        { return MOD_EQ; }
      "^="                        { return EXP_EQ; }
      "..="                       { return CONCAT_EQ; }
      "->"                        { return ARROW; }
 
-     "~"                         { return BIT_TILDE; } //lua5.2
-     "&"                         { return BIT_AND; } //lua5.2
-     "|"                         { return BIT_OR; } //lua5.2
+     "&"                         { return INTERSECTION; }
+     "|"                         { return UNION; }
 
      "\""                        { yybegin(xDOUBLE_QUOTED_STRING); yypushback(yylength()); }
      "'"                         { yybegin(xSINGLE_QUOTED_STRING); yypushback(yylength()); }
