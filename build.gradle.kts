@@ -98,8 +98,8 @@ tasks {
     prepareSandbox {
         doLast {
             copy {
-                from("${project.projectDir}/src/main/languageServer")
-                into("${destinationDir.path}/${properties("pluginName").get()}/languageServer")
+                from("${project.projectDir}/src/main/resources/typeDeclarations")
+                into("${destinationDir.path}/${properties("pluginName").get()}/typeDeclarations")
             }
         }
     }

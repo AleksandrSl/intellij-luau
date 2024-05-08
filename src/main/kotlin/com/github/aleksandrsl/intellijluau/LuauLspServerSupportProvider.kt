@@ -5,6 +5,8 @@ package com.github.aleksandrsl.intellijluau
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
+import com.intellij.ide.plugins.PluginManagerCore
+import com.intellij.openapi.application.PluginPathManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.lsp.api.LspServerSupportProvider
@@ -32,11 +34,17 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
         if (!lsp.exists()) {
             throw ExecutionException(LuauBundle.message("luau.language.server.not.found"))
         }
+
+        val declarations = PluginPathManager.getPluginResource(javaClass, "typeDeclarations/globalTypes.PluginSecurity.d.luau")
         return GeneralCommandLine().apply {
             withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
             withCharset(Charsets.UTF_8)
             withExePath(lsp.path)
             addParameter("lsp")
+            if (declarations != null) {
+                addParameter("--definitions")
+                addParameter(declarations.path)
+            }
         }
     }
 }
