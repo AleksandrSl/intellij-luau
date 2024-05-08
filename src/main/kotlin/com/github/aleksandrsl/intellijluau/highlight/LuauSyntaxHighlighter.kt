@@ -1,7 +1,6 @@
 package com.github.aleksandrsl.intellijluau.highlight
 
-import com.github.aleksandrsl.intellijluau.LuauParserDefinition.Companion.COMMENT_TOKENS
-import com.github.aleksandrsl.intellijluau.LuauParserDefinition.Companion.KEYWORD_TOKENS
+import com.github.aleksandrsl.intellijluau.LuauTokenSets
 import com.github.aleksandrsl.intellijluau.lexer.LuauLexerAdapter
 import com.github.aleksandrsl.intellijluau.psi.LuauTypes
 import com.intellij.lexer.Lexer
@@ -22,10 +21,10 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
 
     override fun getTokenHighlights(tokenType: IElementType): Array<TextAttributesKey> {
         return when (tokenType) {
-            in KEYWORD_TOKENS -> {
+            in LuauTokenSets.KEYWORDS -> {
                 KEYWORD_KEYS
             }
-            in COMMENT_TOKENS -> {
+            in LuauTokenSets.COMMENTS -> {
                 COMMENT_KEYS
             }
             LuauTypes.STRING -> STRING_KEYS

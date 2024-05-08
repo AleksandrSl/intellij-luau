@@ -12,26 +12,19 @@ import com.intellij.openapi.project.Project
 import com.intellij.psi.FileViewProvider
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.TokenType
 import com.intellij.psi.tree.IFileElementType
 import com.intellij.psi.tree.TokenSet
 
-class LuauParserDefinition : ParserDefinition {
-    val WHITE_SPACES = TokenSet.create(TokenType.WHITE_SPACE)
-    val COMMENTS = TokenSet.create(LuauTypes.BLOCK_COMMENT, LuauTypes.DOC_COMMENT, LuauTypes.SHORT_COMMENT, LuauTypes.DOC_BLOCK_COMMENT)
+private val FILE = IFileElementType(LuauLanguage.INSTANCE)
 
-    val FILE = IFileElementType(LuauLanguage.INSTANCE)
+class LuauParserDefinition : ParserDefinition {
 
     override fun createLexer(project: Project?): Lexer {
         return LuauLexerAdapter()
     }
 
-    override fun getWhitespaceTokens(): TokenSet {
-        return WHITE_SPACES
-    }
-
     override fun getCommentTokens(): TokenSet {
-        return COMMENTS
+        return LuauTokenSets.COMMENTS
     }
 
     override fun getStringLiteralElements(): TokenSet {
@@ -56,31 +49,5 @@ class LuauParserDefinition : ParserDefinition {
 
     override fun createElement(node: ASTNode?): PsiElement {
         return LuauTypes.Factory.createElement(node)
-    }
-
-    companion object {
-        val COMMENT_TOKENS = TokenSet.create(LuauTypes.BLOCK_COMMENT, LuauTypes.DOC_COMMENT, LuauTypes.SHORT_COMMENT, LuauTypes.DOC_BLOCK_COMMENT)
-        val KEYWORD_TOKENS = TokenSet.create(
-            LuauTypes.AND,
-            LuauTypes.BREAK,
-            LuauTypes.DO,
-            LuauTypes.ELSE,
-            LuauTypes.ELSEIF,
-            LuauTypes.END,
-            LuauTypes.FOR,
-            LuauTypes.FUNCTION,
-            LuauTypes.IF,
-            LuauTypes.IN,
-            LuauTypes.LOCAL,
-            LuauTypes.NOT,
-            LuauTypes.OR,
-            LuauTypes.REPEAT,
-            LuauTypes.RETURN,
-            LuauTypes.THEN,
-            LuauTypes.UNTIL,
-            LuauTypes.WHILE,
-            // Luau type cast operator
-            LuauTypes.DOUBLE_COLON,
-        )
     }
 }
