@@ -228,9 +228,9 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // GenericTypeList (',' GenericTypePackParameterWithDefault)*
-  //     | ID (',' ID)* (',' ID '=' Type)* (',' GenericTypePackParameterWithDefault)*
-  //     | ID '=' Type (',' GenericTypePackParameterWithDefault)*
+  // GenericTypeList (',' GenericTypePackParameterWithDefault)*
+  //     | ID (',' ID)* (',' ID '=' Type)* (',' GenericTypePackParameterWithDefault)*
+  //     | ID '=' Type (',' GenericTypePackParameterWithDefault)*
   //     | GenericTypePackParameterWithDefault (',' GenericTypePackParameterWithDefault)*
   public static boolean GenericTypeListWithDefaults(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "GenericTypeListWithDefaults")) return false;
@@ -474,7 +474,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   // ('&' SimpleType)+
   public static boolean IntersectionSuffix(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "IntersectionSuffix")) return false;
-    if (!nextTokenIs(builder_, BIT_AND)) return false;
+    if (!nextTokenIs(builder_, INTERSECTION)) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
     result_ = IntersectionSuffix_0(builder_, level_ + 1);
@@ -492,7 +492,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(builder_, level_, "IntersectionSuffix_0")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, BIT_AND);
+    result_ = consumeToken(builder_, INTERSECTION);
     result_ = result_ && SimpleType(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
@@ -554,12 +554,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'nil' |
-  //     SingletonType |
-  //     ID ('.' ID)? ('<' TypeParams? '>')? |
-  //     'typeof' '(' expression ')' |
-  //     TableType |
-  //     FunctionType |
+  // 'nil' |
+  //     SingletonType |
+  //     ID ('.' ID)? ('<' TypeParams? '>')? |
+  //     'typeof' '(' expression ')' |
+  //     TableType |
+  //     FunctionType |
   //     '(' Type ')'
   public static boolean SimpleType(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "SimpleType")) return false;
@@ -912,7 +912,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   // ('|' SimpleType '?'?)+
   public static boolean UnionSuffix(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "UnionSuffix")) return false;
-    if (!nextTokenIs(builder_, BIT_OR)) return false;
+    if (!nextTokenIs(builder_, UNION)) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
     result_ = UnionSuffix_0(builder_, level_ + 1);
@@ -930,7 +930,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(builder_, level_, "UnionSuffix_0")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = consumeToken(builder_, BIT_OR);
+    result_ = consumeToken(builder_, UNION);
     result_ = result_ && SimpleType(builder_, level_ + 1);
     result_ = result_ && UnionSuffix_0_2(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
@@ -1087,7 +1087,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '+' | '-' | '*' | '/' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
+  // '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
   public static boolean binop(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "binop")) return false;
     boolean result_;
@@ -1096,6 +1096,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = consumeToken(builder_, MINUS);
     if (!result_) result_ = consumeToken(builder_, MULT);
     if (!result_) result_ = consumeToken(builder_, DIV);
+    if (!result_) result_ = consumeToken(builder_, DOUBLE_DIV);
     if (!result_) result_ = consumeToken(builder_, EXP);
     if (!result_) result_ = consumeToken(builder_, MOD);
     if (!result_) result_ = consumeToken(builder_, CONCAT);
@@ -1230,7 +1231,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..='
+  // '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..=' | '//='
   public static boolean compoundop(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "compoundop")) return false;
     boolean result_;
@@ -1242,6 +1243,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!result_) result_ = consumeToken(builder_, MOD_EQ);
     if (!result_) result_ = consumeToken(builder_, EXP_EQ);
     if (!result_) result_ = consumeToken(builder_, CONCAT_EQ);
+    if (!result_) result_ = consumeToken(builder_, DOUBLE_DIV_EQ);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
@@ -1981,18 +1983,18 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // assignmentStatement
-  //      | typeDeclarationStatement
-  //      | functioncall
-  //      | doStatement
-  //      | whileStatement
-  //      | repeatStatement
-  //      | ifStatement
-  //      // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
-  //      // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
-  //      | expressionStatement
-  //      | classicForStatement
-  //      | foreachStatement
+  // assignmentStatement
+  //      | typeDeclarationStatement
+  //      | functioncall
+  //      | doStatement
+  //      | whileStatement
+  //      | repeatStatement
+  //      | ifStatement
+  //      // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
+  //      // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
+  //      | expressionStatement
+  //      | classicForStatement
+  //      | foreachStatement
   //      | defStatement
   public static boolean statement(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "statement")) return false;

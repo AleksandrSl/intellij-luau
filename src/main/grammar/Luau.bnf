@@ -68,15 +68,20 @@
           DOT = "."
           EXP = "^"
           QUESTION = "?"
+          DOUBLE_COLON = "::"
+          DOUBLE_DIV = "//"
 
           PLUS_EQ = "+="
           MINUS_EQ = "-="
           MULT_EQ = "*="
           DIV_EQ = "/="
+          DOUBLE_DIV_EQ = "//="
           MOD_EQ = "%="
           EXP_EQ = "^="
           CONCAT_EQ = "..="
           ARROW = "->"
+          UNION = "|"
+          INTERSECTION = "&"
 
           SHORT_COMMENT="SHORT_COMMENT"
           DOC_BLOCK_COMMENT="DOC_BLOCK_COMMENT"
@@ -85,16 +90,6 @@
           ID="regexp:[A-Za-z_][A-Za-z0-9_]*"
           NUMBER="regexp:[0-9]+"
           STRING = "regexp:\"\S*\""
-
-          //lua 5.3
-          DOUBLE_COLON = "::"
-          GOTO = "goto"
-          BIT_OR = "|"
-          BIT_AND = "&"
-          BIT_LTLT = "<<"
-          BIT_RTRT = ">>"
-          BIT_TILDE = "~"
-          DOUBLE_DIV = "//"
     ]
 
 //    hooks("localDefStat|assignmentStatement|tableField") = [leftBinder="MY_LEFT_COMMENT_BINDER" rightBinder="MY_RIGHT_COMMENT_BINDER"]
@@ -178,8 +173,8 @@ field ::= '[' expression ']' '=' expression | ID '=' expression | expression
 // Why the fuck they allow two separators
 fieldsep ::= ',' | ';'
 
-compoundop ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..='
-binop ::= '+' | '-' | '*' | '/' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
+compoundop ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..=' | '//='
+binop ::= '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
 unop ::= '-' | 'not' | '#'
 
 SimpleType ::=
