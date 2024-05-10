@@ -60,7 +60,6 @@ public interface LuauTypes {
   IElementType TABLE_CONSTRUCTOR = new LuauElementType("TABLE_CONSTRUCTOR");
   IElementType TABLE_INDEXER = new LuauElementType("TABLE_INDEXER");
   IElementType TABLE_PROP = new LuauElementType("TABLE_PROP");
-  IElementType TABLE_PROP_OR_INDEXER = new LuauElementType("TABLE_PROP_OR_INDEXER");
   IElementType TABLE_TYPE = new LuauElementType("TABLE_TYPE");
   IElementType TEMPLATE_STRING = new LuauElementType("TEMPLATE_STRING");
   IElementType TYPE = new LuauElementType("TYPE");
@@ -309,9 +308,6 @@ public interface LuauTypes {
       }
       else if (type == TABLE_PROP) {
         return new LuauTablePropImpl(node);
-      }
-      else if (type == TABLE_PROP_OR_INDEXER) {
-        return new LuauTablePropOrIndexerImpl(node);
       }
       else if (type == TABLE_TYPE) {
         return new LuauTableTypeImpl(node);
