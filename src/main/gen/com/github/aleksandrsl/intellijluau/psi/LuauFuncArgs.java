@@ -5,12 +5,15 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauFunctioncall extends PsiElement {
+public interface LuauFuncArgs extends PsiElement {
 
-  @NotNull
-  LuauPostfixExp getPostfixExp();
+  @Nullable
+  LuauExpList getExpList();
 
-  @NotNull
-  LuauPrefixExp getPrefixExp();
+  @Nullable
+  LuauTableConstructor getTableConstructor();
+
+  @Nullable
+  PsiElement getString();
 
 }

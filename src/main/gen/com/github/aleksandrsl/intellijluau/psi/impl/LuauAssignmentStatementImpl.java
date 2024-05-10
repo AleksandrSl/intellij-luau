@@ -35,8 +35,8 @@ public class LuauAssignmentStatementImpl extends ASTWrapperPsiElement implements
 
   @Override
   @Nullable
-  public LuauCompoundop getCompoundop() {
-    return findChildByClass(LuauCompoundop.class);
+  public LuauCompoundOp getCompoundOp() {
+    return findChildByClass(LuauCompoundOp.class);
   }
 
   @Override

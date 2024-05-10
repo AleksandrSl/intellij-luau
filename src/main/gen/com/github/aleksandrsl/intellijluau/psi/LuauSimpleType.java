@@ -8,6 +8,9 @@ import com.intellij.psi.PsiElement;
 public interface LuauSimpleType extends PsiElement {
 
   @Nullable
+  LuauExpression getExpression();
+
+  @Nullable
   LuauFunctionType getFunctionType();
 
   @Nullable
@@ -21,8 +24,5 @@ public interface LuauSimpleType extends PsiElement {
 
   @Nullable
   LuauTypeParams getTypeParams();
-
-  @Nullable
-  LuauExpression getExpression();
 
 }

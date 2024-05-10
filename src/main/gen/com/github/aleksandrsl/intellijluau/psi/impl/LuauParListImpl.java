@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauIfelseexpImpl extends ASTWrapperPsiElement implements LuauIfelseexp {
+public class LuauParListImpl extends ASTWrapperPsiElement implements LuauParList {
 
-  public LuauIfelseexpImpl(@NotNull ASTNode node) {
+  public LuauParListImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitIfelseexp(this);
+    visitor.visitParList(this);
   }
 
   @Override
@@ -28,9 +28,21 @@ public class LuauIfelseexpImpl extends ASTWrapperPsiElement implements LuauIfels
   }
 
   @Override
-  @NotNull
-  public List<LuauExpression> getExpressionList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauExpression.class);
+  @Nullable
+  public LuauBindingList getBindingList() {
+    return findChildByClass(LuauBindingList.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauGenericTypePack getGenericTypePack() {
+    return findChildByClass(LuauGenericTypePack.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauType getType() {
+    return findChildByClass(LuauType.class);
   }
 
 }

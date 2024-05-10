@@ -11,7 +11,7 @@ public interface LuauAssignmentStatement extends PsiElement {
   LuauBindingList getBindingList();
 
   @Nullable
-  LuauCompoundop getCompoundop();
+  LuauCompoundOp getCompoundOp();
 
   @Nullable
   LuauExpList getExpList();

@@ -35,8 +35,8 @@ public class LuauUnaryExpImpl extends LuauExpressionImpl implements LuauUnaryExp
 
   @Override
   @NotNull
-  public LuauUnop getUnop() {
-    return findNotNullChildByClass(LuauUnop.class);
+  public LuauUnOp getUnOp() {
+    return findNotNullChildByClass(LuauUnOp.class);
   }
 
 }

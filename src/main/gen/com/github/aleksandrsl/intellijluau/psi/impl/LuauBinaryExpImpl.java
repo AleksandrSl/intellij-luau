@@ -29,8 +29,8 @@ public class LuauBinaryExpImpl extends LuauExpressionImpl implements LuauBinaryE
 
   @Override
   @NotNull
-  public LuauBinop getBinop() {
-    return findNotNullChildByClass(LuauBinop.class);
+  public LuauBinOp getBinOp() {
+    return findNotNullChildByClass(LuauBinOp.class);
   }
 
   @Override

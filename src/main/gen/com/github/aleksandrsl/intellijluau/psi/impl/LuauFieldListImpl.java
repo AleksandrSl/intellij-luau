@@ -11,20 +11,32 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauFieldsepImpl extends ASTWrapperPsiElement implements LuauFieldsep {
+public class LuauFieldListImpl extends ASTWrapperPsiElement implements LuauFieldList {
 
-  public LuauFieldsepImpl(@NotNull ASTNode node) {
+  public LuauFieldListImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitFieldsep(this);
+    visitor.visitFieldList(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof LuauVisitor) accept((LuauVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauField> getFieldList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauField.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauFieldSep> getFieldSepList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauFieldSep.class);
   }
 
 }

@@ -11,20 +11,32 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauBinopImpl extends ASTWrapperPsiElement implements LuauBinop {
+public class LuauFunctionCallImpl extends ASTWrapperPsiElement implements LuauFunctionCall {
 
-  public LuauBinopImpl(@NotNull ASTNode node) {
+  public LuauFunctionCallImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitBinop(this);
+    visitor.visitFunctionCall(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof LuauVisitor) accept((LuauVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  @NotNull
+  public LuauPostfixExp getPostfixExp() {
+    return findNotNullChildByClass(LuauPostfixExp.class);
+  }
+
+  @Override
+  @NotNull
+  public LuauPrefixExp getPrefixExp() {
+    return findNotNullChildByClass(LuauPrefixExp.class);
   }
 
 }

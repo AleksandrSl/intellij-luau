@@ -11,32 +11,20 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauFuncDefStatImpl extends ASTWrapperPsiElement implements LuauFuncDefStat {
+public class LuauFuncNameImpl extends ASTWrapperPsiElement implements LuauFuncName {
 
-  public LuauFuncDefStatImpl(@NotNull ASTNode node) {
+  public LuauFuncNameImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitFuncDefStat(this);
+    visitor.visitFuncName(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof LuauVisitor) accept((LuauVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @NotNull
-  public LuauFuncBody getFuncBody() {
-    return findNotNullChildByClass(LuauFuncBody.class);
-  }
-
-  @Override
-  @NotNull
-  public LuauFuncname getFuncname() {
-    return findNotNullChildByClass(LuauFuncname.class);
   }
 
 }

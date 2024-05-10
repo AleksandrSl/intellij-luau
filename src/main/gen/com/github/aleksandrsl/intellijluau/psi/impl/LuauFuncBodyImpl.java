@@ -28,18 +28,6 @@ public class LuauFuncBodyImpl extends ASTWrapperPsiElement implements LuauFuncBo
   }
 
   @Override
-  @Nullable
-  public LuauGenericTypeList getGenericTypeList() {
-    return findChildByClass(LuauGenericTypeList.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauReturnType getReturnType() {
-    return findChildByClass(LuauReturnType.class);
-  }
-
-  @Override
   @NotNull
   public LuauBlock getBlock() {
     return findNotNullChildByClass(LuauBlock.class);
@@ -47,8 +35,20 @@ public class LuauFuncBodyImpl extends ASTWrapperPsiElement implements LuauFuncBo
 
   @Override
   @Nullable
-  public LuauParlist getParlist() {
-    return findChildByClass(LuauParlist.class);
+  public LuauGenericTypeList getGenericTypeList() {
+    return findChildByClass(LuauGenericTypeList.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauParList getParList() {
+    return findChildByClass(LuauParList.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauReturnType getReturnType() {
+    return findChildByClass(LuauReturnType.class);
   }
 
 }

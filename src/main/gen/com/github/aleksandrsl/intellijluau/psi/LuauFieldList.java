@@ -5,6 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauFieldsep extends PsiElement {
+public interface LuauFieldList extends PsiElement {
+
+  @NotNull
+  List<LuauField> getFieldList();
+
+  @NotNull
+  List<LuauFieldSep> getFieldSepList();
 
 }

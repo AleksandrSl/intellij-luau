@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauFunctioncallImpl extends ASTWrapperPsiElement implements LuauFunctioncall {
+public class LuauClosureExpImpl extends ASTWrapperPsiElement implements LuauClosureExp {
 
-  public LuauFunctioncallImpl(@NotNull ASTNode node) {
+  public LuauClosureExpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitFunctioncall(this);
+    visitor.visitClosureExp(this);
   }
 
   @Override
@@ -29,14 +29,8 @@ public class LuauFunctioncallImpl extends ASTWrapperPsiElement implements LuauFu
 
   @Override
   @NotNull
-  public LuauPostfixExp getPostfixExp() {
-    return findNotNullChildByClass(LuauPostfixExp.class);
-  }
-
-  @Override
-  @NotNull
-  public LuauPrefixExp getPrefixExp() {
-    return findNotNullChildByClass(LuauPrefixExp.class);
+  public LuauFuncBody getFuncBody() {
+    return findNotNullChildByClass(LuauFuncBody.class);
   }
 
 }

@@ -8,9 +8,9 @@ import com.intellij.psi.PsiElement;
 public interface LuauAsExp extends LuauExpression {
 
   @NotNull
-  LuauType getType();
+  LuauSimpleExp getSimpleExp();
 
   @NotNull
-  LuauSimpleExp getSimpleExp();
+  LuauType getType();
 
 }

@@ -11,20 +11,38 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauCompoundopImpl extends ASTWrapperPsiElement implements LuauCompoundop {
+public class LuauFuncArgsImpl extends ASTWrapperPsiElement implements LuauFuncArgs {
 
-  public LuauCompoundopImpl(@NotNull ASTNode node) {
+  public LuauFuncArgsImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitCompoundop(this);
+    visitor.visitFuncArgs(this);
   }
 
   @Override
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof LuauVisitor) accept((LuauVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  @Nullable
+  public LuauExpList getExpList() {
+    return findChildByClass(LuauExpList.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauTableConstructor getTableConstructor() {
+    return findChildByClass(LuauTableConstructor.class);
+  }
+
+  @Override
+  @Nullable
+  public PsiElement getString() {
+    return findChildByType(STRING);
   }
 
 }

@@ -8,16 +8,16 @@ import com.intellij.psi.PsiElement;
 public interface LuauSimpleExp extends LuauExpression {
 
   @Nullable
-  LuauClosureExpr getClosureExpr();
+  LuauClosureExp getClosureExp();
 
   @Nullable
-  LuauIfelseexp getIfelseexp();
+  LuauIfelseExp getIfelseExp();
 
   @Nullable
   LuauPrefixExp getPrefixExp();
 
   @Nullable
-  LuauTableconstructor getTableconstructor();
+  LuauTableConstructor getTableConstructor();
 
   @Nullable
   LuauTemplateString getTemplateString();

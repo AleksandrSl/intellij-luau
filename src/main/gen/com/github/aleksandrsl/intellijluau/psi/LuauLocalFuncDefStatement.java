@@ -5,12 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauFuncDefStat extends PsiElement {
+public interface LuauLocalFuncDefStatement extends PsiElement {
 
   @NotNull
   LuauFuncBody getFuncBody();
 
   @NotNull
-  LuauFuncname getFuncname();
+  LuauFuncName getFuncName();
 
 }

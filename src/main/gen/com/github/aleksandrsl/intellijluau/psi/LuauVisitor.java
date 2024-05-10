@@ -7,7 +7,47 @@ import com.intellij.psi.PsiElement;
 
 public class LuauVisitor extends PsiElementVisitor {
 
+  public void visitAsExp(@NotNull LuauAsExp o) {
+    visitExpression(o);
+  }
+
+  public void visitAssignmentStatement(@NotNull LuauAssignmentStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitBinOp(@NotNull LuauBinOp o) {
+    visitPsiElement(o);
+  }
+
+  public void visitBinaryExp(@NotNull LuauBinaryExp o) {
+    visitExpression(o);
+  }
+
+  public void visitBinding(@NotNull LuauBinding o) {
+    visitPsiElement(o);
+  }
+
+  public void visitBindingList(@NotNull LuauBindingList o) {
+    visitPsiElement(o);
+  }
+
+  public void visitBlock(@NotNull LuauBlock o) {
+    visitPsiElement(o);
+  }
+
   public void visitBoundTypeList(@NotNull LuauBoundTypeList o) {
+    visitPsiElement(o);
+  }
+
+  public void visitClassicForStatement(@NotNull LuauClassicForStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitClosureExp(@NotNull LuauClosureExp o) {
+    visitPsiElement(o);
+  }
+
+  public void visitCompoundOp(@NotNull LuauCompoundOp o) {
     visitPsiElement(o);
   }
 
@@ -15,8 +55,60 @@ public class LuauVisitor extends PsiElementVisitor {
     visitSoftKeyword(o);
   }
 
+  public void visitDoStatement(@NotNull LuauDoStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitExpList(@NotNull LuauExpList o) {
+    visitPsiElement(o);
+  }
+
   public void visitExportSoftKeyword(@NotNull LuauExportSoftKeyword o) {
     visitSoftKeyword(o);
+  }
+
+  public void visitExpression(@NotNull LuauExpression o) {
+    visitPsiElement(o);
+  }
+
+  public void visitExpressionStatement(@NotNull LuauExpressionStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitField(@NotNull LuauField o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFieldList(@NotNull LuauFieldList o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFieldSep(@NotNull LuauFieldSep o) {
+    visitPsiElement(o);
+  }
+
+  public void visitForeachStatement(@NotNull LuauForeachStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFuncArgs(@NotNull LuauFuncArgs o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFuncBody(@NotNull LuauFuncBody o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFuncDefStatement(@NotNull LuauFuncDefStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFuncName(@NotNull LuauFuncName o) {
+    visitPsiElement(o);
+  }
+
+  public void visitFunctionCall(@NotNull LuauFunctionCall o) {
+    visitPsiElement(o);
   }
 
   public void visitFunctionType(@NotNull LuauFunctionType o) {
@@ -43,7 +135,35 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitIfStatement(@NotNull LuauIfStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitIfelseExp(@NotNull LuauIfelseExp o) {
+    visitPsiElement(o);
+  }
+
   public void visitIntersectionSuffix(@NotNull LuauIntersectionSuffix o) {
+    visitPsiElement(o);
+  }
+
+  public void visitLastStatement(@NotNull LuauLastStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitLocalFuncDefStatement(@NotNull LuauLocalFuncDefStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitParList(@NotNull LuauParList o) {
+    visitPsiElement(o);
+  }
+
+  public void visitPostfixExp(@NotNull LuauPostfixExp o) {
+    visitPsiElement(o);
+  }
+
+  public void visitPrefixExp(@NotNull LuauPrefixExp o) {
     visitPsiElement(o);
   }
 
@@ -51,15 +171,39 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitRepeatStatement(@NotNull LuauRepeatStatement o) {
+    visitPsiElement(o);
+  }
+
   public void visitReturnType(@NotNull LuauReturnType o) {
     visitPsiElement(o);
+  }
+
+  public void visitShebangLine(@NotNull LuauShebangLine o) {
+    visitPsiElement(o);
+  }
+
+  public void visitSimpleExp(@NotNull LuauSimpleExp o) {
+    visitExpression(o);
   }
 
   public void visitSimpleType(@NotNull LuauSimpleType o) {
     visitPsiElement(o);
   }
 
+  public void visitSimpleVar(@NotNull LuauSimpleVar o) {
+    visitPsiElement(o);
+  }
+
   public void visitSingletonType(@NotNull LuauSingletonType o) {
+    visitPsiElement(o);
+  }
+
+  public void visitStatement(@NotNull LuauStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitTableConstructor(@NotNull LuauTableConstructor o) {
     visitPsiElement(o);
   }
 
@@ -79,7 +223,15 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitTemplateString(@NotNull LuauTemplateString o) {
+    visitPsiElement(o);
+  }
+
   public void visitType(@NotNull LuauType o) {
+    visitPsiElement(o);
+  }
+
+  public void visitTypeDeclarationStatement(@NotNull LuauTypeDeclarationStatement o) {
     visitPsiElement(o);
   }
 
@@ -99,163 +251,7 @@ public class LuauVisitor extends PsiElementVisitor {
     visitSoftKeyword(o);
   }
 
-  public void visitUnionSuffix(@NotNull LuauUnionSuffix o) {
-    visitPsiElement(o);
-  }
-
-  public void visitVariadicTypePack(@NotNull LuauVariadicTypePack o) {
-    visitPsiElement(o);
-  }
-
-  public void visitAsExp(@NotNull LuauAsExp o) {
-    visitExpression(o);
-  }
-
-  public void visitAssignmentStatement(@NotNull LuauAssignmentStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitBinaryExp(@NotNull LuauBinaryExp o) {
-    visitExpression(o);
-  }
-
-  public void visitBinding(@NotNull LuauBinding o) {
-    visitPsiElement(o);
-  }
-
-  public void visitBindingList(@NotNull LuauBindingList o) {
-    visitPsiElement(o);
-  }
-
-  public void visitBinop(@NotNull LuauBinop o) {
-    visitPsiElement(o);
-  }
-
-  public void visitBlock(@NotNull LuauBlock o) {
-    visitPsiElement(o);
-  }
-
-  public void visitClassicForStatement(@NotNull LuauClassicForStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitClosureExpr(@NotNull LuauClosureExpr o) {
-    visitPsiElement(o);
-  }
-
-  public void visitCompoundop(@NotNull LuauCompoundop o) {
-    visitPsiElement(o);
-  }
-
-  public void visitDoStatement(@NotNull LuauDoStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitExpList(@NotNull LuauExpList o) {
-    visitPsiElement(o);
-  }
-
-  public void visitExpression(@NotNull LuauExpression o) {
-    visitPsiElement(o);
-  }
-
-  public void visitExpressionStatement(@NotNull LuauExpressionStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitField(@NotNull LuauField o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFieldlist(@NotNull LuauFieldlist o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFieldsep(@NotNull LuauFieldsep o) {
-    visitPsiElement(o);
-  }
-
-  public void visitForeachStatement(@NotNull LuauForeachStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFuncBody(@NotNull LuauFuncBody o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFuncDefStat(@NotNull LuauFuncDefStat o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFuncargs(@NotNull LuauFuncargs o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFuncname(@NotNull LuauFuncname o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFunctioncall(@NotNull LuauFunctioncall o) {
-    visitPsiElement(o);
-  }
-
-  public void visitIfStatement(@NotNull LuauIfStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitIfelseexp(@NotNull LuauIfelseexp o) {
-    visitPsiElement(o);
-  }
-
-  public void visitLastStatement(@NotNull LuauLastStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitLocalFuncDefStat(@NotNull LuauLocalFuncDefStat o) {
-    visitPsiElement(o);
-  }
-
-  public void visitParlist(@NotNull LuauParlist o) {
-    visitPsiElement(o);
-  }
-
-  public void visitPostfixExp(@NotNull LuauPostfixExp o) {
-    visitPsiElement(o);
-  }
-
-  public void visitPrefixExp(@NotNull LuauPrefixExp o) {
-    visitPsiElement(o);
-  }
-
-  public void visitRepeatStatement(@NotNull LuauRepeatStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitShebangLine(@NotNull LuauShebangLine o) {
-    visitPsiElement(o);
-  }
-
-  public void visitSimpleExp(@NotNull LuauSimpleExp o) {
-    visitExpression(o);
-  }
-
-  public void visitSimpleVar(@NotNull LuauSimpleVar o) {
-    visitPsiElement(o);
-  }
-
-  public void visitStatement(@NotNull LuauStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitTableconstructor(@NotNull LuauTableconstructor o) {
-    visitPsiElement(o);
-  }
-
-  public void visitTemplateString(@NotNull LuauTemplateString o) {
-    visitPsiElement(o);
-  }
-
-  public void visitTypeDeclarationStatement(@NotNull LuauTypeDeclarationStatement o) {
+  public void visitUnOp(@NotNull LuauUnOp o) {
     visitPsiElement(o);
   }
 
@@ -263,7 +259,7 @@ public class LuauVisitor extends PsiElementVisitor {
     visitExpression(o);
   }
 
-  public void visitUnop(@NotNull LuauUnop o) {
+  public void visitUnionSuffix(@NotNull LuauUnionSuffix o) {
     visitPsiElement(o);
   }
 
@@ -272,6 +268,10 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitVarList(@NotNull LuauVarList o) {
+    visitPsiElement(o);
+  }
+
+  public void visitVariadicTypePack(@NotNull LuauVariadicTypePack o) {
     visitPsiElement(o);
   }
 

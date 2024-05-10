@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauIfelseexp extends PsiElement {
+public interface LuauTableConstructor extends PsiElement {
 
-  @NotNull
-  List<LuauExpression> getExpressionList();
+  @Nullable
+  LuauFieldList getFieldList();
 
 }

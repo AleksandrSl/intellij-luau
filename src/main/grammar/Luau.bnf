@@ -92,7 +92,7 @@
           STRING = "regexp:\"\S*\""
     ]
 
-    implements(".*SoftKeyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
+    implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
 //    hooks("localDefStat|assignmentStatement|tableField") = [leftBinder="MY_LEFT_COMMENT_BINDER" rightBinder="MY_RIGHT_COMMENT_BINDER"]
 //    hooks("fieldList") = [leftBinder="GREEDY_LEFT_BINDER" rightBinder="GREEDY_RIGHT_BINDER"]
 //    implements(".*Attribute") = "com.tang.intellij.lua.psi.LuaAttribute"
@@ -103,120 +103,120 @@
 }
 
 
-luaFile ::= shebang_line? block
+luau_file ::= shebang_line? block
 shebang_line ::= SHEBANG SHEBANG_CONTENT
 
-block ::= (statement ';'?)* (lastStatement ';'?)?
+block ::= (statement ';'?)* (last_statement ';'?)?
 statement ::=
-     assignmentStatement
-     | typeDeclarationStatement
-     | functioncall
-     | doStatement
-     | whileStatement
-     | repeatStatement
-     | ifStatement
+     assignment_statement
+     | type_declaration_statement
+     | function_call
+     | do_statement
+     | while_statement
+     | repeat_statement
+     | if_statement
      // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
      // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
-     | expressionStatement
-     | classicForStatement
-     | foreachStatement
-     | defStatement
+     | expression_statement
+     | classic_for_statement
+     | foreach_statement
+     | def_statement
 
-doStatement ::= 'do' block 'end'
-whileStatement ::= 'while' expression 'do' block 'end'
-repeatStatement ::= 'repeat' block 'until' expression
-ifStatement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
-classicForStatement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end'
-foreachStatement ::= 'for' bindingList 'in' expList 'do' block 'end'
-assignmentStatement ::= varList '=' expList | 'local' bindingList ('=' expList)? | var compoundop expression
-expressionStatement ::= expression
-private defStatement ::= classMethodDefStat | funcDefStat | localFuncDefStat
-lastStatement ::= 'return' expList? | 'break' | ContinueSoftKeyword
-typeDeclarationStatement ::= ExportSoftKeyword ? TypeSoftKeyword ID ('<' GenericTypeListWithDefaults '>')? '=' Type
-ExportSoftKeyword ::= 'export'
-ContinueSoftKeyword ::= 'continue'
-TypeSoftKeyword ::= 'type'
+do_statement ::= 'do' block 'end'
+while_statement ::= 'while' expression 'do' block 'end'
+repeat_statement ::= 'repeat' block 'until' expression
+if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
+classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end'
+foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end'
+assignment_statement ::= varList '=' exp_list | 'local' binding_list ('=' exp_list)? | var compound_op expression
+expression_statement ::= expression
+private def_statement ::= class_method_def_statement | func_def_statement | local_func_def_statement
+last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
+type_declaration_statement ::= export_soft_keyword ? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type
+export_soft_keyword ::= 'export'
+continue_soft_keyword ::= 'continue'
+type_soft_keyword ::= 'type'
 
-funcDefStat ::= 'function' funcname funcBody
+func_def_statement ::= 'function' func_name func_body
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
-//classMethodDefStat ::= 'function' classMethodName funcBody
-localFuncDefStat ::= 'local' 'function' funcname funcBody
+//class_method_def_statement ::= 'function' classMethodName funcBody
+local_func_def_statement ::= 'local' 'function' func_name func_body
 
-funcname ::= ID ('.' ID)* (':' ID)?
-funcBody ::= ('<' GenericTypeList '>')? '(' parlist? ')' (':' ReturnType)? block 'end'
-parlist ::= bindingList (',' '...')? | '...' (':' (Type | GenericTypePack))?
+func_name ::= ID ('.' ID)* (':' ID)?
+func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
+par_list ::= binding_list (',' '...')? | '...' (':' (type | generic_type_pack))?
 
-expList ::= (expression ',')* expression
+exp_list ::= (expression ',')* expression
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
-binding ::= ID (':' Type)?
-bindingList ::= binding (',' bindingList)? // equivalent of Lua 5.1 'namelist', except with optional type annotations
+binding ::= ID (':' type)?
+binding_list ::= binding (',' binding_list)? // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
 varList ::= var (',' var)*
-var ::= simpleVar postfixExp*
-simpleVar ::= ID | '(' expression ')'
-prefixExp ::= (var | '(' expression ')') postfixExp*
-postfixExp ::= funcargs | ':' ID funcargs | '[' expression ']' | '.' ID
-functioncall ::= prefixExp postfixExp
+var ::= simple_var postfix_exp*
+simple_var ::= ID | '(' expression ')'
+prefix_exp ::= (var | '(' expression ')') postfix_exp*
+postfix_exp ::= func_args | ':' ID func_args | '[' expression ']' | '.' ID
+function_call ::= prefix_exp postfix_exp
 
-expression ::= simpleExp | asExp | unaryExp | binaryExp
+expression ::= simple_exp | as_exp | unary_exp | binary_exp
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
-unaryExp ::= unop expression {extends=expression}
-binaryExp ::= expression binop expression {extends=expression}
-ifelseexp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
-asExp ::= simpleExp '::' Type {extends=expression}
-templateString ::= TEMPLATE_STRING_SQUOTE (STRING? '{' expression '}' STRING?)* TEMPLATE_STRING_EQUOTE
-simpleExp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | tableconstructor | closureExpr | prefixExp | ifelseexp | templateString {extends=expression}
-funcargs ::=  '(' expList? ')' | tableconstructor | STRING
+unary_exp ::= un_op expression {extends=expression}
+binary_exp ::= expression bin_op expression {extends=expression}
+ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
+as_exp ::= simple_exp '::' type {extends=expression}
+template_string ::= TEMPLATE_STRING_SQUOTE (STRING? '{' expression '}' STRING?)* TEMPLATE_STRING_EQUOTE
+simple_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | table_constructor | closure_exp | prefix_exp | ifelse_exp | template_string {extends=expression}
+func_args ::=  '(' exp_list? ')' | table_constructor | STRING
 
-closureExpr ::= 'function' funcBody
+closure_exp ::= 'function' func_body
 
-tableconstructor ::= '{' fieldlist? '}'
-fieldlist ::= field (fieldsep field)* fieldsep?
+table_constructor ::= '{' field_list? '}'
+field_list ::= field (field_sep field)* field_sep?
 field ::= '[' expression ']' '=' expression | ID '=' expression | expression
-// Why the fuck they allow two separators
-fieldsep ::= ',' | ';'
+// Why the hell they allow two separators
+field_sep ::= ',' | ';'
 
-compoundop ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..=' | '//='
-binop ::= '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
-unop ::= '-' | 'not' | '#'
+compound_op ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..=' | '//='
+bin_op ::= '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
+un_op ::= '-' | 'not' | '#'
 
-SimpleType ::=
+simple_type ::=
     'nil' |
-    SingletonType |
-    ID ('.' ID)? ('<' TypeParams? '>')? |
+    singleton_type |
+    ID ('.' ID)? ('<' type_params? '>')? |
     'typeof' '(' expression ')' |
-    TableType |
-    FunctionType |
-    '(' Type ')'
+    table_type |
+    function_type |
+    '(' type ')'
 
-SingletonType ::= STRING | 'true' | 'false'
+singleton_type ::= STRING | 'true' | 'false'
 
 // Why ? is used in UnionSuffix only, is it not possible to use with &? I'll move it for now.
-UnionSuffix ::= ('|' SimpleType '?'?)+
-IntersectionSuffix ::= ('&' SimpleType)+
-Type ::= SimpleType '?'? (UnionSuffix | IntersectionSuffix)*
+union_suffix ::= ('|' simple_type '?'?)+
+intersection_suffix ::= ('&' simple_type)+
+type ::= simple_type '?'? (union_suffix | intersection_suffix)*
 
-GenericTypePackParameter ::= ID '...'
-GenericTypeList ::= ID (',' GenericTypeList)? | GenericTypePackParameter (',' GenericTypePackParameter)*
+generic_type_pack_parameter ::= ID '...'
+generic_type_list ::= ID (',' generic_type_list)? | generic_type_pack_parameter (',' generic_type_pack_parameter)*
 
-GenericTypePackParameterWithDefault ::= ID '...' '=' (TypePack | VariadicTypePack | GenericTypePack)
-GenericTypeListWithDefaults ::=
-    GenericTypeList (',' GenericTypePackParameterWithDefault)*
-    | ID (',' ID)* (',' ID '=' Type)* (',' GenericTypePackParameterWithDefault)*
-    | ID '=' Type (',' GenericTypePackParameterWithDefault)*
-    | GenericTypePackParameterWithDefault (',' GenericTypePackParameterWithDefault)*
+generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack)
+generic_type_list_with_defaults ::=
+    generic_type_list (',' generic_type_pack_parameter_with_default)*
+    | ID (',' ID)* (',' ID '=' type)* (',' generic_type_pack_parameter_with_default)*
+    | ID '=' type (',' generic_type_pack_parameter_with_default)*
+    | generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
 
-TypeList ::= Type (',' TypeList)? | '...' Type
-BoundTypeList ::= (ID ':')? Type (',' BoundTypeList)? | '...' Type
-TypeParams ::= (Type | TypePack | VariadicTypePack | GenericTypePack) (',' TypeParams)?
-TypePack ::= '(' TypeList? ')'
-GenericTypePack ::= ID '...'
-VariadicTypePack ::= '...' Type
-ReturnType ::= Type | TypePack
-TableIndexer ::= '[' Type ']' ':' Type
-TableProp ::= ID ':' Type
-TablePropOrIndexer ::= TableProp | TableIndexer
-PropList ::= TablePropOrIndexer (fieldsep TablePropOrIndexer)* fieldsep?
-TableType ::= '{' Type '}' | '{' PropList? '}'
-FunctionType ::= ('<' GenericTypeList '>')? '(' BoundTypeList? ')' '->' ReturnType
+type_list ::= type (',' type_list)? | '...' type
+bound_type_list ::= (ID ':')? type (',' bound_type_list)? | '...' type
+type_params ::= (type | type_pack | variadic_type_pack | generic_type_pack) (',' type_params)?
+type_pack ::= '(' type_list? ')'
+generic_type_pack ::= ID '...'
+variadic_type_pack ::= '...' type
+return_type ::= type | type_pack
+table_indexer ::= '[' type ']' ':' type
+table_prop ::= ID ':' type
+table_prop_or_indexer ::= table_prop | table_indexer
+prop_list ::= table_prop_or_indexer (field_sep table_prop_or_indexer)* field_sep?
+table_type ::= '{' type '}' | '{' prop_list? '}'
+function_type ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type
