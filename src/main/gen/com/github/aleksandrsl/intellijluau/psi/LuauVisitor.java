@@ -11,6 +11,14 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitContinueSoftKeyword(@NotNull LuauContinueSoftKeyword o) {
+    visitSoftKeyword(o);
+  }
+
+  public void visitExportSoftKeyword(@NotNull LuauExportSoftKeyword o) {
+    visitSoftKeyword(o);
+  }
+
   public void visitFunctionType(@NotNull LuauFunctionType o) {
     visitPsiElement(o);
   }
@@ -85,6 +93,10 @@ public class LuauVisitor extends PsiElementVisitor {
 
   public void visitTypeParams(@NotNull LuauTypeParams o) {
     visitPsiElement(o);
+  }
+
+  public void visitTypeSoftKeyword(@NotNull LuauTypeSoftKeyword o) {
+    visitSoftKeyword(o);
   }
 
   public void visitUnionSuffix(@NotNull LuauUnionSuffix o) {
@@ -264,6 +276,10 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitWhileStatement(@NotNull LuauWhileStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitSoftKeyword(@NotNull LuauSoftKeyword o) {
     visitPsiElement(o);
   }
 

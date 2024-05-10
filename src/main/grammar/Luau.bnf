@@ -92,6 +92,7 @@
           STRING = "regexp:\"\S*\""
     ]
 
+    implements(".*SoftKeyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
 //    hooks("localDefStat|assignmentStatement|tableField") = [leftBinder="MY_LEFT_COMMENT_BINDER" rightBinder="MY_RIGHT_COMMENT_BINDER"]
 //    hooks("fieldList") = [leftBinder="GREEDY_LEFT_BINDER" rightBinder="GREEDY_RIGHT_BINDER"]
 //    implements(".*Attribute") = "com.tang.intellij.lua.psi.LuaAttribute"
@@ -130,8 +131,11 @@ foreachStatement ::= 'for' bindingList 'in' expList 'do' block 'end'
 assignmentStatement ::= varList '=' expList | 'local' bindingList ('=' expList)? | var compoundop expression
 expressionStatement ::= expression
 private defStatement ::= classMethodDefStat | funcDefStat | localFuncDefStat
-lastStatement ::= 'return' expList? | 'break' | 'continue'
-typeDeclarationStatement ::= 'export'? 'type' ID ('<' GenericTypeListWithDefaults '>')? '=' Type
+lastStatement ::= 'return' expList? | 'break' | ContinueSoftKeyword
+typeDeclarationStatement ::= ExportSoftKeyword ? TypeSoftKeyword ID ('<' GenericTypeListWithDefaults '>')? '=' Type
+ExportSoftKeyword ::= 'export'
+ContinueSoftKeyword ::= 'continue'
+TypeSoftKeyword ::= 'type'
 
 funcDefStat ::= 'function' funcname funcBody
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))

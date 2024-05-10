@@ -29,6 +29,12 @@ public class LuauTypeDeclarationStatementImpl extends ASTWrapperPsiElement imple
 
   @Override
   @Nullable
+  public LuauExportSoftKeyword getExportSoftKeyword() {
+    return findChildByClass(LuauExportSoftKeyword.class);
+  }
+
+  @Override
+  @Nullable
   public LuauGenericTypeListWithDefaults getGenericTypeListWithDefaults() {
     return findChildByClass(LuauGenericTypeListWithDefaults.class);
   }
@@ -37,6 +43,12 @@ public class LuauTypeDeclarationStatementImpl extends ASTWrapperPsiElement imple
   @NotNull
   public LuauType getType() {
     return findNotNullChildByClass(LuauType.class);
+  }
+
+  @Override
+  @NotNull
+  public LuauTypeSoftKeyword getTypeSoftKeyword() {
+    return findNotNullChildByClass(LuauTypeSoftKeyword.class);
   }
 
   @Override

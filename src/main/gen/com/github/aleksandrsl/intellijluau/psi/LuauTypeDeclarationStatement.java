@@ -8,10 +8,16 @@ import com.intellij.psi.PsiElement;
 public interface LuauTypeDeclarationStatement extends PsiElement {
 
   @Nullable
+  LuauExportSoftKeyword getExportSoftKeyword();
+
+  @Nullable
   LuauGenericTypeListWithDefaults getGenericTypeListWithDefaults();
 
   @NotNull
   LuauType getType();
+
+  @NotNull
+  LuauTypeSoftKeyword getTypeSoftKeyword();
 
   @NotNull
   PsiElement getId();
