@@ -215,10 +215,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitTablePropOrIndexer(@NotNull LuauTablePropOrIndexer o) {
-    visitPsiElement(o);
-  }
-
   public void visitTableType(@NotNull LuauTableType o) {
     visitPsiElement(o);
   }

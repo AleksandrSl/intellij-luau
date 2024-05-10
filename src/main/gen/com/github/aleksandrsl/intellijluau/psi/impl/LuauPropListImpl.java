@@ -35,8 +35,14 @@ public class LuauPropListImpl extends ASTWrapperPsiElement implements LuauPropLi
 
   @Override
   @NotNull
-  public List<LuauTablePropOrIndexer> getTablePropOrIndexerList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauTablePropOrIndexer.class);
+  public List<LuauTableIndexer> getTableIndexerList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauTableIndexer.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauTableProp> getTablePropList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauTableProp.class);
   }
 
 }

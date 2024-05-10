@@ -11,6 +11,9 @@ public interface LuauPropList extends PsiElement {
   List<LuauFieldSep> getFieldSepList();
 
   @NotNull
-  List<LuauTablePropOrIndexer> getTablePropOrIndexerList();
+  List<LuauTableIndexer> getTableIndexerList();
+
+  @NotNull
+  List<LuauTableProp> getTablePropList();
 
 }

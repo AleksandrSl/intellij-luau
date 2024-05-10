@@ -1800,14 +1800,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // table_prop | table_indexer
-  public static boolean table_prop_or_indexer(PsiBuilder builder_, int level_) {
+  static boolean table_prop_or_indexer(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "table_prop_or_indexer")) return false;
-    if (!nextTokenIs(builder_, "<table prop or indexer>", ID, LBRACK)) return false;
+    if (!nextTokenIs(builder_, "", ID, LBRACK)) return false;
     boolean result_;
-    Marker marker_ = enter_section_(builder_, level_, _NONE_, TABLE_PROP_OR_INDEXER, "<table prop or indexer>");
     result_ = table_prop(builder_, level_ + 1);
     if (!result_) result_ = table_indexer(builder_, level_ + 1);
-    exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
 
