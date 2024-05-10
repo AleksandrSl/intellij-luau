@@ -251,6 +251,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitSoftKeyword(o);
   }
 
+  public void visitTypeofSoftKeyword(@NotNull LuauTypeofSoftKeyword o) {
+    visitSoftKeyword(o);
+  }
+
   public void visitUnOp(@NotNull LuauUnOp o) {
     visitPsiElement(o);
   }

@@ -25,4 +25,7 @@ public interface LuauSimpleType extends PsiElement {
   @Nullable
   LuauTypeParams getTypeParams();
 
+  @Nullable
+  LuauTypeofSoftKeyword getTypeofSoftKeyword();
+
 }
