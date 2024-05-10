@@ -111,6 +111,28 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // 'continue'
+  public static boolean ContinueSoftKeyword(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "ContinueSoftKeyword")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, CONTINUE_SOFT_KEYWORD, "<continue soft keyword>");
+    result_ = consumeToken(builder_, "continue");
+    exit_section_(builder_, level_, marker_, result_, false, null);
+    return result_;
+  }
+
+  /* ********************************************************** */
+  // 'export'
+  public static boolean ExportSoftKeyword(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "ExportSoftKeyword")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, EXPORT_SOFT_KEYWORD, "<export soft keyword>");
+    result_ = consumeToken(builder_, "export");
+    exit_section_(builder_, level_, marker_, result_, false, null);
+    return result_;
+  }
+
+  /* ********************************************************** */
   // ('<' GenericTypeList '>')? '(' BoundTypeList? ')' '->' ReturnType
   public static boolean FunctionType(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "FunctionType")) return false;
@@ -905,6 +927,17 @@ public class LuauParser implements PsiParser, LightPsiParser {
     result_ = consumeToken(builder_, COMMA);
     result_ = result_ && TypeParams(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
+    return result_;
+  }
+
+  /* ********************************************************** */
+  // 'type'
+  public static boolean TypeSoftKeyword(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "TypeSoftKeyword")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_, level_, _NONE_, TYPE_SOFT_KEYWORD, "<type soft keyword>");
+    result_ = consumeToken(builder_, "type");
+    exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
 
@@ -1704,14 +1737,14 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'return' expList? | 'break' | 'continue'
+  // 'return' expList? | 'break' | ContinueSoftKeyword
   public static boolean lastStatement(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "lastStatement")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, LAST_STATEMENT, "<last statement>");
     result_ = lastStatement_0(builder_, level_ + 1);
     if (!result_) result_ = consumeToken(builder_, BREAK);
-    if (!result_) result_ = consumeToken(builder_, "continue");
+    if (!result_) result_ = ContinueSoftKeyword(builder_, level_ + 1);
     exit_section_(builder_, level_, marker_, result_, false, null);
     return result_;
   }
@@ -2090,13 +2123,13 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'export'? 'type' ID ('<' GenericTypeListWithDefaults '>')? '=' Type
+  // ExportSoftKeyword ? TypeSoftKeyword ID ('<' GenericTypeListWithDefaults '>')? '=' Type
   public static boolean typeDeclarationStatement(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "typeDeclarationStatement")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_, level_, _NONE_, TYPE_DECLARATION_STATEMENT, "<type declaration statement>");
     result_ = typeDeclarationStatement_0(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, "type");
+    result_ = result_ && TypeSoftKeyword(builder_, level_ + 1);
     result_ = result_ && consumeToken(builder_, ID);
     result_ = result_ && typeDeclarationStatement_3(builder_, level_ + 1);
     result_ = result_ && consumeToken(builder_, ASSIGN);
@@ -2105,10 +2138,10 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // 'export'?
+  // ExportSoftKeyword ?
   private static boolean typeDeclarationStatement_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "typeDeclarationStatement_0")) return false;
-    consumeToken(builder_, "export");
+    ExportSoftKeyword(builder_, level_ + 1);
     return true;
   }
 

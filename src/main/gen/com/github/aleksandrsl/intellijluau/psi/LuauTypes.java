@@ -19,7 +19,9 @@ public interface LuauTypes {
   IElementType CLASSIC_FOR_STATEMENT = new LuauElementType("CLASSIC_FOR_STATEMENT");
   IElementType CLOSURE_EXPR = new LuauElementType("CLOSURE_EXPR");
   IElementType COMPOUNDOP = new LuauElementType("COMPOUNDOP");
+  IElementType CONTINUE_SOFT_KEYWORD = new LuauElementType("CONTINUE_SOFT_KEYWORD");
   IElementType DO_STATEMENT = new LuauElementType("DO_STATEMENT");
+  IElementType EXPORT_SOFT_KEYWORD = new LuauElementType("EXPORT_SOFT_KEYWORD");
   IElementType EXPRESSION = new LuauElementType("EXPRESSION");
   IElementType EXPRESSION_STATEMENT = new LuauElementType("EXPRESSION_STATEMENT");
   IElementType EXP_LIST = new LuauElementType("EXP_LIST");
@@ -66,6 +68,7 @@ public interface LuauTypes {
   IElementType TYPE_LIST = new LuauElementType("TYPE_LIST");
   IElementType TYPE_PACK = new LuauElementType("TYPE_PACK");
   IElementType TYPE_PARAMS = new LuauElementType("TYPE_PARAMS");
+  IElementType TYPE_SOFT_KEYWORD = new LuauElementType("TYPE_SOFT_KEYWORD");
   IElementType UNARY_EXP = new LuauElementType("UNARY_EXP");
   IElementType UNION_SUFFIX = new LuauElementType("UNION_SUFFIX");
   IElementType UNOP = new LuauElementType("UNOP");
@@ -186,8 +189,14 @@ public interface LuauTypes {
       else if (type == COMPOUNDOP) {
         return new LuauCompoundopImpl(node);
       }
+      else if (type == CONTINUE_SOFT_KEYWORD) {
+        return new LuauContinueSoftKeywordImpl(node);
+      }
       else if (type == DO_STATEMENT) {
         return new LuauDoStatementImpl(node);
+      }
+      else if (type == EXPORT_SOFT_KEYWORD) {
+        return new LuauExportSoftKeywordImpl(node);
       }
       else if (type == EXPRESSION_STATEMENT) {
         return new LuauExpressionStatementImpl(node);
@@ -323,6 +332,9 @@ public interface LuauTypes {
       }
       else if (type == TYPE_PARAMS) {
         return new LuauTypeParamsImpl(node);
+      }
+      else if (type == TYPE_SOFT_KEYWORD) {
+        return new LuauTypeSoftKeywordImpl(node);
       }
       else if (type == UNARY_EXP) {
         return new LuauUnaryExpImpl(node);

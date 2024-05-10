@@ -27,10 +27,10 @@
         <colorSettingsPage
                 implementation="com.github.aleksandrsl.intellijluau.highlight.LuauColorSettingsPage"
         />
-<!--        <annotator-->
-<!--                language="luau"-->
-<!--                implementationClass="com.github.aleksandrsl.intellijluau.highlight.HighlightAnnotator"-->
-<!--        />-->
+        <annotator
+                language="luau"
+                implementationClass="com.github.aleksandrsl.intellijluau.highlight.LuauSyntaxHighlightAnnotator"
+        />
 <!--        <lang.foldingBuilder-->
 <!--                language="luau"-->
 <!--                implementationClass="com.github.aleksandrsl.intellijluau.LuauFoldingBuilder"-->
