@@ -64,6 +64,7 @@ public interface LuauTypes {
   IElementType TABLE_TYPE = new LuauElementType("TABLE_TYPE");
   IElementType TEMPLATE_STRING = new LuauElementType("TEMPLATE_STRING");
   IElementType TYPE = new LuauElementType("TYPE");
+  IElementType TYPEOF_SOFT_KEYWORD = new LuauElementType("TYPEOF_SOFT_KEYWORD");
   IElementType TYPE_DECLARATION_STATEMENT = new LuauElementType("TYPE_DECLARATION_STATEMENT");
   IElementType TYPE_LIST = new LuauElementType("TYPE_LIST");
   IElementType TYPE_PACK = new LuauElementType("TYPE_PACK");
@@ -320,6 +321,9 @@ public interface LuauTypes {
       }
       else if (type == TYPE) {
         return new LuauTypeImpl(node);
+      }
+      else if (type == TYPEOF_SOFT_KEYWORD) {
+        return new LuauTypeofSoftKeywordImpl(node);
       }
       else if (type == TYPE_DECLARATION_STATEMENT) {
         return new LuauTypeDeclarationStatementImpl(node);

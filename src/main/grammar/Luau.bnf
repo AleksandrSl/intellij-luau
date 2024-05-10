@@ -136,6 +136,7 @@ type_declaration_statement ::= export_soft_keyword ? type_soft_keyword ID ('<' g
 export_soft_keyword ::= 'export'
 continue_soft_keyword ::= 'continue'
 type_soft_keyword ::= 'type'
+typeof_soft_keyword ::= 'typeof'
 
 func_def_statement ::= 'function' func_name func_body
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
@@ -182,13 +183,13 @@ bin_op ::= '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' | '<' | '<=' | '>' | 
 un_op ::= '-' | 'not' | '#'
 
 simple_type ::=
-    'nil' |
-    singleton_type |
-    ID ('.' ID)? ('<' type_params? '>')? |
-    'typeof' '(' expression ')' |
-    table_type |
-    function_type |
-    '(' type ')'
+    'nil'
+    | singleton_type
+    | typeof_soft_keyword '(' expression ')'
+    | ID ('.' ID)? ('<' type_params? '>')?
+    | table_type
+    | function_type
+    | '(' type ')'
 
 singleton_type ::= STRING | 'true' | 'false'
 

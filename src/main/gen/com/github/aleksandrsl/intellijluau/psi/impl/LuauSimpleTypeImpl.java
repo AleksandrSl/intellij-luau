@@ -63,4 +63,10 @@ public class LuauSimpleTypeImpl extends ASTWrapperPsiElement implements LuauSimp
     return findChildByClass(LuauTypeParams.class);
   }
 
+  @Override
+  @Nullable
+  public LuauTypeofSoftKeyword getTypeofSoftKeyword() {
+    return findChildByClass(LuauTypeofSoftKeyword.class);
+  }
+
 }
