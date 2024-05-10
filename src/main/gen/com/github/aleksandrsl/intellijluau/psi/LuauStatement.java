@@ -23,16 +23,16 @@ public interface LuauStatement extends PsiElement {
   LuauForeachStatement getForeachStatement();
 
   @Nullable
-  LuauFuncDefStat getFuncDefStat();
+  LuauFuncDefStatement getFuncDefStatement();
 
   @Nullable
-  LuauFunctioncall getFunctioncall();
+  LuauFunctionCall getFunctionCall();
 
   @Nullable
   LuauIfStatement getIfStatement();
 
   @Nullable
-  LuauLocalFuncDefStat getLocalFuncDefStat();
+  LuauLocalFuncDefStatement getLocalFuncDefStatement();
 
   @Nullable
   LuauRepeatStatement getRepeatStatement();

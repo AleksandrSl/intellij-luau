@@ -5,6 +5,6 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauCompoundop extends PsiElement {
+public interface LuauFuncName extends PsiElement {
 
 }

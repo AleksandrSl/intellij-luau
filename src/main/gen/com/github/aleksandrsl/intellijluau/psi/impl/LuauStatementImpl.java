@@ -59,14 +59,14 @@ public class LuauStatementImpl extends ASTWrapperPsiElement implements LuauState
 
   @Override
   @Nullable
-  public LuauFuncDefStat getFuncDefStat() {
-    return findChildByClass(LuauFuncDefStat.class);
+  public LuauFuncDefStatement getFuncDefStatement() {
+    return findChildByClass(LuauFuncDefStatement.class);
   }
 
   @Override
   @Nullable
-  public LuauFunctioncall getFunctioncall() {
-    return findChildByClass(LuauFunctioncall.class);
+  public LuauFunctionCall getFunctionCall() {
+    return findChildByClass(LuauFunctionCall.class);
   }
 
   @Override
@@ -77,8 +77,8 @@ public class LuauStatementImpl extends ASTWrapperPsiElement implements LuauState
 
   @Override
   @Nullable
-  public LuauLocalFuncDefStat getLocalFuncDefStat() {
-    return findChildByClass(LuauLocalFuncDefStat.class);
+  public LuauLocalFuncDefStatement getLocalFuncDefStatement() {
+    return findChildByClass(LuauLocalFuncDefStatement.class);
   }
 
   @Override

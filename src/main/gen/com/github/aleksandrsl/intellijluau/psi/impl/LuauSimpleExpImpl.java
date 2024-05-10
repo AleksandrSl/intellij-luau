@@ -29,14 +29,14 @@ public class LuauSimpleExpImpl extends LuauExpressionImpl implements LuauSimpleE
 
   @Override
   @Nullable
-  public LuauClosureExpr getClosureExpr() {
-    return findChildByClass(LuauClosureExpr.class);
+  public LuauClosureExp getClosureExp() {
+    return findChildByClass(LuauClosureExp.class);
   }
 
   @Override
   @Nullable
-  public LuauIfelseexp getIfelseexp() {
-    return findChildByClass(LuauIfelseexp.class);
+  public LuauIfelseExp getIfelseExp() {
+    return findChildByClass(LuauIfelseExp.class);
   }
 
   @Override
@@ -47,8 +47,8 @@ public class LuauSimpleExpImpl extends LuauExpressionImpl implements LuauSimpleE
 
   @Override
   @Nullable
-  public LuauTableconstructor getTableconstructor() {
-    return findChildByClass(LuauTableconstructor.class);
+  public LuauTableConstructor getTableConstructor() {
+    return findChildByClass(LuauTableConstructor.class);
   }
 
   @Override

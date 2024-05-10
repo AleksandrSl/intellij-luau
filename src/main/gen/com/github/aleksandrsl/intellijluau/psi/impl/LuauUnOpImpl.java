@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauUnopImpl extends ASTWrapperPsiElement implements LuauUnop {
+public class LuauUnOpImpl extends ASTWrapperPsiElement implements LuauUnOp {
 
-  public LuauUnopImpl(@NotNull ASTNode node) {
+  public LuauUnOpImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitUnop(this);
+    visitor.visitUnOp(this);
   }
 
   @Override

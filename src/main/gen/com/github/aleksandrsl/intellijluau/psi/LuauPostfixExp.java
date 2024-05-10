@@ -11,7 +11,7 @@ public interface LuauPostfixExp extends PsiElement {
   LuauExpression getExpression();
 
   @Nullable
-  LuauFuncargs getFuncargs();
+  LuauFuncArgs getFuncArgs();
 
   @Nullable
   PsiElement getId();

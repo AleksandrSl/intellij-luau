@@ -13,12 +13,12 @@ public interface LuauTypes {
   IElementType BINARY_EXP = new LuauElementType("BINARY_EXP");
   IElementType BINDING = new LuauElementType("BINDING");
   IElementType BINDING_LIST = new LuauElementType("BINDING_LIST");
-  IElementType BINOP = new LuauElementType("BINOP");
+  IElementType BIN_OP = new LuauElementType("BIN_OP");
   IElementType BLOCK = new LuauElementType("BLOCK");
   IElementType BOUND_TYPE_LIST = new LuauElementType("BOUND_TYPE_LIST");
   IElementType CLASSIC_FOR_STATEMENT = new LuauElementType("CLASSIC_FOR_STATEMENT");
-  IElementType CLOSURE_EXPR = new LuauElementType("CLOSURE_EXPR");
-  IElementType COMPOUNDOP = new LuauElementType("COMPOUNDOP");
+  IElementType CLOSURE_EXP = new LuauElementType("CLOSURE_EXP");
+  IElementType COMPOUND_OP = new LuauElementType("COMPOUND_OP");
   IElementType CONTINUE_SOFT_KEYWORD = new LuauElementType("CONTINUE_SOFT_KEYWORD");
   IElementType DO_STATEMENT = new LuauElementType("DO_STATEMENT");
   IElementType EXPORT_SOFT_KEYWORD = new LuauElementType("EXPORT_SOFT_KEYWORD");
@@ -26,26 +26,26 @@ public interface LuauTypes {
   IElementType EXPRESSION_STATEMENT = new LuauElementType("EXPRESSION_STATEMENT");
   IElementType EXP_LIST = new LuauElementType("EXP_LIST");
   IElementType FIELD = new LuauElementType("FIELD");
-  IElementType FIELDLIST = new LuauElementType("FIELDLIST");
-  IElementType FIELDSEP = new LuauElementType("FIELDSEP");
+  IElementType FIELD_LIST = new LuauElementType("FIELD_LIST");
+  IElementType FIELD_SEP = new LuauElementType("FIELD_SEP");
   IElementType FOREACH_STATEMENT = new LuauElementType("FOREACH_STATEMENT");
-  IElementType FUNCARGS = new LuauElementType("FUNCARGS");
-  IElementType FUNCNAME = new LuauElementType("FUNCNAME");
-  IElementType FUNCTIONCALL = new LuauElementType("FUNCTIONCALL");
+  IElementType FUNCTION_CALL = new LuauElementType("FUNCTION_CALL");
   IElementType FUNCTION_TYPE = new LuauElementType("FUNCTION_TYPE");
+  IElementType FUNC_ARGS = new LuauElementType("FUNC_ARGS");
   IElementType FUNC_BODY = new LuauElementType("FUNC_BODY");
-  IElementType FUNC_DEF_STAT = new LuauElementType("FUNC_DEF_STAT");
+  IElementType FUNC_DEF_STATEMENT = new LuauElementType("FUNC_DEF_STATEMENT");
+  IElementType FUNC_NAME = new LuauElementType("FUNC_NAME");
   IElementType GENERIC_TYPE_LIST = new LuauElementType("GENERIC_TYPE_LIST");
   IElementType GENERIC_TYPE_LIST_WITH_DEFAULTS = new LuauElementType("GENERIC_TYPE_LIST_WITH_DEFAULTS");
   IElementType GENERIC_TYPE_PACK = new LuauElementType("GENERIC_TYPE_PACK");
   IElementType GENERIC_TYPE_PACK_PARAMETER = new LuauElementType("GENERIC_TYPE_PACK_PARAMETER");
   IElementType GENERIC_TYPE_PACK_PARAMETER_WITH_DEFAULT = new LuauElementType("GENERIC_TYPE_PACK_PARAMETER_WITH_DEFAULT");
-  IElementType IFELSEEXP = new LuauElementType("IFELSEEXP");
+  IElementType IFELSE_EXP = new LuauElementType("IFELSE_EXP");
   IElementType IF_STATEMENT = new LuauElementType("IF_STATEMENT");
   IElementType INTERSECTION_SUFFIX = new LuauElementType("INTERSECTION_SUFFIX");
   IElementType LAST_STATEMENT = new LuauElementType("LAST_STATEMENT");
-  IElementType LOCAL_FUNC_DEF_STAT = new LuauElementType("LOCAL_FUNC_DEF_STAT");
-  IElementType PARLIST = new LuauElementType("PARLIST");
+  IElementType LOCAL_FUNC_DEF_STATEMENT = new LuauElementType("LOCAL_FUNC_DEF_STATEMENT");
+  IElementType PAR_LIST = new LuauElementType("PAR_LIST");
   IElementType POSTFIX_EXP = new LuauElementType("POSTFIX_EXP");
   IElementType PREFIX_EXP = new LuauElementType("PREFIX_EXP");
   IElementType PROP_LIST = new LuauElementType("PROP_LIST");
@@ -57,7 +57,7 @@ public interface LuauTypes {
   IElementType SIMPLE_VAR = new LuauElementType("SIMPLE_VAR");
   IElementType SINGLETON_TYPE = new LuauElementType("SINGLETON_TYPE");
   IElementType STATEMENT = new LuauElementType("STATEMENT");
-  IElementType TABLECONSTRUCTOR = new LuauElementType("TABLECONSTRUCTOR");
+  IElementType TABLE_CONSTRUCTOR = new LuauElementType("TABLE_CONSTRUCTOR");
   IElementType TABLE_INDEXER = new LuauElementType("TABLE_INDEXER");
   IElementType TABLE_PROP = new LuauElementType("TABLE_PROP");
   IElementType TABLE_PROP_OR_INDEXER = new LuauElementType("TABLE_PROP_OR_INDEXER");
@@ -71,7 +71,7 @@ public interface LuauTypes {
   IElementType TYPE_SOFT_KEYWORD = new LuauElementType("TYPE_SOFT_KEYWORD");
   IElementType UNARY_EXP = new LuauElementType("UNARY_EXP");
   IElementType UNION_SUFFIX = new LuauElementType("UNION_SUFFIX");
-  IElementType UNOP = new LuauElementType("UNOP");
+  IElementType UN_OP = new LuauElementType("UN_OP");
   IElementType VAR = new LuauElementType("VAR");
   IElementType VARIADIC_TYPE_PACK = new LuauElementType("VARIADIC_TYPE_PACK");
   IElementType VAR_LIST = new LuauElementType("VAR_LIST");
@@ -82,7 +82,7 @@ public interface LuauTypes {
   IElementType ASSIGN = new LuauTokenType("=");
   IElementType BLOCK_COMMENT = new LuauTokenType("BLOCK_COMMENT");
   IElementType BREAK = new LuauTokenType("break");
-  IElementType CLASSMETHODDEFSTAT = new LuauTokenType("classMethodDefStat");
+  IElementType CLASS_METHOD_DEF_STATEMENT = new LuauTokenType("class_method_def_statement");
   IElementType COLON = new LuauTokenType(":");
   IElementType COMMA = new LuauTokenType(",");
   IElementType CONCAT = new LuauTokenType("..");
@@ -171,8 +171,8 @@ public interface LuauTypes {
       else if (type == BINDING_LIST) {
         return new LuauBindingListImpl(node);
       }
-      else if (type == BINOP) {
-        return new LuauBinopImpl(node);
+      else if (type == BIN_OP) {
+        return new LuauBinOpImpl(node);
       }
       else if (type == BLOCK) {
         return new LuauBlockImpl(node);
@@ -183,11 +183,11 @@ public interface LuauTypes {
       else if (type == CLASSIC_FOR_STATEMENT) {
         return new LuauClassicForStatementImpl(node);
       }
-      else if (type == CLOSURE_EXPR) {
-        return new LuauClosureExprImpl(node);
+      else if (type == CLOSURE_EXP) {
+        return new LuauClosureExpImpl(node);
       }
-      else if (type == COMPOUNDOP) {
-        return new LuauCompoundopImpl(node);
+      else if (type == COMPOUND_OP) {
+        return new LuauCompoundOpImpl(node);
       }
       else if (type == CONTINUE_SOFT_KEYWORD) {
         return new LuauContinueSoftKeywordImpl(node);
@@ -207,32 +207,32 @@ public interface LuauTypes {
       else if (type == FIELD) {
         return new LuauFieldImpl(node);
       }
-      else if (type == FIELDLIST) {
-        return new LuauFieldlistImpl(node);
+      else if (type == FIELD_LIST) {
+        return new LuauFieldListImpl(node);
       }
-      else if (type == FIELDSEP) {
-        return new LuauFieldsepImpl(node);
+      else if (type == FIELD_SEP) {
+        return new LuauFieldSepImpl(node);
       }
       else if (type == FOREACH_STATEMENT) {
         return new LuauForeachStatementImpl(node);
       }
-      else if (type == FUNCARGS) {
-        return new LuauFuncargsImpl(node);
-      }
-      else if (type == FUNCNAME) {
-        return new LuauFuncnameImpl(node);
-      }
-      else if (type == FUNCTIONCALL) {
-        return new LuauFunctioncallImpl(node);
+      else if (type == FUNCTION_CALL) {
+        return new LuauFunctionCallImpl(node);
       }
       else if (type == FUNCTION_TYPE) {
         return new LuauFunctionTypeImpl(node);
       }
+      else if (type == FUNC_ARGS) {
+        return new LuauFuncArgsImpl(node);
+      }
       else if (type == FUNC_BODY) {
         return new LuauFuncBodyImpl(node);
       }
-      else if (type == FUNC_DEF_STAT) {
-        return new LuauFuncDefStatImpl(node);
+      else if (type == FUNC_DEF_STATEMENT) {
+        return new LuauFuncDefStatementImpl(node);
+      }
+      else if (type == FUNC_NAME) {
+        return new LuauFuncNameImpl(node);
       }
       else if (type == GENERIC_TYPE_LIST) {
         return new LuauGenericTypeListImpl(node);
@@ -249,8 +249,8 @@ public interface LuauTypes {
       else if (type == GENERIC_TYPE_PACK_PARAMETER_WITH_DEFAULT) {
         return new LuauGenericTypePackParameterWithDefaultImpl(node);
       }
-      else if (type == IFELSEEXP) {
-        return new LuauIfelseexpImpl(node);
+      else if (type == IFELSE_EXP) {
+        return new LuauIfelseExpImpl(node);
       }
       else if (type == IF_STATEMENT) {
         return new LuauIfStatementImpl(node);
@@ -261,11 +261,11 @@ public interface LuauTypes {
       else if (type == LAST_STATEMENT) {
         return new LuauLastStatementImpl(node);
       }
-      else if (type == LOCAL_FUNC_DEF_STAT) {
-        return new LuauLocalFuncDefStatImpl(node);
+      else if (type == LOCAL_FUNC_DEF_STATEMENT) {
+        return new LuauLocalFuncDefStatementImpl(node);
       }
-      else if (type == PARLIST) {
-        return new LuauParlistImpl(node);
+      else if (type == PAR_LIST) {
+        return new LuauParListImpl(node);
       }
       else if (type == POSTFIX_EXP) {
         return new LuauPostfixExpImpl(node);
@@ -300,8 +300,8 @@ public interface LuauTypes {
       else if (type == STATEMENT) {
         return new LuauStatementImpl(node);
       }
-      else if (type == TABLECONSTRUCTOR) {
-        return new LuauTableconstructorImpl(node);
+      else if (type == TABLE_CONSTRUCTOR) {
+        return new LuauTableConstructorImpl(node);
       }
       else if (type == TABLE_INDEXER) {
         return new LuauTableIndexerImpl(node);
@@ -342,8 +342,8 @@ public interface LuauTypes {
       else if (type == UNION_SUFFIX) {
         return new LuauUnionSuffixImpl(node);
       }
-      else if (type == UNOP) {
-        return new LuauUnopImpl(node);
+      else if (type == UN_OP) {
+        return new LuauUnOpImpl(node);
       }
       else if (type == VAR) {
         return new LuauVarImpl(node);

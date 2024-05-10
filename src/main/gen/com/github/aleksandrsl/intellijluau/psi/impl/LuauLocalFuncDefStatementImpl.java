@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauTableconstructorImpl extends ASTWrapperPsiElement implements LuauTableconstructor {
+public class LuauLocalFuncDefStatementImpl extends ASTWrapperPsiElement implements LuauLocalFuncDefStatement {
 
-  public LuauTableconstructorImpl(@NotNull ASTNode node) {
+  public LuauLocalFuncDefStatementImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitTableconstructor(this);
+    visitor.visitLocalFuncDefStatement(this);
   }
 
   @Override
@@ -28,9 +28,15 @@ public class LuauTableconstructorImpl extends ASTWrapperPsiElement implements Lu
   }
 
   @Override
-  @Nullable
-  public LuauFieldlist getFieldlist() {
-    return findChildByClass(LuauFieldlist.class);
+  @NotNull
+  public LuauFuncBody getFuncBody() {
+    return findNotNullChildByClass(LuauFuncBody.class);
+  }
+
+  @Override
+  @NotNull
+  public LuauFuncName getFuncName() {
+    return findNotNullChildByClass(LuauFuncName.class);
   }
 
 }

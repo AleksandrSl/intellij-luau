@@ -29,8 +29,8 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
             }
             LuauTypes.STRING -> STRING_KEYS
             LuauTypes.NUMBER -> NUMBER_KEYS
-            LuauTypes.BINOP,
-            LuauTypes.UNOP -> {
+            LuauTypes.BIN_OP,
+            LuauTypes.UN_OP -> {
                 OPERATOR_KEYS
             }
             LuauTypes.ID -> {

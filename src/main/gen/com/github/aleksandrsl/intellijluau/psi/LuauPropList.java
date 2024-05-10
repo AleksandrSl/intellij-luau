@@ -8,9 +8,9 @@ import com.intellij.psi.PsiElement;
 public interface LuauPropList extends PsiElement {
 
   @NotNull
-  List<LuauTablePropOrIndexer> getTablePropOrIndexerList();
+  List<LuauFieldSep> getFieldSepList();
 
   @NotNull
-  List<LuauFieldsep> getFieldsepList();
+  List<LuauTablePropOrIndexer> getTablePropOrIndexerList();
 
 }

@@ -5,6 +5,15 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauBinop extends PsiElement {
+public interface LuauParList extends PsiElement {
+
+  @Nullable
+  LuauBindingList getBindingList();
+
+  @Nullable
+  LuauGenericTypePack getGenericTypePack();
+
+  @Nullable
+  LuauType getType();
 
 }

@@ -11,6 +11,6 @@ public interface LuauUnaryExp extends LuauExpression {
   LuauExpression getExpression();
 
   @NotNull
-  LuauUnop getUnop();
+  LuauUnOp getUnOp();
 
 }

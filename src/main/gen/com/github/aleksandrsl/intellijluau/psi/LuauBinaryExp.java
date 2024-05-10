@@ -8,7 +8,7 @@ import com.intellij.psi.PsiElement;
 public interface LuauBinaryExp extends LuauExpression {
 
   @NotNull
-  LuauBinop getBinop();
+  LuauBinOp getBinOp();
 
   @NotNull
   List<LuauExpression> getExpressionList();

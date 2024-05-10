@@ -29,6 +29,12 @@ public class LuauSimpleTypeImpl extends ASTWrapperPsiElement implements LuauSimp
 
   @Override
   @Nullable
+  public LuauExpression getExpression() {
+    return findChildByClass(LuauExpression.class);
+  }
+
+  @Override
+  @Nullable
   public LuauFunctionType getFunctionType() {
     return findChildByClass(LuauFunctionType.class);
   }
@@ -55,12 +61,6 @@ public class LuauSimpleTypeImpl extends ASTWrapperPsiElement implements LuauSimp
   @Nullable
   public LuauTypeParams getTypeParams() {
     return findChildByClass(LuauTypeParams.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauExpression getExpression() {
-    return findChildByClass(LuauExpression.class);
   }
 
 }

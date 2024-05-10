@@ -35,8 +35,8 @@ public class LuauPostfixExpImpl extends ASTWrapperPsiElement implements LuauPost
 
   @Override
   @Nullable
-  public LuauFuncargs getFuncargs() {
-    return findChildByClass(LuauFuncargs.class);
+  public LuauFuncArgs getFuncArgs() {
+    return findChildByClass(LuauFuncArgs.class);
   }
 
   @Override
