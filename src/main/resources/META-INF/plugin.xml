@@ -47,6 +47,12 @@
 <!--                language="luau"-->
 <!--                implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"-->
 <!--        />-->
+        <codeStyleSettingsProvider
+                implementation="com.github.aleksandrsl.intellijluau.formatter.LuauCodeStyleSettingsProvider"/>
+        <langCodeStyleSettingsProvider implementation="com.github.aleksandrsl.intellijluau.formatter.LuauLanguageCodeStyleSettingsProvider" />
+        <lang.formatter
+                language="luau"
+                implementationClass="com.github.aleksandrsl.intellijluau.formatter.LuauFormattingModelBuilder"/>
         <platform.lsp.serverSupportProvider implementation="com.github.aleksandrsl.intellijluau.LuauLspServerSupportProvider"/>
         <projectConfigurable
                     parentId="language"
