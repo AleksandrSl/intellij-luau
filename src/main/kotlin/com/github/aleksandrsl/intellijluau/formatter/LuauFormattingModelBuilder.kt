@@ -16,7 +16,7 @@ internal class LuauFormattingModelBuilder : FormattingModelBuilder {
                 LuauFormatterBlock(
                     formattingContext.node,
                     Wrap.createWrap(WrapType.NONE, false),
-                    Alignment.createAlignment(),
+                    null,
                     createSpaceBuilder(codeStyleSettings)
                 ),
                 codeStyleSettings

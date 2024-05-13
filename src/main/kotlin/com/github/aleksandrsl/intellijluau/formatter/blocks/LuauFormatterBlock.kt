@@ -11,7 +11,8 @@ open class LuauFormatterBlock(
     private val spacingBuilder: SpacingBuilder
 ) : AbstractBlock(node, wrap, alignment) {
 
-    private val myIndent: Indent = LuauIndentProcessor(null).getChildIndent(node)
+    private val myIndentProcessor = LuauIndentProcessor(null)
+    private val myIndent: Indent = myIndentProcessor.getIndent(node)
 
     override fun buildChildren(): List<Block> {
         return myNode.getChildren(null).asSequence().filter {
@@ -27,13 +28,16 @@ open class LuauFormatterBlock(
         }.toList()
     }
 
-    override fun getIndent(): Indent {
-        return myIndent
-    }
+    override fun getIndent(): Indent = myIndent
 
     override fun getSpacing(child1: Block?, child2: Block): Spacing? {
         return spacingBuilder.getSpacing(this, child1, child2)
     }
 
     override fun isLeaf(): Boolean = myNode.firstChildNode == null
+
+    override fun getChildAttributes(newChildIndex: Int): ChildAttributes {
+        // TODO: I have little idea how this works well for property lists, I return none, but the children are still correctly aligned
+        return ChildAttributes(myIndentProcessor.getChildIndent(myNode), null)
+    }
 }

@@ -14,7 +14,7 @@ private val LOG = logger<LuauIndentProcessor>()
 
 class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
 
-    fun getChildIndent(node: ASTNode): Indent {
+    fun getIndent(node: ASTNode): Indent {
         val elementType: IElementType = node.elementType
         val prevSibling = node.treePrev
         val prevSiblingType: IElementType? = if (prevSibling == null) null else prevSibling.elementType
@@ -39,6 +39,7 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         }
 
         if (parentType == LuauTypes.FUNC_ARGS && elementType == LuauTypes.EXP_LIST) {
+            // TODO: No idea why smart indent here, but everyone is doing this
             return Indent.getSmartIndent(Indent.Type.CONTINUATION)
         }
 
@@ -73,6 +74,21 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         val line = doc.getLineNumber(node.startOffset)
         val lineStart = doc.getLineStartOffset(line)
         return node.startOffset == lineStart
+    }
+
+    fun getChildIndent(node: ASTNode): Indent {
+        val elementType = node.elementType
+        if (blockIndentationParents.contains(elementType)) {
+            return Indent.getNormalIndent()
+        }
+        if (elementType == LuauTypes.TABLE_TYPE
+            || elementType == LuauTypes.TABLE_CONSTRUCTOR) {
+            return Indent.getNormalIndent()
+        }
+        if (elementType == LuauTypes.FUNC_ARGS) {
+            return Indent.getSmartIndent(Indent.Type.CONTINUATION)
+        }
+        return Indent.getNoneIndent()
     }
 
     companion object {
