@@ -126,6 +126,7 @@ do_statement ::= 'do' block 'end'
 while_statement ::= 'while' expression 'do' block 'end'
 repeat_statement ::= 'repeat' block 'until' expression
 if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
+// TODO: Should I have a binding list here?
 classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end'
 foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end'
 assignment_statement ::= varList '=' exp_list | 'local' binding_list ('=' exp_list)? | var compound_op expression
@@ -151,7 +152,7 @@ exp_list ::= (expression ',')* expression
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
 binding ::= ID (':' type)?
-binding_list ::= binding (',' binding_list)? // equivalent of Lua 5.1 'namelist', except with optional type annotations
+binding_list ::= binding (',' binding)* // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
 varList ::= var (',' var)*
 var ::= simple_var postfix_exp*
