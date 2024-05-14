@@ -13,10 +13,14 @@ class ProjectSettingsComponent {
     private val lspPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
     }
+    private val styLuaPathComponent = TextFieldWithBrowseButton().apply {
+        addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
+    }
 
     init {
         panel = FormBuilder.createFormBuilder()
             .addLabeledComponent(JBLabel("Path to luau lsp: "), this.lspPathComponent, 1, false)
+            .addLabeledComponent(JBLabel("Path to StyLua: "), this.styLuaPathComponent, 1, false)
             .addComponentFillVertically(JPanel(), 0)
             .panel
     }
@@ -27,5 +31,11 @@ class ProjectSettingsComponent {
         get() = this.lspPathComponent.text
         set(newText) {
             this.lspPathComponent.text = newText ?: ""
+        }
+
+    var styLuaPath: String?
+        get() = this.styLuaPathComponent.text
+        set(newText) {
+            this.styLuaPathComponent.text = newText ?: ""
         }
 }

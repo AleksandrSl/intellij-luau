@@ -3,7 +3,7 @@ package com.github.aleksandrsl.intellijluau.settings
 import com.intellij.openapi.options.Configurable
 import javax.swing.JComponent
 
-class ProjectSettingsConfigurable: Configurable {
+class ProjectSettingsConfigurable : Configurable {
 
     private var component: ProjectSettingsComponent? = null
     private val settings = ProjectSettingsState.instance
@@ -11,19 +11,21 @@ class ProjectSettingsConfigurable: Configurable {
     override fun createComponent(): JComponent {
         return ProjectSettingsComponent().apply {
             lspPath = settings.lspPath
+            styLuaPath = settings.styLuaPath
         }.also {
             component = it
         }.panel
     }
 
     override fun isModified(): Boolean {
-        return settings.lspPath != component?.lspPath
+        return settings.lspPath != component?.lspPath || settings.styLuaPath != component?.styLuaPath
     }
 
-    override fun getPreferredFocusedComponent(): JComponent?  = component?.preferredFocusedComponent
+    override fun getPreferredFocusedComponent(): JComponent? = component?.preferredFocusedComponent
 
     override fun apply() {
         settings.lspPath = component?.lspPath ?: ""
+        settings.styLuaPath = component?.styLuaPath ?: ""
     }
 
     override fun getDisplayName(): String {
