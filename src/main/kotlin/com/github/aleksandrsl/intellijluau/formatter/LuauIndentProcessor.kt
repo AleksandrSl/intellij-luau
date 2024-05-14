@@ -25,7 +25,6 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         val firstChild: ASTNode? = node.firstChildNode
         val firstChildType: IElementType? = if (firstChild == null) null else firstChild.elementType
 
-        LOG.warn("$elementType, $parentType")
         if (parent?.treeParent == null) {
             return Indent.getNoneIndent()
         }
