@@ -11,6 +11,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 @State(name = "LuauPluginSettings", storages = [Storage("luauPlugin.xml")])
 internal class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState> {
     var lspPath: String = ""
+    var styLuaPath: String = ""
 
     override fun getState(): ProjectSettingsState {
         return this

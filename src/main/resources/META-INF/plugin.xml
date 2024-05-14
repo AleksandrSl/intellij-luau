@@ -61,5 +61,15 @@
                     displayName="Luau"
                     nonDefaultProject="true"
         />
+        <notificationGroup id="Luau notifications"
+                           displayType="BALLOON"
+                           key="luau.notification.group.name"/>
     </extensions>
+    <actions>
+        <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
+                class="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
+                text="StyLua: format">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
