@@ -5,7 +5,6 @@ package com.github.aleksandrsl.intellijluau
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.ide.plugins.PluginManagerCore
 import com.intellij.openapi.application.PluginPathManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
