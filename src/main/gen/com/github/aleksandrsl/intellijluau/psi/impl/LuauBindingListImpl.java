@@ -29,14 +29,8 @@ public class LuauBindingListImpl extends ASTWrapperPsiElement implements LuauBin
 
   @Override
   @NotNull
-  public LuauBinding getBinding() {
-    return findNotNullChildByClass(LuauBinding.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauBindingList getBindingList() {
-    return findChildByClass(LuauBindingList.class);
+  public List<LuauBinding> getBindingList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauBinding.class);
   }
 
 }

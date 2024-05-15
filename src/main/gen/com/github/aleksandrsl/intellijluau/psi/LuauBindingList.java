@@ -8,9 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface LuauBindingList extends PsiElement {
 
   @NotNull
-  LuauBinding getBinding();
-
-  @Nullable
-  LuauBindingList getBindingList();
+  List<LuauBinding> getBindingList();
 
 }
