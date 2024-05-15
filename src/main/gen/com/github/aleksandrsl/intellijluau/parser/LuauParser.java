@@ -165,7 +165,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // binding (',' binding_list)?
+  // binding (',' binding)*
   public static boolean binding_list(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "binding_list")) return false;
     if (!nextTokenIs(builder_, ID)) return false;
@@ -177,20 +177,24 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // (',' binding_list)?
+  // (',' binding)*
   private static boolean binding_list_1(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "binding_list_1")) return false;
-    binding_list_1_0(builder_, level_ + 1);
+    while (true) {
+      int pos_ = current_position_(builder_);
+      if (!binding_list_1_0(builder_, level_ + 1)) break;
+      if (!empty_element_parsed_guard_(builder_, "binding_list_1", pos_)) break;
+    }
     return true;
   }
 
-  // ',' binding_list
+  // ',' binding
   private static boolean binding_list_1_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "binding_list_1_0")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
     result_ = consumeToken(builder_, COMMA);
-    result_ = result_ && binding_list(builder_, level_ + 1);
+    result_ = result_ && binding(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
