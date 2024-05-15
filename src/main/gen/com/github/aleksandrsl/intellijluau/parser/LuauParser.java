@@ -1858,7 +1858,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // TEMPLATE_STRING_SQUOTE (STRING? '{' expression '}' STRING?)* TEMPLATE_STRING_EQUOTE
+  // TEMPLATE_STRING_SQUOTE (STRING | ('{' expression '}'))* TEMPLATE_STRING_EQUOTE
   public static boolean template_string(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "template_string")) return false;
     if (!nextTokenIs(builder_, TEMPLATE_STRING_SQUOTE)) return false;
@@ -1871,7 +1871,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return result_;
   }
 
-  // (STRING? '{' expression '}' STRING?)*
+  // (STRING | ('{' expression '}'))*
   private static boolean template_string_1(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "template_string_1")) return false;
     while (true) {
@@ -1882,32 +1882,27 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // STRING? '{' expression '}' STRING?
+  // STRING | ('{' expression '}')
   private static boolean template_string_1_0(PsiBuilder builder_, int level_) {
     if (!recursion_guard_(builder_, level_, "template_string_1_0")) return false;
     boolean result_;
     Marker marker_ = enter_section_(builder_);
-    result_ = template_string_1_0_0(builder_, level_ + 1);
-    result_ = result_ && consumeToken(builder_, LCURLY);
-    result_ = result_ && expression(builder_, level_ + 1, -1);
-    result_ = result_ && consumeToken(builder_, RCURLY);
-    result_ = result_ && template_string_1_0_4(builder_, level_ + 1);
+    result_ = consumeToken(builder_, STRING);
+    if (!result_) result_ = template_string_1_0_1(builder_, level_ + 1);
     exit_section_(builder_, marker_, null, result_);
     return result_;
   }
 
-  // STRING?
-  private static boolean template_string_1_0_0(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "template_string_1_0_0")) return false;
-    consumeToken(builder_, STRING);
-    return true;
-  }
-
-  // STRING?
-  private static boolean template_string_1_0_4(PsiBuilder builder_, int level_) {
-    if (!recursion_guard_(builder_, level_, "template_string_1_0_4")) return false;
-    consumeToken(builder_, STRING);
-    return true;
+  // '{' expression '}'
+  private static boolean template_string_1_0_1(PsiBuilder builder_, int level_) {
+    if (!recursion_guard_(builder_, level_, "template_string_1_0_1")) return false;
+    boolean result_;
+    Marker marker_ = enter_section_(builder_);
+    result_ = consumeToken(builder_, LCURLY);
+    result_ = result_ && expression(builder_, level_ + 1, -1);
+    result_ = result_ && consumeToken(builder_, RCURLY);
+    exit_section_(builder_, marker_, null, result_);
+    return result_;
   }
 
   /* ********************************************************** */
