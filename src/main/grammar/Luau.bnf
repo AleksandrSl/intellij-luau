@@ -167,7 +167,7 @@ unary_exp ::= un_op expression {extends=expression}
 binary_exp ::= expression bin_op expression {extends=expression}
 ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
 as_exp ::= simple_exp '::' type {extends=expression}
-template_string ::= TEMPLATE_STRING_SQUOTE (STRING? '{' expression '}' STRING?)* TEMPLATE_STRING_EQUOTE
+template_string ::= TEMPLATE_STRING_SQUOTE (STRING | ('{' expression '}'))* TEMPLATE_STRING_EQUOTE
 simple_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | table_constructor | closure_exp | prefix_exp | ifelse_exp | template_string {extends=expression}
 func_args ::=  '(' exp_list? ')' | table_constructor | STRING
 
