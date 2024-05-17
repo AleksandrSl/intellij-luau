@@ -43,10 +43,10 @@
 <!--                language="luau"-->
 <!--                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"-->
 <!--        />-->
-<!--        <lang.braceMatcher-->
-<!--                language="luau"-->
-<!--                implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"-->
-<!--        />-->
+        <lang.braceMatcher
+                language="luau"
+                implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"
+        />
         <codeStyleSettingsProvider
                 implementation="com.github.aleksandrsl.intellijluau.formatter.LuauCodeStyleSettingsProvider"/>
         <langCodeStyleSettingsProvider implementation="com.github.aleksandrsl.intellijluau.formatter.LuauLanguageCodeStyleSettingsProvider" />
