@@ -23,21 +23,19 @@ class LuauBraceMatcher : PairedBraceMatcher {
         return openingBraceOffset
     }
 
-    companion object {
-        private val PAIRS = arrayOf(
-            BracePair(LuauTypes.LBRACK, LuauTypes.RBRACK, false),
-            BracePair(LuauTypes.LCURLY, LuauTypes.RCURLY, false),
-            BracePair(LuauTypes.LPAREN, LuauTypes.RPAREN, false)
-        )
-
-        private fun isPairedBracesAllowedBeforeTypeInHaxe(tokenType: IElementType?): Boolean {
-            // Adding brackets inside brackets don't create pair, but I don't know if I need this.
-            return (LuauTokenSets.COMMENTS.contains(tokenType)
-                    || TokenSet.WHITE_SPACE.contains(tokenType))
-                    || tokenType === LuauTypes.RPAREN
-                    || tokenType === LuauTypes.RBRACK
-                    || tokenType === LuauTypes.RCURLY
-                    || tokenType === LuauTypes.LCURLY
-        }
+    private fun isPairedBracesAllowedBeforeTypeInHaxe(tokenType: IElementType?): Boolean {
+        // Adding brackets inside brackets don't create pair, but I don't know if I need this.
+        return (LuauTokenSets.COMMENTS.contains(tokenType)
+                || TokenSet.WHITE_SPACE.contains(tokenType))
+                || tokenType === LuauTypes.RPAREN
+                || tokenType === LuauTypes.RBRACK
+                || tokenType === LuauTypes.RCURLY
+                || tokenType === LuauTypes.LCURLY
     }
 }
+
+private val PAIRS = arrayOf(
+    BracePair(LuauTypes.LBRACK, LuauTypes.RBRACK, false),
+    BracePair(LuauTypes.LCURLY, LuauTypes.RCURLY, false),
+    BracePair(LuauTypes.LPAREN, LuauTypes.RPAREN, false)
+)
