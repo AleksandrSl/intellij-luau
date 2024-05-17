@@ -56,7 +56,7 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         return null
     }
 
-    fun queryVersion(project: Project): String {
+    fun queryVersion(): String {
         val firstLine =
             CapturingProcessHandler(GeneralCommandLine().apply {
                 withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)

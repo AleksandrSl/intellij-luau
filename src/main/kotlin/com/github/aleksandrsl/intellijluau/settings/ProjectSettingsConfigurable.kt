@@ -1,15 +1,18 @@
 package com.github.aleksandrsl.intellijluau.settings
 
+import com.github.aleksandrsl.intellijluau.cli.LuauCliService
+import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.project.Project
 import javax.swing.JComponent
 
-class ProjectSettingsConfigurable : Configurable {
+class ProjectSettingsConfigurable(val project: Project) : Configurable {
 
     private var component: ProjectSettingsComponent? = null
     private val settings = ProjectSettingsState.instance
 
     override fun createComponent(): JComponent {
-        return ProjectSettingsComponent().apply {
+        return ProjectSettingsComponent(project.service<LuauCliService>()).apply {
             lspPath = settings.lspPath
             styLuaPath = settings.styLuaPath
         }.also {
