@@ -43,6 +43,7 @@
 <!--                language="luau"-->
 <!--                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"-->
 <!--        />-->
+        <lang.quoteHandler language="luau" implementationClass="com.github.aleksandrsl.intellijluau.LuauQuoteHandler" />
         <lang.braceMatcher
                 language="luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"

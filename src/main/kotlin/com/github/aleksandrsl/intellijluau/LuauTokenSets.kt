@@ -28,4 +28,6 @@ object LuauTokenSets {
         // Luau type cast operator
         LuauTypes.DOUBLE_COLON,
     )
+    // TODO: Template string doesn't give any effect. Have to fix this, need to look at a language parser implementation with such strings
+    val STRINGS = TokenSet.create(LuauTypes.STRING, LuauTypes.TEMPLATE_STRING)
 }
