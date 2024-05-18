@@ -28,7 +28,7 @@ class LuauCodeStyleSettingsProvider: CodeStyleSettingsProvider() {
         }
     }
 
-    class LuauCodeStyleMainPanel(currentSettings: CodeStyleSettings?, settings: CodeStyleSettings?) :
-        TabbedLanguageCodeStylePanel(LuauLanguage.INSTANCE, currentSettings, settings!!)
+    class LuauCodeStyleMainPanel(currentSettings: CodeStyleSettings?, settings: CodeStyleSettings) :
+        TabbedLanguageCodeStylePanel(LuauLanguage.INSTANCE, currentSettings, settings)
 }
 
