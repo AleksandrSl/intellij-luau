@@ -4,7 +4,6 @@ import com.github.aleksandrsl.intellijluau.psi.LuauTypes
 import com.intellij.formatting.Indent
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiFile
 import com.intellij.psi.codeStyle.CommonCodeStyleSettings
 import com.intellij.psi.tree.IElementType
@@ -16,14 +15,8 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
 
     fun getIndent(node: ASTNode): Indent {
         val elementType: IElementType = node.elementType
-        val prevSibling = node.treePrev
-        val prevSiblingType: IElementType? = if (prevSibling == null) null else prevSibling.elementType
         val parent: ASTNode? = node.treeParent
-        val parentType: IElementType? = if (parent != null) parent.elementType else null
-        val superParent: ASTNode? = if (parent == null) null else parent.treeParent
-        val superParentType: IElementType? = if (superParent == null) null else superParent.elementType
-        val firstChild: ASTNode? = node.firstChildNode
-        val firstChildType: IElementType? = if (firstChild == null) null else firstChild.elementType
+        val parentType: IElementType? = parent?.elementType
 
         if (parent?.treeParent == null) {
             return Indent.getNoneIndent()
@@ -60,19 +53,6 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         }
 
         return false
-    }
-
-    private fun isAtFirstColumn(node: ASTNode): Boolean {
-        val element = node.psi ?: return false
-        val file = element.containingFile
-        val project = element.project
-        if (null == file) {
-            return false
-        }
-        val doc = PsiDocumentManager.getInstance(project).getDocument(file) ?: return false
-        val line = doc.getLineNumber(node.startOffset)
-        val lineStart = doc.getLineStartOffset(line)
-        return node.startOffset == lineStart
     }
 
     fun getChildIndent(node: ASTNode): Indent {
