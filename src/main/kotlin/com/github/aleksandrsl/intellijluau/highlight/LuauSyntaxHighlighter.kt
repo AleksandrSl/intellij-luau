@@ -27,7 +27,7 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
             in LuauTokenSets.COMMENTS -> {
                 COMMENT_KEYS
             }
-            LuauTypes.STRING -> STRING_KEYS
+            in LuauTokenSets.STRINGS -> STRING_KEYS
             LuauTypes.NUMBER -> NUMBER_KEYS
             LuauTypes.BIN_OP,
             LuauTypes.UN_OP -> {
