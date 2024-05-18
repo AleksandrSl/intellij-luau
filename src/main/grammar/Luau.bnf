@@ -14,7 +14,6 @@
 
   tokens = [
           space = "regexp:\s+"
-          /* Keywords */
           AND = "and"
           BREAK = "break"
           DO = "do"
@@ -93,13 +92,6 @@
     ]
 
     implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
-//    hooks("localDefStat|assignmentStatement|tableField") = [leftBinder="MY_LEFT_COMMENT_BINDER" rightBinder="MY_RIGHT_COMMENT_BINDER"]
-//    hooks("fieldList") = [leftBinder="GREEDY_LEFT_BINDER" rightBinder="GREEDY_RIGHT_BINDER"]
-//    implements(".*Attribute") = "com.tang.intellij.lua.psi.LuaAttribute"
-//    implements(".*Stat") = "com.tang.intellij.lua.psi.LuaStatement"
-//    hooks(".*Expr") = [leftBinder="MY_LEFT_COMMENT_BINDER"]
-//    hooks("expList") = [leftBinder="MY_LEFT_COMMENT_BINDER"]
-//    hooks(".*Statement") = [leftBinder="MY_LEFT_COMMENT_BINDER"]
 }
 
 
