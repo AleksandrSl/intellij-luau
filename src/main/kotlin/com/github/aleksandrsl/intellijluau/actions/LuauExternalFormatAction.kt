@@ -8,10 +8,12 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -37,19 +39,16 @@ class LuauExternalFormatAction : AnAction() {
         val projectService = project.service<LuauCliService>()
         val notificationGroupManager = NotificationGroupManager.getInstance()
             .getNotificationGroup("Luau notifications")
-        projectService.coroutineScope.launch {
+        projectService.coroutineScope.launch(Dispatchers.EDT) {
             // Why is not modal progress working?
             // Do I need different contexts here?
             withBackgroundProgress(project, "Stylua format current document") {
-                val output = StyLuaCli(tool.toPath()).formatDocumentOnDisk(project)
-                if (output == null) {
-                    notificationGroupManager.createNotification("Failed to run stylua", NotificationType.ERROR)
+                when (val result = StyLuaCli(tool.toPath()).formatDocument(project)) {
+                    is StyLuaCli.FormatResult.Success -> notificationGroupManager.createNotification("File formatted", NotificationType.INFORMATION)
                         .notify(project);
-                    return@withBackgroundProgress
-                }
-                if (output.checkSuccess(LOG)) {
-                    notificationGroupManager.createNotification("File formatted", NotificationType.INFORMATION)
+                    is StyLuaCli.FormatResult.StyluaError -> notificationGroupManager.createNotification(result.msg, NotificationType.ERROR)
                         .notify(project);
+                    null -> null
                 }
             }
         }
