@@ -95,7 +95,8 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         }
         if (output.checkSuccess(LOG)) {
             writeAction {
-                currentFile.writeText(output.stdout)
+                // No idea if I can save document to a variable to reference it safer later, I guess I can. So a plce for future refactoring
+                FileDocumentManager.getInstance().getDocument(currentFile)?.setText(output.stdout)
             }
             return FormatResult.Success()
         }
