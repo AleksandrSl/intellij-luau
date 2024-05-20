@@ -54,8 +54,8 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         }
         val currentFile = files[0]
 
-        val hasReadonlyFiles = ReadonlyStatusHandler.getInstance(project).ensureFilesWritable(listOf(currentFile))
-            .hasReadonlyFiles()
+        val hasReadonlyFiles =
+            ReadonlyStatusHandler.getInstance(project).ensureFilesWritable(listOf(currentFile)).hasReadonlyFiles()
         if (hasReadonlyFiles) return null
 
         var content: String? = null
@@ -104,19 +104,18 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
     }
 
     sealed class FormatResult(val msg: String, val cause: Throwable? = null) {
-        class Success: FormatResult("Ok")
-        class StyluaError(msg: String): FormatResult("Stylua failed to run \n$msg")
+        class Success : FormatResult("Ok")
+        class StyluaError(msg: String) : FormatResult("Stylua failed to run \n$msg")
     }
 
     fun queryVersion(): String {
-        val firstLine =
-            CapturingProcessHandler(GeneralCommandLine().apply {
-                withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-                withCharset(Charsets.UTF_8)
-                withExePath(styLuaExecutablePath.pathString)
-                addParameter("--version")
+        val firstLine = CapturingProcessHandler(GeneralCommandLine().apply {
+            withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+            withCharset(Charsets.UTF_8)
+            withExePath(styLuaExecutablePath.pathString)
+            addParameter("--version")
 //                 TODO: Do lazy reading?
-            }).runProcess().stdoutLines.first()
+        }).runProcess().stdoutLines.first()
         return firstLine
     }
 }
