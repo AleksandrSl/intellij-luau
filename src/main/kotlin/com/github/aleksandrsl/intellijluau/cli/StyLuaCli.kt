@@ -5,6 +5,7 @@ import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
+import com.intellij.openapi.command.executeCommand
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -95,8 +96,10 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         }
         if (output.checkSuccess(LOG)) {
             writeAction {
-                // No idea if I can save document to a variable to reference it safer later, I guess I can. So a plce for future refactoring
-                FileDocumentManager.getInstance().getDocument(currentFile)?.setText(output.stdout)
+                executeCommand(project, "Format with Stylua") {
+                    // No idea if I can save document to a variable to reference it safer later, I guess I can. So a plce for future refactoring
+                    FileDocumentManager.getInstance().getDocument(currentFile)?.setText(output.stdout)
+                 }
             }
             return FormatResult.Success()
         }
