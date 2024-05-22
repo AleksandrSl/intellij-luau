@@ -44,6 +44,7 @@ public interface LuauTypes {
   IElementType IF_STATEMENT = new LuauElementType("IF_STATEMENT");
   IElementType INTERSECTION_SUFFIX = new LuauElementType("INTERSECTION_SUFFIX");
   IElementType LAST_STATEMENT = new LuauElementType("LAST_STATEMENT");
+  IElementType LOCAL_DEF_STATEMENT = new LuauElementType("LOCAL_DEF_STATEMENT");
   IElementType LOCAL_FUNC_DEF_STATEMENT = new LuauElementType("LOCAL_FUNC_DEF_STATEMENT");
   IElementType PAR_LIST = new LuauElementType("PAR_LIST");
   IElementType POSTFIX_EXP = new LuauElementType("POSTFIX_EXP");
@@ -75,6 +76,7 @@ public interface LuauTypes {
   IElementType VAR = new LuauElementType("VAR");
   IElementType VARIADIC_TYPE_PACK = new LuauElementType("VARIADIC_TYPE_PACK");
   IElementType VAR_LIST = new LuauElementType("VAR_LIST");
+  IElementType VAR_REFERENCE = new LuauElementType("VAR_REFERENCE");
   IElementType WHILE_STATEMENT = new LuauElementType("WHILE_STATEMENT");
 
   IElementType AND = new LuauTokenType("and");
@@ -261,6 +263,9 @@ public interface LuauTypes {
       else if (type == LAST_STATEMENT) {
         return new LuauLastStatementImpl(node);
       }
+      else if (type == LOCAL_DEF_STATEMENT) {
+        return new LuauLocalDefStatementImpl(node);
+      }
       else if (type == LOCAL_FUNC_DEF_STATEMENT) {
         return new LuauLocalFuncDefStatementImpl(node);
       }
@@ -353,6 +358,9 @@ public interface LuauTypes {
       }
       else if (type == VAR_LIST) {
         return new LuauVarListImpl(node);
+      }
+      else if (type == VAR_REFERENCE) {
+        return new LuauVarReferenceImpl(node);
       }
       else if (type == WHILE_STATEMENT) {
         return new LuauWhileStatementImpl(node);

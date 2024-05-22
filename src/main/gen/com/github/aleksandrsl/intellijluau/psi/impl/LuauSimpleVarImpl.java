@@ -35,8 +35,8 @@ public class LuauSimpleVarImpl extends ASTWrapperPsiElement implements LuauSimpl
 
   @Override
   @Nullable
-  public PsiElement getId() {
-    return findChildByType(ID);
+  public LuauVarReference getVarReference() {
+    return findChildByClass(LuauVarReference.class);
   }
 
 }
