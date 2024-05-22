@@ -8,17 +8,18 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
+import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
+import com.intellij.psi.PsiReference;
 
-public class LuauBindingImpl extends LuauNamedElementImpl implements LuauBinding {
+public class LuauVarReferenceImpl extends ASTWrapperPsiElement implements LuauVarReference {
 
-  public LuauBindingImpl(@NotNull ASTNode node) {
+  public LuauVarReferenceImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitBinding(this);
+    visitor.visitVarReference(this);
   }
 
   @Override
@@ -28,15 +29,15 @@ public class LuauBindingImpl extends LuauNamedElementImpl implements LuauBinding
   }
 
   @Override
-  @Nullable
-  public LuauType getType() {
-    return findChildByClass(LuauType.class);
+  @NotNull
+  public PsiElement getId() {
+    return findNotNullChildByType(ID);
   }
 
   @Override
   @NotNull
-  public PsiElement getId() {
-    return findNotNullChildByType(ID);
+  public PsiReference[] getReferences() {
+    return LuauPsiImplUtilKt.getReferences(this);
   }
 
 }

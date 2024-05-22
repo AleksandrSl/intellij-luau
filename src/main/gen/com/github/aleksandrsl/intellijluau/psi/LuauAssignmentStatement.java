@@ -8,9 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface LuauAssignmentStatement extends PsiElement {
 
   @Nullable
-  LuauBindingList getBindingList();
-
-  @Nullable
   LuauCompoundOp getCompoundOp();
 
   @Nullable
@@ -18,6 +15,9 @@ public interface LuauAssignmentStatement extends PsiElement {
 
   @Nullable
   LuauExpression getExpression();
+
+  @Nullable
+  LuauLocalDefStatement getLocalDefStatement();
 
   @Nullable
   LuauVar getVar();

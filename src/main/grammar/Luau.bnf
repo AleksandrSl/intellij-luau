@@ -7,6 +7,7 @@
   psiImplClassSuffix="Impl"
   psiPackage="com.github.aleksandrsl.intellijluau.psi"
   psiImplPackage="com.github.aleksandrsl.intellijluau.psi.impl"
+  psiImplUtilClass="com.github.aleksandrsl.intellijluau.psi.LuauPsiImplUtilKt"
 
   elementTypeHolderClass="com.github.aleksandrsl.intellijluau.psi.LuauTypes"
   elementTypeClass="com.github.aleksandrsl.intellijluau.psi.LuauElementType"
@@ -121,7 +122,7 @@ if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)
 // TODO: Should I have a binding list here?
 classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end'
 foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end'
-assignment_statement ::= varList '=' exp_list | 'local' binding_list ('=' exp_list)? | var compound_op expression
+assignment_statement ::= varList '=' exp_list | local_def_statement | var compound_op expression
 expression_statement ::= expression
 private def_statement ::= class_method_def_statement | func_def_statement | local_func_def_statement
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
@@ -131,6 +132,7 @@ continue_soft_keyword ::= 'continue'
 type_soft_keyword ::= 'type'
 typeof_soft_keyword ::= 'typeof'
 
+local_def_statement ::= 'local' binding_list ('=' exp_list)?
 func_def_statement ::= 'function' func_name func_body
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
 //class_method_def_statement ::= 'function' classMethodName funcBody
@@ -143,12 +145,18 @@ par_list ::= binding_list (',' '...')? | '...' (':' (type | generic_type_pack))?
 exp_list ::= (expression ',')* expression
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
-binding ::= ID (':' type)?
+binding ::= ID (':' type)?  {
+  // No idea why they use mixins or methods instead of extend, probably because they need more than one implementation
+  // But usually it's not the case.
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl";
+  implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+}
 binding_list ::= binding (',' binding)* // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
 varList ::= var (',' var)*
 var ::= simple_var postfix_exp*
-simple_var ::= ID | '(' expression ')'
+simple_var ::= var_reference | '(' expression ')'
+var_reference ::= ID { methods=[getReferences] }
 prefix_exp ::= (var | '(' expression ')') postfix_exp*
 postfix_exp ::= func_args | ':' ID func_args | '[' expression ']' | '.' ID
 function_call ::= prefix_exp postfix_exp

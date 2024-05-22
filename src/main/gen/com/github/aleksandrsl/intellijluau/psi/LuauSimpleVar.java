@@ -11,6 +11,6 @@ public interface LuauSimpleVar extends PsiElement {
   LuauExpression getExpression();
 
   @Nullable
-  PsiElement getId();
+  LuauVarReference getVarReference();
 
 }

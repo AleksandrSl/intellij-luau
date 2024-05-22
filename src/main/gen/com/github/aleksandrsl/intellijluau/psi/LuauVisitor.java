@@ -24,7 +24,7 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitBinding(@NotNull LuauBinding o) {
-    visitPsiElement(o);
+    visitNamedElement(o);
   }
 
   public void visitBindingList(@NotNull LuauBindingList o) {
@@ -151,6 +151,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitLocalDefStatement(@NotNull LuauLocalDefStatement o) {
+    visitPsiElement(o);
+  }
+
   public void visitLocalFuncDefStatement(@NotNull LuauLocalFuncDefStatement o) {
     visitPsiElement(o);
   }
@@ -271,11 +275,19 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitVarReference(@NotNull LuauVarReference o) {
+    visitPsiElement(o);
+  }
+
   public void visitVariadicTypePack(@NotNull LuauVariadicTypePack o) {
     visitPsiElement(o);
   }
 
   public void visitWhileStatement(@NotNull LuauWhileStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitNamedElement(@NotNull LuauNamedElement o) {
     visitPsiElement(o);
   }
 
