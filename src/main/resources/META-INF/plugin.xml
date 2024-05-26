@@ -31,10 +31,10 @@
                 language="luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.highlight.LuauSyntaxHighlightAnnotator"
         />
-<!--        <lang.foldingBuilder-->
-<!--                language="luau"-->
-<!--                implementationClass="com.github.aleksandrsl.intellijluau.LuauFoldingBuilder"-->
-<!--        />-->
+        <lang.foldingBuilder
+                language="luau"
+                implementationClass="com.github.aleksandrsl.intellijluau.LuauFoldingBuilder"
+        />
         <lang.commenter
                 language="luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauCommenter"
