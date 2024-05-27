@@ -133,7 +133,7 @@ type_soft_keyword ::= 'type'
 typeof_soft_keyword ::= 'typeof'
 
 local_def_statement ::= 'local' binding_list ('=' exp_list)?
-func_def_statement ::= 'function' func_name func_body
+func_def_statement ::= 'function' func_name func_body { methods=[getPresentation] }
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
 //class_method_def_statement ::= 'function' classMethodName funcBody
 local_func_def_statement ::= 'local' 'function' func_name func_body
