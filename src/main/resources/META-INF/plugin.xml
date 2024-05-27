@@ -39,6 +39,9 @@
                 language="luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauCommenter"
         />
+        <lang.psiStructureViewFactory
+                language="luau"
+                implementationClass="com.github.aleksandrsl.intellijluau.structureView.LuauStructureViewFactory"/>
 <!--        <completion.contributor-->
 <!--                language="luau"-->
 <!--                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"-->
