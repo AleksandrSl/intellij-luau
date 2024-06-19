@@ -93,9 +93,11 @@ SHORT_COMMENT=--[^\r\n]*
 DOC_COMMENT=----*[^\r\n]*(\r?\n{LINE_WS}*----*[^\r\n]*)*
 
 //Strings
-DOUBLE_QUOTED_STRING=\"([^\\\"]|\\\S|\\[\r\n])*\"?  //\"([^\\\"\r\n]|\\[^\r\n])*\"?
-SINGLE_QUOTED_STRING='([^\\\']|\\\S|\\[\r\n])*'?    //'([^\\'\r\n]|\\[^\r\n])*'?
-TEMPLATE_QUOTED_STRING=([^\`\r\n\{])*
+// ? is important because we can miss the second quote with string being yet incomplete and we don't have [^] rule in lexer. Thus we break promise to parse the whole file.
+// Line breaks are also allowed, I have to check if this actually needed if I don't want to write separate String lexer other lua plugins do
+DOUBLE_QUOTED_STRING=\"([^\\\"]|\\\S|\\[\r\n])*\"?
+SINGLE_QUOTED_STRING='([^\\\']|\\\S|\\[\r\n])*'?
+TEMPLATE_QUOTED_STRING_PART=([^\`\r\n\{])*
 //[[]]
 LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
@@ -230,5 +232,5 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
    "{" { yybegin(xTEMPLATE_STRING_EXPRESSION); return LCURLY; }
    "`" { yybegin(YYINITIAL); return TEMPLATE_STRING_EQUOTE; }
    {EOL} { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
-   {TEMPLATE_QUOTED_STRING}  { return STRING; }
+   {TEMPLATE_QUOTED_STRING_PART}  { return STRING; }
 }
