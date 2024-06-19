@@ -126,7 +126,7 @@ assignment_statement ::= varList '=' exp_list | local_def_statement | var compou
 expression_statement ::= expression
 private def_statement ::= class_method_def_statement | func_def_statement | local_func_def_statement
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
-type_declaration_statement ::= export_soft_keyword ? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type
+type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type
 export_soft_keyword ::= 'export'
 continue_soft_keyword ::= 'continue'
 type_soft_keyword ::= 'type'
@@ -143,8 +143,7 @@ func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? 
 par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
-// TODO (AleksandrSl 19/06/2024): Make it looks like the others
-exp_list ::= (expression ',')* expression
+exp_list ::= expression (',' expression)*
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
 binding ::= ID (':' type)?  {

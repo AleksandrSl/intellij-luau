@@ -402,35 +402,35 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (expression ',')* expression
+  // expression (',' expression)*
   public static boolean exp_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "exp_list")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, EXP_LIST, "<exp list>");
-    r = exp_list_0(b, l + 1);
-    r = r && expression(b, l + 1, -1);
+    r = expression(b, l + 1, -1);
+    r = r && exp_list_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // (expression ',')*
-  private static boolean exp_list_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "exp_list_0")) return false;
+  // (',' expression)*
+  private static boolean exp_list_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "exp_list_1")) return false;
     while (true) {
       int c = current_position_(b);
-      if (!exp_list_0_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "exp_list_0", c)) break;
+      if (!exp_list_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "exp_list_1", c)) break;
     }
     return true;
   }
 
-  // expression ','
-  private static boolean exp_list_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "exp_list_0_0")) return false;
+  // ',' expression
+  private static boolean exp_list_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "exp_list_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = expression(b, l + 1, -1);
-    r = r && consumeToken(b, COMMA);
+    r = consumeToken(b, COMMA);
+    r = r && expression(b, l + 1, -1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -1877,64 +1877,49 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // type ((',' type)+ | ('...' type))?
+  // type (',' type_list)? | '...' type
   public static boolean type_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_list")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, TYPE_LIST, "<type list>");
-    r = type(b, l + 1);
-    r = r && type_list_1(b, l + 1);
+    r = type_list_0(b, l + 1);
+    if (!r) r = type_list_1(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // ((',' type)+ | ('...' type))?
-  private static boolean type_list_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_1")) return false;
-    type_list_1_0(b, l + 1);
+  // type (',' type_list)?
+  private static boolean type_list_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = type(b, l + 1);
+    r = r && type_list_0_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (',' type_list)?
+  private static boolean type_list_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_0_1")) return false;
+    type_list_0_1_0(b, l + 1);
     return true;
   }
 
-  // (',' type)+ | ('...' type)
-  private static boolean type_list_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_1_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = type_list_1_0_0(b, l + 1);
-    if (!r) r = type_list_1_0_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // (',' type)+
-  private static boolean type_list_1_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_1_0_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = type_list_1_0_0_0(b, l + 1);
-    while (r) {
-      int c = current_position_(b);
-      if (!type_list_1_0_0_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "type_list_1_0_0", c)) break;
-    }
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // ',' type
-  private static boolean type_list_1_0_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_1_0_0_0")) return false;
+  // ',' type_list
+  private static boolean type_list_0_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_0_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
-    r = r && type(b, l + 1);
+    r = r && type_list(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // '...' type
-  private static boolean type_list_1_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_1_0_1")) return false;
+  private static boolean type_list_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, ELLIPSIS);
