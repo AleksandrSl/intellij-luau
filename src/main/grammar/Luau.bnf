@@ -140,8 +140,10 @@ local_func_def_statement ::= 'local' 'function' func_name func_body
 
 func_name ::= ID ('.' ID)* (':' ID)?
 func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
-par_list ::= binding_list (',' '...')? | '...' (':' (type | generic_type_pack))?
+par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
+private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
+// TODO (AleksandrSl 19/06/2024): Make it looks like the others
 exp_list ::= (expression ',')* expression
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
@@ -200,18 +202,19 @@ intersection_suffix ::= ('&' simple_type)+
 type ::= simple_type '?'? (union_suffix | intersection_suffix)*
 
 generic_type_pack_parameter ::= ID '...'
-generic_type_list ::= ID (',' generic_type_list)? | generic_type_pack_parameter (',' generic_type_pack_parameter)*
-
 generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack)
-generic_type_list_with_defaults ::=
-    generic_type_list (',' generic_type_pack_parameter_with_default)*
-    | ID (',' ID)* (',' ID '=' type)* (',' generic_type_pack_parameter_with_default)*
-    | ID '=' type (',' generic_type_pack_parameter_with_default)*
-    | generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+
+// Having just ID before the ... fucks everything up, because T... will match just ID and go another step and then later fail, but it won't backtrack and try ...
+generic_type_list ::= generic_type_pack_parameter (',' generic_type_pack_parameter)* | ID (',' ID)* (',' generic_type_pack_parameter)*
+
+generic_type_list_with_defaults ::= generic_type_list (',' generic_type_list_with_defaults_item)* | generic_type_list_with_defaults_item (',' generic_type_list_with_defaults_item)*
+private generic_type_list_with_defaults_item ::=
+    generic_type_pack_parameter_with_default
+    | ID '=' type
 
 type_list ::= type (',' type_list)? | '...' type
-bound_type_list ::= (ID ':')? type (',' bound_type_list)? | '...' type
-type_params ::= (type | type_pack | variadic_type_pack | generic_type_pack) (',' type_params)?
+bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)?
+type_params ::= (variadic_type_pack | generic_type_pack | type_pack | type) (',' type_params)?
 type_pack ::= '(' type_list? ')'
 generic_type_pack ::= ID '...'
 variadic_type_pack ::= '...' type
