@@ -114,29 +114,54 @@ statement ::=
      | classic_for_statement
      | foreach_statement
      | def_statement
+     { recoverWhile = statement_recover }
 
-do_statement ::= 'do' block 'end'
-while_statement ::= 'while' expression 'do' block 'end'
-repeat_statement ::= 'repeat' block 'until' expression
-if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
+// TODO (AleksandrSl 20/06/2024): Should I add table parenthesis
+private statement_recover ::= !(
+  ID
+  | ',' | ';'
+  | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | break
+  | nil | true | false | STRING | NUMBER | export_soft_keyword | type_soft_keyword
+  | un_op
+)
+
+do_statement ::= 'do' block 'end' { pin = 1 }
+while_statement ::= 'while' expression 'do' block 'end' { pin = 1 }
+repeat_statement ::= 'repeat' block 'until' expression { pin = 1 }
+if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end' { pin = 1 }
 // TODO: Should I have a binding list here?
-classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end'
-foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end'
-assignment_statement ::= varList '=' exp_list | local_def_statement | var compound_op expression
+// TODO (AleksandrSl 20/06/2024): I copied pin = 3, but I guess it is the way
+classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end' { pin = 3 }
+foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 1 }
+assignment_statement ::= varList '=' exp_list | var compound_op expression
 expression_statement ::= expression
-private def_statement ::= class_method_def_statement | func_def_statement | local_func_def_statement
+private def_statement ::= class_method_def_statement | func_def_statement | local_func_def_statement | local_def_statement
+// TODO (AleksandrSl 20/06/2024): Is continue really last statement?
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
-type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type
+// TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
+type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type { pin = 2 }
 export_soft_keyword ::= 'export'
 continue_soft_keyword ::= 'continue'
 type_soft_keyword ::= 'type'
 typeof_soft_keyword ::= 'typeof'
 
-local_def_statement ::= 'local' binding_list ('=' exp_list)?
-func_def_statement ::= 'function' func_name func_body { methods=[getPresentation] }
+local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }
+func_def_statement ::= 'function' func_name func_body { pin = 1; methods=[getPresentation] }
 //classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
 //class_method_def_statement ::= 'function' classMethodName funcBody
-local_func_def_statement ::= 'local' 'function' func_name func_body
+
+// Without pinning somehow it won't match the function but local_def_statement instead even though it is later in the variants.
+// Looks like parser first searches for pins if there are any in the rules.
+
+// Rule also scans until it encounters recoverWhile symbol and then tries something else for unknown reason.
+// There no errors what are you recovering from?
+// Moreover, it safely parses name of the function (it's also an ID) and then stops inside the generic_type_list, what the actual fuck is this?
+// Ok, it actually fails to parse conditions and assignments inside the body, so it actually fails to parse function and starts doing this shit.
+// I broke somethings with pinning
+
+// Even if the code is perfectly normal.
+// 'function' is pinned because pinning local won't allow to match variable definitions
+local_func_def_statement ::= 'local' 'function' func_name func_body { pin = 2 }
 
 func_name ::= ID ('.' ID)* (':' ID)?
 func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
