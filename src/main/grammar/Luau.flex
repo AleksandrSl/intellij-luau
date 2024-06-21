@@ -74,15 +74,19 @@ VALID_CHAR=[a-zA-Z_\u00ff-\uffff]
 ID={VALID_CHAR} ({VALID_CHAR}|[0-9])*
 
 //Number
-n=[0-9]+
-h=[0-9a-fA-F]+
+n=[0-9][0-9_]*
+h=[0-9a-fA-F][0-9a-fA-F_]*
 exp=[Ee]([+-]?{n})?
+// TODO (AleksandrSl 22/06/2024): Looks like luau doesn't had p as well.
 ppp=[Pp][+-]{n}
 // 123ULL/123LL
 // 0x123FFULL/0x123FFLL
+// TODO (AleksandrSl 22/06/2024): Does lua has this?
 JIT_EXT_NUMBER=(0[xX]{h}|{n})U?LL
+BIN_NUMBER=0[bB][01][01_]*
+// TODO (AleksandrSl 22/06/2024): Looks like exp notaiton is supported, but . is not
 HEX_NUMBER=0[xX]({h}|{h}[.]{h})({exp}|{ppp})?
-NUMBER={JIT_EXT_NUMBER}|{HEX_NUMBER}|({n}|{n}[.]{n}){exp}?|[.]{n}|{n}[.]
+NUMBER={JIT_EXT_NUMBER}|{HEX_NUMBER}|{BIN_NUMBER}|({n}|{n}[.]{n}){exp}?|[.]{n}|{n}[.]
 
 //Comments
 REGION_START =--(region|\{\{\{)([^\r\n]*)*
