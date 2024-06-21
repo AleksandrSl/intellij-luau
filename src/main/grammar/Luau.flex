@@ -11,7 +11,7 @@ import com.intellij.psi.TokenType;
   public LuauLexer() {
     this((java.io.Reader)null);
   }
-
+  private boolean insideTemplate = false;
    private int nBrackets = 0;
       private boolean checkAhead(char c, int offset) {
           return this.zzMarkedPos + offset < this.zzBuffer.length() && this.zzBuffer.charAt(this.zzMarkedPos + offset) == c;
@@ -112,20 +112,24 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
 %%
 
+<YYINITIAL> {
+    "--"                        {
+          boolean block = checkBlock();
+          if (block) {
+              boolean docBlock = checkDocBlock();
+              yypushback(yylength());
+              zzMarkedPos += checkBlockEnd();
+              return docBlock ? DOC_BLOCK_COMMENT : BLOCK_COMMENT;
+          }
+          else { yypushback(yylength()); yybegin(xCOMMENT); }
+     }
+    {REGION_START}              { return REGION; }
+    {REGION_END}                { return ENDREGION; }
+    "#!"                        { yybegin(xSHEBANG); return SHEBANG; }
+}
+
 <YYINITIAL, xTEMPLATE_STRING_EXPRESSION> {
    {WHITE_SPACE}               { return TokenType.WHITE_SPACE; }
-     {REGION_START}              { return REGION; }
-     {REGION_END}                { return ENDREGION; }
-        "--"                        {
-              boolean block = checkBlock();
-              if (block) {
-                  boolean docBlock = checkDocBlock();
-                  yypushback(yylength());
-                  zzMarkedPos += checkBlockEnd();
-                  return docBlock ? DOC_BLOCK_COMMENT : BLOCK_COMMENT;
-              }
-              else { yypushback(yylength()); yybegin(xCOMMENT); }
-         }
     "and"                       { return AND; }
     "break"                     { return BREAK; }
     "do"                        { return DO; }
@@ -147,7 +151,6 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
     "true"                      { return TRUE; }
     "until"                     { return UNTIL; }
     "while"                     { return WHILE; }
-    "#!"                        { yybegin(xSHEBANG); return SHEBANG; }
   "..."                       { return ELLIPSIS; }
   ".."                        { return CONCAT; }
   "=="                        { return EQ; }
@@ -203,7 +206,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
      "\""                        { yybegin(xDOUBLE_QUOTED_STRING); yypushback(yylength()); }
      "'"                         { yybegin(xSINGLE_QUOTED_STRING); yypushback(yylength()); }
-     "`"                         { yybegin(xTEMPLATE_STRING); return TEMPLATE_STRING_SQUOTE; }
+     "`"                         { yybegin(xTEMPLATE_STRING); insideTemplate = true; return TEMPLATE_STRING_SQUOTE; }
 
      {ID}                        { return ID; }
      {NUMBER}                    { return NUMBER; }
@@ -221,16 +224,16 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 }
 
 <xDOUBLE_QUOTED_STRING> {
-    {DOUBLE_QUOTED_STRING}    { yybegin(YYINITIAL); return STRING; }
+    {DOUBLE_QUOTED_STRING}    { yybegin(insideTemplate ? xTEMPLATE_STRING : YYINITIAL); return STRING; }
 }
 
 <xSINGLE_QUOTED_STRING> {
-    {SINGLE_QUOTED_STRING}    { yybegin(YYINITIAL); return STRING; }
+    {SINGLE_QUOTED_STRING}    { yybegin(insideTemplate ? xTEMPLATE_STRING : YYINITIAL); return STRING; }
 }
 
 <xTEMPLATE_STRING> {
    "{" { yybegin(xTEMPLATE_STRING_EXPRESSION); return LCURLY; }
-   "`" { yybegin(YYINITIAL); return TEMPLATE_STRING_EQUOTE; }
+   "`" { yybegin(YYINITIAL); insideTemplate = false; return TEMPLATE_STRING_EQUOTE; }
    {EOL} { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
    {TEMPLATE_QUOTED_STRING_PART}  { return STRING; }
 }
