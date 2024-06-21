@@ -100,9 +100,9 @@ luau_file ::= shebang_line? block
 shebang_line ::= SHEBANG SHEBANG_CONTENT
 
 block ::= (statement ';'?)* (last_statement ';'?)?
+
 statement ::=
-     assignment_statement
-     | type_declaration_statement
+     type_declaration_statement
      | do_statement
      | while_statement
      | repeat_statement
@@ -111,6 +111,7 @@ statement ::=
      | foreach_statement
      | def_statement
      | compound_op_statement
+     | assignment_statement
      // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
      // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
      | expression_statement
@@ -132,11 +133,13 @@ if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)
 // TODO: Should I have a binding list here?
 // TODO (AleksandrSl 20/06/2024): I copied pin = 3, but I guess it is the way
 classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end' { pin = 3 }
+// Rename for into numeric_for and generic_for as in lua docs
 foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 1 }
-assignment_statement ::= varList '=' exp_list { pin = 2 }
+// I guess the problem is here, at least part of it. Because the error is bin_op or , is expected. And bin_op is a part of expression
+assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= var compound_op expression { pin = 2 }
-expression_statement ::= expression | function_call
-private def_statement ::= class_method_def_statement | func_def_statement | local_func_def_statement | local_def_statement
+expression_statement ::= expression { pin = 1 }
+private def_statement ::= func_def_statement | local_func_def_statement | local_def_statement // class_method_def_statement
 // TODO (AleksandrSl 20/06/2024): Is continue really last statement?
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
 // TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
@@ -169,7 +172,7 @@ func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? 
 par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
-exp_list ::= expression (',' expression)*
+exp_list ::= expression // (',' expression)*
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
 binding ::= ID (':' type)?  {
@@ -180,13 +183,29 @@ binding ::= ID (':' type)?  {
 }
 binding_list ::= binding (',' binding)* // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
-varList ::= var (',' var)*
-var ::= simple_var postfix_exp*
-simple_var ::= var_reference | '(' expression ')'
+var_list ::= var (',' var)*
+var ::= primary_exp
 var_reference ::= ID { methods=[getReferences] }
-prefix_exp ::= (var | '(' expression ')') postfix_exp*
-postfix_exp ::= func_args | ':' ID func_args | '[' expression ']' | '.' ID
-function_call ::= prefix_exp postfix_exp
+prefix_exp ::= var_reference | '(' expression ')' | table_constructor
+postfix_exp ::= func_args | index_expr
+
+// I guess this is a bit more permissive that it should be? e.g. it allows {}()
+primary_exp ::= prefix_exp postfix_exp*
+
+left index_expr ::= '[' expression ']' | '.' ID | ':' ID
+
+func_args ::= list_args | single_arg
+// TODO (AleksandrSl 21/06/2024): I wonder when you may have table and string as an arg without the parenthesis
+// Well, shit, sugar we deserved
+// > A call of the form f{fields} is syntactic sugar for f({fields});
+//   that is, the argument list is a single new table.
+//   A call of the form f'string' (or f"string" or f[[string]]) is syntactic sugar for f('string');
+//   that is, the argument list is a single literal string
+// Only STRING is allowed, not template_string
+single_arg ::= table_constructor | STRING { extends = func_args }
+private arg_expr_list ::= (expression ',')* (expression |& ')') // { pin = 1 }
+list_args ::= '(' (arg_expr_list)? ')' { extends = func_args; pin = 1 }
+
 
 expression ::= simple_exp | as_exp | unary_exp | binary_exp
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
@@ -196,8 +215,9 @@ ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' exp
 // TODO (AleksandrSl 21/06/2024): I guess I may have () around cast and they maybe be even necessary? Can I cast all simple expressions?
 as_exp ::= simple_exp '::' type {extends=expression}
 template_string ::= TEMPLATE_STRING_SQUOTE (STRING | ('{' expression '}'))* TEMPLATE_STRING_EQUOTE
-simple_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | table_constructor | closure_exp | prefix_exp | ifelse_exp | template_string {extends=expression}
-func_args ::=  '(' exp_list? ')' | table_constructor | STRING
+simple_exp ::=  table_constructor | closure_exp | primary_exp | ifelse_exp | literal_exp | template_string {extends=expression}
+
+private literal_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
 
 closure_exp ::= 'function' func_body
 
