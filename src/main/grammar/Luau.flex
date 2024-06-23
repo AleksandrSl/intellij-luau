@@ -11,7 +11,20 @@ import com.intellij.psi.TokenType;
   public LuauLexer() {
     this((java.io.Reader)null);
   }
-  private boolean insideTemplate = false;
+  private int templateStack = 0;
+  private void pushState(int state) {
+      yybegin(state);
+      if (state == xTEMPLATE_STRING) {
+        templateStack += 1;
+      }
+  }
+  private void popState() {
+    if (yystate() == xTEMPLATE_STRING) {
+        templateStack -= 1;
+    }
+    yybegin(templateStack > 0 ? xTEMPLATE_STRING_EXPRESSION : YYINITIAL);
+  }
+
    private int nBrackets = 0;
       private boolean checkAhead(char c, int offset) {
           return this.zzMarkedPos + offset < this.zzBuffer.length() && this.zzBuffer.charAt(this.zzMarkedPos + offset) == c;
@@ -97,13 +110,40 @@ SHORT_COMMENT=--[^\r\n]*
 DOC_COMMENT=----*[^\r\n]*(\r?\n{LINE_WS}*----*[^\r\n]*)*
 
 //Strings
+COMMON_STRING_ESCAPES = \\z\s*|\\.|\\[\r\n]
 // ? is important because we can miss the second quote with string being yet incomplete and we don't have [^] rule in lexer. Thus we break promise to parse the whole file.
 // Line breaks are also allowed, I have to check if this actually needed if I don't want to write separate String lexer other lua plugins do
-DOUBLE_QUOTED_STRING=\"([^\\\"]|\\\S|\\[\r\n])*\"?
-SINGLE_QUOTED_STRING='([^\\\']|\\\S|\\[\r\n])*'?
-TEMPLATE_QUOTED_STRING_PART=([^\`\r\n\{])*
+// Just \ is allowed in luau but not in lua 5.3. I can't just drop them from the first negation, becuase otherwise it will eat up all the escapes.
+DOUBLE_QUOTED_STRING=\"([^\"\r\n\\]|{COMMON_STRING_ESCAPES})*\"?
+SINGLE_QUOTED_STRING='([^'\r\n\\]|{COMMON_STRING_ESCAPES})*'?
+
+/*
+
+From lua5.3 which is close to luau
+A short literal string can be delimited by matching single or double quotes,
+ and can contain the following C-like escape sequences:
+ '\a' (bell), '\b' (backspace), '\f' (form feed), '\n' (newline), '\r' (carriage return),
+ '\t' (horizontal tab), '\v' (vertical tab), '\\' (backslash),
+ '\"' (quotation mark [double quote]), and
+ '\'' (apostrophe [single quote]).
+ A backslash followed by a line break results in a newline in the string.
+ The escape sequence '\z' skips the following span of white-space characters,
+  including line breaks;
+   A short literal string cannot contain unescaped line breaks nor escapes not forming a valid escape sequence.
+
+  luau definitely allows other escapes.
+*/
+// . doesn't match new lines, so match all the stuff after the \ and allow
+TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})*
 //[[]]
 LONG_STRING=\[=*\[[\s\S]*\]=*\]
+
+/*
+ case BrokenInterpDoubleBrace:
+   return "'{{', which is invalid (did you mean '\\{'?)";
+
+  Interesting, luau has common errors in lexer
+*/
 
 %state xSHEBANG
 %state xDOUBLE_QUOTED_STRING
@@ -125,11 +165,11 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
               zzMarkedPos += checkBlockEnd();
               return docBlock ? DOC_BLOCK_COMMENT : BLOCK_COMMENT;
           }
-          else { yypushback(yylength()); yybegin(xCOMMENT); }
+          else { yypushback(yylength()); pushState(xCOMMENT); }
      }
     {REGION_START}              { return REGION; }
     {REGION_END}                { return ENDREGION; }
-    "#!"                        { yybegin(xSHEBANG); return SHEBANG; }
+    "#!"                        { pushState(xSHEBANG); return SHEBANG; }
 }
 
 <YYINITIAL, xTEMPLATE_STRING_EXPRESSION> {
@@ -185,7 +225,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
      }
      "]"                         { return RBRACK; }
      "{"                         { return LCURLY; }
-     "}"                         { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { yybegin(xTEMPLATE_STRING); }; return RCURLY; }
+     "}"                         { popState(); return RCURLY; }
      "#"                         { return GETN; }
      ","                         { return COMMA; }
      ";"                         { return SEMI; }
@@ -208,9 +248,9 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
      "&"                         { return INTERSECTION; }
      "|"                         { return UNION; }
 
-     "\""                        { yybegin(xDOUBLE_QUOTED_STRING); yypushback(yylength()); }
-     "'"                         { yybegin(xSINGLE_QUOTED_STRING); yypushback(yylength()); }
-     "`"                         { yybegin(xTEMPLATE_STRING); insideTemplate = true; return TEMPLATE_STRING_SQUOTE; }
+     "\""                        { pushState(xDOUBLE_QUOTED_STRING); yypushback(yylength()); }
+     "'"                         { pushState(xSINGLE_QUOTED_STRING); yypushback(yylength()); }
+     "`"                         { pushState(xTEMPLATE_STRING); return TEMPLATE_STRING_SQUOTE; }
 
      {ID}                        { return ID; }
      {NUMBER}                    { return NUMBER; }
@@ -219,25 +259,29 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 }
 
 <xSHEBANG> {
-    [^\r\n]*                  { yybegin(YYINITIAL); return SHEBANG_CONTENT; }
+    [^\r\n]*                  { popState(); return SHEBANG_CONTENT; }
 }
 
 <xCOMMENT> {
-    {DOC_COMMENT}             { yybegin(YYINITIAL);return DOC_COMMENT; }
-    {SHORT_COMMENT}           { yybegin(YYINITIAL);return SHORT_COMMENT; }
+    {DOC_COMMENT}             { popState(); return DOC_COMMENT; }
+    {SHORT_COMMENT}           { popState(); return SHORT_COMMENT; }
 }
 
 <xDOUBLE_QUOTED_STRING> {
-    {DOUBLE_QUOTED_STRING}    { yybegin(insideTemplate ? xTEMPLATE_STRING : YYINITIAL); return STRING; }
+    {DOUBLE_QUOTED_STRING}    { if (yycharat(yylength() - 1) == '"') { popState(); }; return STRING; }
+    [\r\n]*                   { popState(); return TokenType.BAD_CHARACTER; }
+    [^]                       { return TokenType.BAD_CHARACTER; }
 }
 
 <xSINGLE_QUOTED_STRING> {
-    {SINGLE_QUOTED_STRING}    { yybegin(insideTemplate ? xTEMPLATE_STRING : YYINITIAL); return STRING; }
+    {SINGLE_QUOTED_STRING}    { if (yycharat(yylength() - 1) == '\'') { popState(); }; return STRING; }
+    [\r\n]*                   { popState(); return TokenType.BAD_CHARACTER; }
+    [^]                       { return TokenType.BAD_CHARACTER; }
 }
 
 <xTEMPLATE_STRING> {
-   "{" { yybegin(xTEMPLATE_STRING_EXPRESSION); return LCURLY; }
-   "`" { yybegin(YYINITIAL); insideTemplate = false; return TEMPLATE_STRING_EQUOTE; }
-   {EOL} { yybegin(YYINITIAL); return TokenType.WHITE_SPACE; }
-   {TEMPLATE_QUOTED_STRING_PART}  { return STRING; }
+   "{"                         { pushState(xTEMPLATE_STRING_EXPRESSION); return LCURLY; }
+   "`"                         { popState(); return TEMPLATE_STRING_EQUOTE; }
+   {TEMPLATE_STRING_PART}      { return STRING; }
+   [^]                         { return TokenType.BAD_CHARACTER; }
 }
