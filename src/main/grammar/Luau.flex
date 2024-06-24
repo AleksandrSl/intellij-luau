@@ -4,6 +4,7 @@ import com.intellij.lexer.FlexLexer;
 import com.intellij.psi.tree.IElementType;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.psi.TokenType;
+import java.util.Stack;
 
 %%
 
@@ -11,18 +12,14 @@ import com.intellij.psi.TokenType;
   public LuauLexer() {
     this((java.io.Reader)null);
   }
-  private int templateStack = 0;
+  private Stack<Integer> stack = new Stack<>();
   private void pushState(int state) {
+      stack.push(yystate());
       yybegin(state);
-      if (state == xTEMPLATE_STRING) {
-        templateStack += 1;
-      }
   }
   private void popState() {
-    if (yystate() == xTEMPLATE_STRING) {
-        templateStack -= 1;
-    }
-    yybegin(templateStack > 0 ? xTEMPLATE_STRING_EXPRESSION : YYINITIAL);
+    Integer state = stack.pop();
+    yybegin(state);
   }
 
    private int nBrackets = 0;
@@ -225,7 +222,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
      }
      "]"                         { return RBRACK; }
      "{"                         { return LCURLY; }
-     "}"                         { popState(); return RCURLY; }
+     "}"                         { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { popState(); }; return RCURLY; }
      "#"                         { return GETN; }
      ","                         { return COMMA; }
      ";"                         { return SEMI; }
@@ -268,14 +265,13 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 }
 
 <xDOUBLE_QUOTED_STRING> {
-    {DOUBLE_QUOTED_STRING}    { if (yycharat(yylength() - 1) == '"') { popState(); }; return STRING; }
-    [\r\n]*                   { popState(); return TokenType.BAD_CHARACTER; }
+    // \n as a bad token isn't properly highlighted by lexer, let's highlight the whole string wor now, until I know how to do errors js style
+    {DOUBLE_QUOTED_STRING}    { popState(); if (yycharat(yylength() - 1) == '"') { return STRING; } else { return TokenType.BAD_CHARACTER; } }
     [^]                       { return TokenType.BAD_CHARACTER; }
 }
 
 <xSINGLE_QUOTED_STRING> {
-    {SINGLE_QUOTED_STRING}    { if (yycharat(yylength() - 1) == '\'') { popState(); }; return STRING; }
-    [\r\n]*                   { popState(); return TokenType.BAD_CHARACTER; }
+    {SINGLE_QUOTED_STRING}    { popState(); if (yycharat(yylength() - 1) == '\'') { return STRING; } else { return TokenType.BAD_CHARACTER; } }
     [^]                       { return TokenType.BAD_CHARACTER; }
 }
 
