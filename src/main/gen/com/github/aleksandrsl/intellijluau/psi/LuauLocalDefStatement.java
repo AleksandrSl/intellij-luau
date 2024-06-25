@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauLocalDefStatement extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauBindingList getBindingList();
 
   @Nullable

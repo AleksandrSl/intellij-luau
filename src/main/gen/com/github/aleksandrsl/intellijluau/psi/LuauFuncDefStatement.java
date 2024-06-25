@@ -8,10 +8,10 @@ import com.intellij.navigation.ItemPresentation;
 
 public interface LuauFuncDefStatement extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauFuncBody getFuncBody();
 
-  @NotNull
+  @Nullable
   LuauFuncName getFuncName();
 
   @NotNull

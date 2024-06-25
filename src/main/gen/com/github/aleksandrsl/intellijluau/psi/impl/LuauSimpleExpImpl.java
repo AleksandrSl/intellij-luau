@@ -41,8 +41,8 @@ public class LuauSimpleExpImpl extends LuauExpressionImpl implements LuauSimpleE
 
   @Override
   @Nullable
-  public LuauPrefixExp getPrefixExp() {
-    return findChildByClass(LuauPrefixExp.class);
+  public LuauPrimaryExp getPrimaryExp() {
+    return findChildByClass(LuauPrimaryExp.class);
   }
 
   @Override

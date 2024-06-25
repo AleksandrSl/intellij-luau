@@ -117,12 +117,13 @@ statement ::=
      | expression_statement
      { recoverWhile = statement_recover }
 
-// TODO (AleksandrSl 20/06/2024): Should I add table parenthesis
+// TODO (AleksandrSl 20/06/2024): I don't know how lua plugin avoid having all the else stuff here,
+//  probably because they do manual expressions parsing
 private statement_recover ::= !(
   ID
-  | ',' | ';'
-  | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | break
-  | nil | true | false | STRING | NUMBER | export_soft_keyword | type_soft_keyword
+  | ',' | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '(' | TEMPLATE_STRING_EQUOTE | '}'
+  | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | 'break'
+  | 'nil' | 'true' | 'false' | STRING | NUMBER | export_soft_keyword | type_soft_keyword
   | un_op
 )
 
@@ -138,7 +139,7 @@ foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 
 // I guess the problem is here, at least part of it. Because the error is bin_op or , is expected. And bin_op is a part of expression
 assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= var compound_op expression { pin = 2 }
-expression_statement ::= expression { pin = 1 }
+expression_statement ::= expression
 private def_statement ::= func_def_statement | local_func_def_statement | local_def_statement // class_method_def_statement
 // TODO (AleksandrSl 20/06/2024): Is continue really last statement?
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
@@ -172,7 +173,7 @@ func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? 
 par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
-exp_list ::= expression // (',' expression)*
+exp_list ::= expression (',' expression)*
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
 binding ::= ID (':' type)?  {
@@ -192,7 +193,7 @@ postfix_exp ::= func_args | index_expr
 // I guess this is a bit more permissive that it should be? e.g. it allows {}()
 primary_exp ::= prefix_exp postfix_exp*
 
-left index_expr ::= '[' expression ']' | '.' ID | ':' ID
+index_expr ::= '[' expression ']' | '.' ID | ':' ID { pin(".*") = 1 }
 
 func_args ::= list_args | single_arg
 // TODO (AleksandrSl 21/06/2024): I wonder when you may have table and string as an arg without the parenthesis
@@ -203,27 +204,31 @@ func_args ::= list_args | single_arg
 //   that is, the argument list is a single literal string
 // Only STRING is allowed, not template_string
 single_arg ::= table_constructor | STRING { extends = func_args }
-private arg_expr_list ::= (expression ',')* (expression |& ')') // { pin = 1 }
-list_args ::= '(' (arg_expr_list)? ')' { extends = func_args; pin = 1 }
+private arg_expr_list ::= (expression ',')* (expression |& ')')
+list_args ::= '(' arg_expr_list? ')' { extends = func_args; pin = 1 }
 
 
 expression ::= simple_exp | as_exp | unary_exp | binary_exp
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
-unary_exp ::= un_op expression {extends=expression}
-binary_exp ::= expression bin_op expression {extends=expression}
-ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
+unary_exp ::= un_op expression {extends=expression; pin = 1}
+binary_exp ::= expression bin_op expression {extends=expression; pin = 2}
+ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression { pin = 1 }
 // TODO (AleksandrSl 21/06/2024): I guess I may have () around cast and they maybe be even necessary? Can I cast all simple expressions?
-as_exp ::= simple_exp '::' type {extends=expression}
-template_string ::= TEMPLATE_STRING_SQUOTE (STRING | ('{' expression '}'))* TEMPLATE_STRING_EQUOTE
-simple_exp ::=  table_constructor | closure_exp | primary_exp | ifelse_exp | literal_exp | template_string {extends=expression}
+as_exp ::= simple_exp '::' type { extends=expression; pin = 2}
+template_string ::= TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE { pin = 1 }
+simple_exp ::=  table_constructor | closure_exp | ifelse_exp | literal_exp | template_string | primary_exp {extends=expression}
 
 private literal_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
 
-closure_exp ::= 'function' func_body
+closure_exp ::= 'function' func_body { pin = 1 }
 
-table_constructor ::= '{' field_list? '}'
+table_constructor ::= '{' field_list? '}' { pin = 1 }
 field_list ::= field (field_sep field)* field_sep?
-field ::= '[' expression ']' '=' expression | ID '=' expression | expression
+field ::= keyed_field | string_keyed_field | indexed_field { recoverWhile = field_recover }
+keyed_field ::= '[' expression ']' '=' expression { pin = 1}
+string_keyed_field ::= ID '=' expression { pin = 2 }
+indexed_field ::= expression
+private field_recover ::= !(',' | ';' | '}' | '[')
 // Why the hell they allow two separators
 field_sep ::= ',' | ';'
 

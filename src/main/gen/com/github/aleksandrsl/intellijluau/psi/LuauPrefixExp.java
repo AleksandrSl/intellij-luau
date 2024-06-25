@@ -10,10 +10,10 @@ public interface LuauPrefixExp extends PsiElement {
   @Nullable
   LuauExpression getExpression();
 
-  @NotNull
-  List<LuauPostfixExp> getPostfixExpList();
+  @Nullable
+  LuauTableConstructor getTableConstructor();
 
   @Nullable
-  LuauVar getVar();
+  LuauVarReference getVarReference();
 
 }

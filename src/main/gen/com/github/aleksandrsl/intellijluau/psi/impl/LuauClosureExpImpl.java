@@ -28,9 +28,9 @@ public class LuauClosureExpImpl extends ASTWrapperPsiElement implements LuauClos
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauFuncBody getFuncBody() {
-    return findNotNullChildByClass(LuauFuncBody.class);
+    return findChildByClass(LuauFuncBody.class);
   }
 
 }

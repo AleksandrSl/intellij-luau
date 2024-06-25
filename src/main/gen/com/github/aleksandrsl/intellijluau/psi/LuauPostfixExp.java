@@ -8,12 +8,9 @@ import com.intellij.psi.PsiElement;
 public interface LuauPostfixExp extends PsiElement {
 
   @Nullable
-  LuauExpression getExpression();
-
-  @Nullable
   LuauFuncArgs getFuncArgs();
 
   @Nullable
-  PsiElement getId();
+  LuauIndexExpr getIndexExpr();
 
 }

@@ -8,17 +8,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauLocalFuncDefStatementImpl extends ASTWrapperPsiElement implements LuauLocalFuncDefStatement {
+public class LuauSingleArgImpl extends LuauFuncArgsImpl implements LuauSingleArg {
 
-  public LuauLocalFuncDefStatementImpl(@NotNull ASTNode node) {
+  public LuauSingleArgImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitLocalFuncDefStatement(this);
+    visitor.visitSingleArg(this);
   }
 
   @Override
@@ -29,14 +29,14 @@ public class LuauLocalFuncDefStatementImpl extends ASTWrapperPsiElement implemen
 
   @Override
   @Nullable
-  public LuauFuncBody getFuncBody() {
-    return findChildByClass(LuauFuncBody.class);
+  public LuauTableConstructor getTableConstructor() {
+    return findChildByClass(LuauTableConstructor.class);
   }
 
   @Override
   @Nullable
-  public LuauFuncName getFuncName() {
-    return findChildByClass(LuauFuncName.class);
+  public PsiElement getString() {
+    return findChildByType(STRING);
   }
 
 }

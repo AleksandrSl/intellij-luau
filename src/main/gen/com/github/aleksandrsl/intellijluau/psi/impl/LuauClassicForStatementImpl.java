@@ -34,9 +34,9 @@ public class LuauClassicForStatementImpl extends ASTWrapperPsiElement implements
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauBlock getBlock() {
-    return findNotNullChildByClass(LuauBlock.class);
+    return findChildByClass(LuauBlock.class);
   }
 
   @Override
