@@ -14,7 +14,8 @@ fun getReferences(element: PsiElement): Array<PsiReference> {
 
 fun getPresentation(element: LuauFuncDefStatement): ItemPresentation {
     return PresentationData().apply {
-        presentableText = element.funcName.text
+        // Let's mimic Kotlin text
+        presentableText = element.funcName?.text ?: "no name provided"
         setIcon(AllIcons.Nodes.Function)
     }
 }

@@ -13,13 +13,13 @@ public interface LuauTypeDeclarationStatement extends PsiElement {
   @Nullable
   LuauGenericTypeListWithDefaults getGenericTypeListWithDefaults();
 
-  @NotNull
+  @Nullable
   LuauType getType();
 
   @NotNull
   LuauTypeSoftKeyword getTypeSoftKeyword();
 
-  @NotNull
+  @Nullable
   PsiElement getId();
 
 }

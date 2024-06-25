@@ -5,12 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauAssignmentStatement extends PsiElement {
-
-  @Nullable
-  LuauExpList getExpList();
+public interface LuauListArgs extends LuauFuncArgs {
 
   @NotNull
-  LuauVarList getVarList();
+  List<LuauExpression> getExpressionList();
 
 }

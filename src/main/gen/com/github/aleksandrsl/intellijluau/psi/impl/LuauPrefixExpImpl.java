@@ -34,15 +34,15 @@ public class LuauPrefixExpImpl extends ASTWrapperPsiElement implements LuauPrefi
   }
 
   @Override
-  @NotNull
-  public List<LuauPostfixExp> getPostfixExpList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauPostfixExp.class);
+  @Nullable
+  public LuauTableConstructor getTableConstructor() {
+    return findChildByClass(LuauTableConstructor.class);
   }
 
   @Override
   @Nullable
-  public LuauVar getVar() {
-    return findChildByClass(LuauVar.class);
+  public LuauVarReference getVarReference() {
+    return findChildByClass(LuauVarReference.class);
   }
 
 }

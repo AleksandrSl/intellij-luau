@@ -28,21 +28,21 @@ public class LuauForeachStatementImpl extends ASTWrapperPsiElement implements Lu
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauBindingList getBindingList() {
-    return findNotNullChildByClass(LuauBindingList.class);
+    return findChildByClass(LuauBindingList.class);
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauBlock getBlock() {
-    return findNotNullChildByClass(LuauBlock.class);
+    return findChildByClass(LuauBlock.class);
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauExpList getExpList() {
-    return findNotNullChildByClass(LuauExpList.class);
+    return findChildByClass(LuauExpList.class);
   }
 
 }

@@ -5,12 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauSimpleVar extends PsiElement {
+public interface LuauStringKeyedField extends PsiElement {
 
   @Nullable
   LuauExpression getExpression();
 
-  @Nullable
-  LuauVarReference getVarReference();
+  @NotNull
+  PsiElement getId();
 
 }

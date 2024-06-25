@@ -51,6 +51,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitCompoundOpStatement(@NotNull LuauCompoundOpStatement o) {
+    visitPsiElement(o);
+  }
+
   public void visitContinueSoftKeyword(@NotNull LuauContinueSoftKeyword o) {
     visitSoftKeyword(o);
   }
@@ -107,10 +111,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitFunctionCall(@NotNull LuauFunctionCall o) {
-    visitPsiElement(o);
-  }
-
   public void visitFunctionType(@NotNull LuauFunctionType o) {
     visitPsiElement(o);
   }
@@ -143,12 +143,28 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitIndexExpr(@NotNull LuauIndexExpr o) {
+    visitPsiElement(o);
+  }
+
+  public void visitIndexedField(@NotNull LuauIndexedField o) {
+    visitPsiElement(o);
+  }
+
   public void visitIntersectionSuffix(@NotNull LuauIntersectionSuffix o) {
+    visitPsiElement(o);
+  }
+
+  public void visitKeyedField(@NotNull LuauKeyedField o) {
     visitPsiElement(o);
   }
 
   public void visitLastStatement(@NotNull LuauLastStatement o) {
     visitPsiElement(o);
+  }
+
+  public void visitListArgs(@NotNull LuauListArgs o) {
+    visitFuncArgs(o);
   }
 
   public void visitLocalDefStatement(@NotNull LuauLocalDefStatement o) {
@@ -168,6 +184,10 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitPrefixExp(@NotNull LuauPrefixExp o) {
+    visitPsiElement(o);
+  }
+
+  public void visitPrimaryExp(@NotNull LuauPrimaryExp o) {
     visitPsiElement(o);
   }
 
@@ -195,8 +215,8 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitSimpleVar(@NotNull LuauSimpleVar o) {
-    visitPsiElement(o);
+  public void visitSingleArg(@NotNull LuauSingleArg o) {
+    visitFuncArgs(o);
   }
 
   public void visitSingletonType(@NotNull LuauSingletonType o) {
@@ -204,6 +224,10 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitStatement(@NotNull LuauStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitStringKeyedField(@NotNull LuauStringKeyedField o) {
     visitPsiElement(o);
   }
 

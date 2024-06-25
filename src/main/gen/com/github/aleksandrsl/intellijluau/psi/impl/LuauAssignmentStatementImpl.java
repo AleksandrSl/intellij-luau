@@ -29,38 +29,14 @@ public class LuauAssignmentStatementImpl extends ASTWrapperPsiElement implements
 
   @Override
   @Nullable
-  public LuauCompoundOp getCompoundOp() {
-    return findChildByClass(LuauCompoundOp.class);
-  }
-
-  @Override
-  @Nullable
   public LuauExpList getExpList() {
     return findChildByClass(LuauExpList.class);
   }
 
   @Override
-  @Nullable
-  public LuauExpression getExpression() {
-    return findChildByClass(LuauExpression.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauLocalDefStatement getLocalDefStatement() {
-    return findChildByClass(LuauLocalDefStatement.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauVar getVar() {
-    return findChildByClass(LuauVar.class);
-  }
-
-  @Override
-  @Nullable
+  @NotNull
   public LuauVarList getVarList() {
-    return findChildByClass(LuauVarList.class);
+    return findNotNullChildByClass(LuauVarList.class);
   }
 
 }

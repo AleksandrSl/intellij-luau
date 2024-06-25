@@ -10,7 +10,7 @@ public interface LuauClassicForStatement extends PsiElement {
   @NotNull
   LuauBinding getBinding();
 
-  @NotNull
+  @Nullable
   LuauBlock getBlock();
 
   @NotNull

@@ -29,15 +29,15 @@ public class LuauFuncDefStatementImpl extends ASTWrapperPsiElement implements Lu
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauFuncBody getFuncBody() {
-    return findNotNullChildByClass(LuauFuncBody.class);
+    return findChildByClass(LuauFuncBody.class);
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauFuncName getFuncName() {
-    return findNotNullChildByClass(LuauFuncName.class);
+    return findChildByClass(LuauFuncName.class);
   }
 
   @Override

@@ -28,9 +28,9 @@ public class LuauDoStatementImpl extends ASTWrapperPsiElement implements LuauDoS
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauBlock getBlock() {
-    return findNotNullChildByClass(LuauBlock.class);
+    return findChildByClass(LuauBlock.class);
   }
 
 }

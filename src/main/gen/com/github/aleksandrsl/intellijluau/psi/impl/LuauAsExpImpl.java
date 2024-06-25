@@ -34,9 +34,9 @@ public class LuauAsExpImpl extends LuauExpressionImpl implements LuauAsExp {
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauType getType() {
-    return findNotNullChildByClass(LuauType.class);
+    return findChildByClass(LuauType.class);
   }
 
 }

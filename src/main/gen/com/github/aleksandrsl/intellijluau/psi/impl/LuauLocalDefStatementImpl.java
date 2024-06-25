@@ -28,9 +28,9 @@ public class LuauLocalDefStatementImpl extends ASTWrapperPsiElement implements L
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauBindingList getBindingList() {
-    return findNotNullChildByClass(LuauBindingList.class);
+    return findChildByClass(LuauBindingList.class);
   }
 
   @Override

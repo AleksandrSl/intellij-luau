@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauSimpleVarImpl extends ASTWrapperPsiElement implements LuauSimpleVar {
+public class LuauKeyedFieldImpl extends ASTWrapperPsiElement implements LuauKeyedField {
 
-  public LuauSimpleVarImpl(@NotNull ASTNode node) {
+  public LuauKeyedFieldImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitSimpleVar(this);
+    visitor.visitKeyedField(this);
   }
 
   @Override
@@ -28,15 +28,9 @@ public class LuauSimpleVarImpl extends ASTWrapperPsiElement implements LuauSimpl
   }
 
   @Override
-  @Nullable
-  public LuauExpression getExpression() {
-    return findChildByClass(LuauExpression.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauVarReference getVarReference() {
-    return findChildByClass(LuauVarReference.class);
+  @NotNull
+  public List<LuauExpression> getExpressionList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauExpression.class);
   }
 
 }

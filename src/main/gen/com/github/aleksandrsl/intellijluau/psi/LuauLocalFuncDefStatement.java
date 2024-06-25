@@ -7,10 +7,10 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauLocalFuncDefStatement extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauFuncBody getFuncBody();
 
-  @NotNull
+  @Nullable
   LuauFuncName getFuncName();
 
 }

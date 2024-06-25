@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauClosureExp extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauFuncBody getFuncBody();
 
 }
