@@ -277,7 +277,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     r = variadic_type_pack(b, l + 1);
     if (!r) r = generic_type_pack(b, l + 1);
     if (!r) r = bound_type_list_2(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
+    exit_section_(b, l, m, r, false, LuauParser::bound_type_list_recover);
     return r;
   }
 
@@ -325,6 +325,17 @@ public class LuauParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, COMMA);
     r = r && bound_type_list(b, l + 1);
     exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !(')')
+  static boolean bound_type_list_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "bound_type_list_recover")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !consumeToken(b, RPAREN);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -763,15 +774,16 @@ public class LuauParser implements PsiParser, LightPsiParser {
   public static boolean function_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "function_type")) return false;
     if (!nextTokenIs(b, "<function type>", LPAREN, LT)) return false;
-    boolean r;
+    boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, FUNCTION_TYPE, "<function type>");
     r = function_type_0(b, l + 1);
     r = r && consumeToken(b, LPAREN);
     r = r && function_type_2(b, l + 1);
-    r = r && consumeTokens(b, 0, RPAREN, ARROW);
+    r = r && consumeTokens(b, 2, RPAREN, ARROW);
+    p = r; // pin = 5
     r = r && return_type(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
   }
 
   // ('<' generic_type_list '>')?

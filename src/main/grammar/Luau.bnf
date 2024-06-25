@@ -264,7 +264,8 @@ private generic_type_list_with_defaults_item ::=
     | ID '=' type
 
 type_list ::= type (',' type_list)? | '...' type
-bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)?
+bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)? { recoverWhile = bound_type_list_recover }
+private bound_type_list_recover ::= !(')')
 type_params ::= (variadic_type_pack | generic_type_pack | type_pack | type) (',' type_params)?
 type_pack ::= '(' type_list? ')'
 generic_type_pack ::= ID '...'
@@ -275,4 +276,5 @@ table_prop ::= ID ':' type
 private table_prop_or_indexer ::= table_prop | table_indexer
 prop_list ::= table_prop_or_indexer (field_sep table_prop_or_indexer)* field_sep?
 table_type ::= '{' type '}' | '{' prop_list? '}'
-function_type ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type
+// I can't pin '(' because there is '(' type ')' type as well
+function_type ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type { pin = 5; }
