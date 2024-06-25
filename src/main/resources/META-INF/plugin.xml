@@ -5,7 +5,10 @@
     <vendor url="https://github.com/AleksandrSl" email="sl.aleksandr28@gmail.com">aleksandrsl</vendor>
 
     <depends>com.intellij.modules.platform</depends>
-    <depends>com.intellij.modules.ultimate</depends>
+    <depends optional="true"
+             config-file="com.github.aleksandrsl.intellijluau-lsp.xml"
+    >com.intellij.modules.ultimate
+    </depends>
 
     <resource-bundle>messages.LuauBundle</resource-bundle>
 
@@ -42,30 +45,32 @@
         <lang.psiStructureViewFactory
                 language="luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.structureView.LuauStructureViewFactory"/>
-<!--        <completion.contributor-->
-<!--                language="luau"-->
-<!--                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"-->
-<!--        />-->
-        <lang.refactoringSupport language="luau" implementationClass="com.github.aleksandrsl.intellijluau.refactoring.LuauRefactoringSupportProvider" />
-        <psi.referenceContributor language="luau" implementation="com.github.aleksandrsl.intellijluau.psi.LuauReferenceContributor" />
-        <lang.quoteHandler language="luau" implementationClass="com.github.aleksandrsl.intellijluau.LuauQuoteHandler" />
+        <!--        <completion.contributor-->
+        <!--                language="luau"-->
+        <!--                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"-->
+        <!--        />-->
+        <lang.refactoringSupport language="luau"
+                                 implementationClass="com.github.aleksandrsl.intellijluau.refactoring.LuauRefactoringSupportProvider"/>
+        <psi.referenceContributor language="luau"
+                                  implementation="com.github.aleksandrsl.intellijluau.psi.LuauReferenceContributor"/>
+        <lang.quoteHandler language="luau" implementationClass="com.github.aleksandrsl.intellijluau.LuauQuoteHandler"/>
         <lang.braceMatcher
                 language="luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"
         />
         <codeStyleSettingsProvider
                 implementation="com.github.aleksandrsl.intellijluau.formatter.LuauCodeStyleSettingsProvider"/>
-        <langCodeStyleSettingsProvider implementation="com.github.aleksandrsl.intellijluau.formatter.LuauLanguageCodeStyleSettingsProvider" />
+        <langCodeStyleSettingsProvider
+                implementation="com.github.aleksandrsl.intellijluau.formatter.LuauLanguageCodeStyleSettingsProvider"/>
         <lang.formatter
                 language="luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.formatter.LuauFormattingModelBuilder"/>
-        <platform.lsp.serverSupportProvider implementation="com.github.aleksandrsl.intellijluau.LuauLspServerSupportProvider"/>
         <projectConfigurable
-                    parentId="language"
-                    instance="com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable"
-                    id="settings.luau"
-                    displayName="Luau"
-                    nonDefaultProject="true"
+                parentId="language"
+                instance="com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable"
+                id="settings.luau"
+                displayName="Luau"
+                nonDefaultProject="true"
         />
         <notificationGroup id="Luau notifications"
                            displayType="BALLOON"
