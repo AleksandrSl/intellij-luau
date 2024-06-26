@@ -179,6 +179,7 @@ binding ::= ID (':' type)?  {
   // But usually it's not the case.
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl";
   implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+  methods=[getPresentation]
 }
 binding_list ::= binding (',' binding)* // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
