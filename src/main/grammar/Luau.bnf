@@ -150,8 +150,6 @@ typeof_soft_keyword ::= 'typeof'
 
 local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }
 func_def_statement ::= 'function' func_name func_body { pin = 1; methods=[getPresentation] }
-//classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
-//class_method_def_statement ::= 'function' classMethodName funcBody
 
 // Without pinning somehow it won't match the function but local_def_statement instead even though it is later in the variants.
 // Looks like parser first searches for pins if there are any in the rules.
