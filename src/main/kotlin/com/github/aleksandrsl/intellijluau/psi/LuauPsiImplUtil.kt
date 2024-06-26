@@ -19,3 +19,11 @@ fun getPresentation(element: LuauFuncDefStatement): ItemPresentation {
         setIcon(AllIcons.Nodes.Function)
     }
 }
+
+fun getPresentation(element: LuauLocalFuncDefStatement): ItemPresentation {
+    return PresentationData().apply {
+        // Let's mimic Kotlin text
+        presentableText = element.funcName?.text ?: "no name provided"
+        setIcon(AllIcons.Nodes.Function)
+    }
+}
