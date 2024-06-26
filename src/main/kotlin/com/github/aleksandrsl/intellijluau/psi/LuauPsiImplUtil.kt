@@ -32,7 +32,7 @@ fun getPresentation(element: LuauMethodDefStatement): ItemPresentation {
     return PresentationData().apply {
         // Let's mimic Kotlin text
         presentableText = element.methodName.text ?: "no name provided"
-        setIcon(AllIcons.Nodes.Function)
+        setIcon(AllIcons.Nodes.Method)
     }
 }
 
