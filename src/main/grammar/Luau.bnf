@@ -140,7 +140,6 @@ assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= var compound_op expression { pin = 2 }
 expression_statement ::= expression
 private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
-// TODO (AleksandrSl 20/06/2024): Is continue really last statement?
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
 // TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
 type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type { pin = 2 }
