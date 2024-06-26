@@ -175,6 +175,14 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitMethodDefStatement(@NotNull LuauMethodDefStatement o) {
+    visitPsiElement(o);
+  }
+
+  public void visitMethodName(@NotNull LuauMethodName o) {
+    visitPsiElement(o);
+  }
+
   public void visitParList(@NotNull LuauParList o) {
     visitPsiElement(o);
   }
