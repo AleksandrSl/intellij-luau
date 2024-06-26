@@ -50,6 +50,8 @@ public interface LuauTypes {
   IElementType LIST_ARGS = new LuauElementType("LIST_ARGS");
   IElementType LOCAL_DEF_STATEMENT = new LuauElementType("LOCAL_DEF_STATEMENT");
   IElementType LOCAL_FUNC_DEF_STATEMENT = new LuauElementType("LOCAL_FUNC_DEF_STATEMENT");
+  IElementType METHOD_DEF_STATEMENT = new LuauElementType("METHOD_DEF_STATEMENT");
+  IElementType METHOD_NAME = new LuauElementType("METHOD_NAME");
   IElementType PAR_LIST = new LuauElementType("PAR_LIST");
   IElementType POSTFIX_EXP = new LuauElementType("POSTFIX_EXP");
   IElementType PREFIX_EXP = new LuauElementType("PREFIX_EXP");
@@ -282,6 +284,12 @@ public interface LuauTypes {
       }
       else if (type == LOCAL_FUNC_DEF_STATEMENT) {
         return new LuauLocalFuncDefStatementImpl(node);
+      }
+      else if (type == METHOD_DEF_STATEMENT) {
+        return new LuauMethodDefStatementImpl(node);
+      }
+      else if (type == METHOD_NAME) {
+        return new LuauMethodNameImpl(node);
       }
       else if (type == PAR_LIST) {
         return new LuauParListImpl(node);

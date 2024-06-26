@@ -38,6 +38,9 @@ public interface LuauStatement extends PsiElement {
   LuauLocalFuncDefStatement getLocalFuncDefStatement();
 
   @Nullable
+  LuauMethodDefStatement getMethodDefStatement();
+
+  @Nullable
   LuauRepeatStatement getRepeatStatement();
 
   @Nullable

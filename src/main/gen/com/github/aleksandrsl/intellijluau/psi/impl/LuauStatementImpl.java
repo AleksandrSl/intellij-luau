@@ -89,6 +89,12 @@ public class LuauStatementImpl extends ASTWrapperPsiElement implements LuauState
 
   @Override
   @Nullable
+  public LuauMethodDefStatement getMethodDefStatement() {
+    return findChildByClass(LuauMethodDefStatement.class);
+  }
+
+  @Override
+  @Nullable
   public LuauRepeatStatement getRepeatStatement() {
     return findChildByClass(LuauRepeatStatement.class);
   }

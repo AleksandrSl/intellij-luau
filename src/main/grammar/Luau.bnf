@@ -140,7 +140,7 @@ foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 
 assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= var compound_op expression { pin = 2 }
 expression_statement ::= expression
-private def_statement ::= func_def_statement | local_func_def_statement | local_def_statement // class_method_def_statement
+private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
 // TODO (AleksandrSl 20/06/2024): Is continue really last statement?
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
 // TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
@@ -167,8 +167,10 @@ func_def_statement ::= 'function' func_name func_body { pin = 1; methods=[getPre
 // Even if the code is perfectly normal.
 // 'function' is pinned because pinning local won't allow to match variable definitions
 local_func_def_statement ::= 'local' 'function' func_name func_body { pin = 2; methods=[getPresentation] }
+method_def_statement ::= 'function' method_name func_body { pin = 2; methods=[getPresentation] }
 
-func_name ::= ID ('.' ID)* (':' ID)?
+func_name ::= ID
+method_name ::= ID ('.' ID)* (':' ID)?
 func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
 par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?

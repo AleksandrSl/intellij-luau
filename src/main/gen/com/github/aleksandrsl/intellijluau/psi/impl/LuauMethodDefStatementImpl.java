@@ -10,15 +10,16 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
+import com.intellij.navigation.ItemPresentation;
 
-public class LuauFuncNameImpl extends ASTWrapperPsiElement implements LuauFuncName {
+public class LuauMethodDefStatementImpl extends ASTWrapperPsiElement implements LuauMethodDefStatement {
 
-  public LuauFuncNameImpl(@NotNull ASTNode node) {
+  public LuauMethodDefStatementImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitFuncName(this);
+    visitor.visitMethodDefStatement(this);
   }
 
   @Override
@@ -28,9 +29,21 @@ public class LuauFuncNameImpl extends ASTWrapperPsiElement implements LuauFuncNa
   }
 
   @Override
+  @Nullable
+  public LuauFuncBody getFuncBody() {
+    return findChildByClass(LuauFuncBody.class);
+  }
+
+  @Override
   @NotNull
-  public PsiElement getId() {
-    return findNotNullChildByType(ID);
+  public LuauMethodName getMethodName() {
+    return findNotNullChildByClass(LuauMethodName.class);
+  }
+
+  @Override
+  @NotNull
+  public ItemPresentation getPresentation() {
+    return LuauPsiImplUtilKt.getPresentation(this);
   }
 
 }
