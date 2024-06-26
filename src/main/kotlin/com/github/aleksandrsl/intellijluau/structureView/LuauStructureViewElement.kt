@@ -2,9 +2,9 @@ package com.github.aleksandrsl.intellijluau.structureView
 
 import com.github.aleksandrsl.intellijluau.psi.LuauFile
 import com.github.aleksandrsl.intellijluau.psi.LuauFuncDefStatement
+import com.github.aleksandrsl.intellijluau.psi.LuauLocalDefStatement
 import com.github.aleksandrsl.intellijluau.psi.LuauLocalFuncDefStatement
 import com.github.aleksandrsl.intellijluau.psi.LuauMethodDefStatement
-import com.github.aleksandrsl.intellijluau.psi.impl.LuauFuncDefStatementImpl
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.structureView.StructureViewTreeElement
 import com.intellij.ide.util.treeView.smartTree.TreeElement
@@ -20,7 +20,7 @@ class LuauStructureViewElement(private val myElement: NavigatablePsiElement) : S
         return presentation ?: PresentationData().apply { presentableText = "Missing presentation" }
     }
 
-    override fun getChildren(): Array<TreeElement> {
+    override fun getChildren(): Array<out TreeElement> {
         if (myElement is LuauFile) {
             return PsiTreeUtil
                 .findChildrenOfAnyType(
@@ -29,7 +29,13 @@ class LuauStructureViewElement(private val myElement: NavigatablePsiElement) : S
                     LuauLocalFuncDefStatement::class.java,
                     LuauMethodDefStatement::class.java,
                 )
-                .map2Array { LuauStructureViewElement(it as NavigatablePsiElement) }
+                .map2Array { LuauStructureViewElement(it as NavigatablePsiElement) }.plus(PsiTreeUtil
+                    .findChildrenOfAnyType(
+                        myElement,
+                        LuauLocalDefStatement::class.java,
+                    )
+                    .mapNotNull { it.bindingList?.bindingList }.flatten()
+                    .map2Array { LuauStructureViewElement(it as NavigatablePsiElement) })
         }
         return TreeElement.EMPTY_ARRAY
     }

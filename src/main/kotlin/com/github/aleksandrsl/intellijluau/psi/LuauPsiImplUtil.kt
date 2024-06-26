@@ -35,3 +35,12 @@ fun getPresentation(element: LuauMethodDefStatement): ItemPresentation {
         setIcon(AllIcons.Nodes.Function)
     }
 }
+
+fun getPresentation(element: LuauBinding): ItemPresentation {
+    return PresentationData().apply {
+        val type = element.type
+        // Let's mimic Kotlin text
+        presentableText = "${element.id.text}${if (type != null) ": ${type.text}" else ""}" ?: "no name provided"
+        setIcon(AllIcons.Nodes.Variable)
+    }
+}
