@@ -166,7 +166,7 @@ func_def_statement ::= 'function' func_name func_body { pin = 1; methods=[getPre
 
 // Even if the code is perfectly normal.
 // 'function' is pinned because pinning local won't allow to match variable definitions
-local_func_def_statement ::= 'local' 'function' func_name func_body { pin = 2 }
+local_func_def_statement ::= 'local' 'function' func_name func_body { pin = 2; methods=[getPresentation] }
 
 func_name ::= ID ('.' ID)* (':' ID)?
 func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'

@@ -2,6 +2,7 @@ package com.github.aleksandrsl.intellijluau.structureView
 
 import com.github.aleksandrsl.intellijluau.psi.LuauFile
 import com.github.aleksandrsl.intellijluau.psi.LuauFuncDefStatement
+import com.github.aleksandrsl.intellijluau.psi.LuauLocalFuncDefStatement
 import com.github.aleksandrsl.intellijluau.psi.impl.LuauFuncDefStatementImpl
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.ide.structureView.StructureViewTreeElement
@@ -21,8 +22,12 @@ class LuauStructureViewElement(private val myElement: NavigatablePsiElement) : S
     override fun getChildren(): Array<TreeElement> {
         if (myElement is LuauFile) {
             return PsiTreeUtil
-                .findChildrenOfType(myElement, LuauFuncDefStatement::class.java)
-                .map2Array { LuauStructureViewElement(it as LuauFuncDefStatementImpl) }
+                .findChildrenOfAnyType(
+                    myElement,
+                    LuauFuncDefStatement::class.java,
+                    LuauLocalFuncDefStatement::class.java
+                )
+                .map2Array { LuauStructureViewElement(it as NavigatablePsiElement) }
         }
         return TreeElement.EMPTY_ARRAY
     }
