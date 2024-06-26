@@ -131,8 +131,7 @@ do_statement ::= 'do' block 'end' { pin = 1 }
 while_statement ::= 'while' expression 'do' block 'end' { pin = 1 }
 repeat_statement ::= 'repeat' block 'until' expression { pin = 1 }
 if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end' { pin = 1 }
-// TODO: Should I have a binding list here?
-// TODO (AleksandrSl 20/06/2024): I copied pin = 3, but I guess it is the way
+// Yes, we can only have one variable here, and yes we can type it: `for i: number=10,1,-1 do print(i) end`
 classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end' { pin = 3 }
 // Rename for into numeric_for and generic_for as in lua docs
 foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 1 }
