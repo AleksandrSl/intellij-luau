@@ -79,21 +79,8 @@ tasks {
         purgeOldFiles.set(true)
     }
 
-    generateParser {
-        // source bnf file
-        sourceFile.set(file("src/main/grammar/Luau.bnf"))
-
-        // optional, task-specific root for the generated files. Default: none
-        targetRootOutputDir.set(file("src/main/gen"))
-
-        pathToParser.set("/com/github/aleksandrsl/intellijluau/parser/LuauParserGenerated.java")
-
-        // path to a directory with generated psi files, relative to the targetRoot
-        pathToPsiRoot.set("/com/github/aleksandrsl/intellijluau/psi")
-
-        // if set, plugin will remove a parser output file and psi output directory before generating new ones. Default: false
-        purgeOldFiles.set(true)
-    }
+    // There is no parser generation, since it doesn't support stuff I use.
+    // Generate parser from the file via Grammar kit plugin.
 
     prepareSandbox {
         val projectDirPath: String = project.projectDir.path
