@@ -96,10 +96,12 @@ tasks {
     }
 
     prepareSandbox {
+        val projectDirPath: String = project.projectDir.path
+        val injected = project.objects.newInstance<Injected>()
         doLast {
-            copy {
-                from("${project.projectDir}/src/main/resources/typeDeclarations")
-                into("${destinationDir.path}/${properties("pluginName").get()}/typeDeclarations")
+            injected.fs.copy {
+                from("${projectDirPath}/src/main/resources/typeDeclarations")
+                into("${destinationDir}/${pluginName.get()}/typeDeclarations")
             }
         }
     }
@@ -159,4 +161,8 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels = properties("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
+}
+
+interface Injected {
+    @get:Inject val fs: FileSystemOperations
 }
