@@ -166,7 +166,8 @@ local_func_def_statement ::= 'local' 'function' func_name func_body { pin = 2; m
 method_def_statement ::= 'function' method_name func_body { pin = 2; methods=[getPresentation] }
 
 func_name ::= ID
-method_name ::= ID ('.' ID)* (':' ID)?
+// ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
+method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
 func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
 par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
