@@ -12,6 +12,7 @@ import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,8 +55,16 @@ class LuauExternalFormatAction : AnAction() {
         }
     }
 
-    // TODO: Do I really need this of this is an old rudiment?
+
     companion object {
+        // TODO: Do I really need this of this is an old rudiment?
         const val ID = "com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction" // must stay in-sync with `plugin.xml`
+
+        // I added this function here, because I used prettier plugin as a reference.
+        // Might make sense to reconsider, and call StyLua from on save directly.
+        fun processVirtualFiles(project: Project, files: Collection<VirtualFile>) {
+            val tool = File(ProjectSettingsState.instance.styLuaPath)
+            StyLuaCli(tool.toPath()).formatFiles(project, files)
+        }
     }
 }
