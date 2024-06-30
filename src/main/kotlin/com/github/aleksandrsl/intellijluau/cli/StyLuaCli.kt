@@ -3,17 +3,20 @@ package com.github.aleksandrsl.intellijluau.cli
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.ProcessOutput
+import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.command.executeCommand
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.ReadonlyStatusHandler
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.writeText
+import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.OutputStreamWriter
 import java.nio.file.Path
@@ -47,23 +50,27 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         return null
     }
 
-    suspend fun formatDocument(project: Project): FormatResult? {
-        val fileEditorManager = FileEditorManager.getInstance(project)
-        val files: Array<VirtualFile> = fileEditorManager.selectedFiles
-        if (files.isEmpty()) {
-            return null
+    fun formatFiles(project: Project, files: Collection<VirtualFile>) {
+        val projectService = project.service<LuauCliService>()
+        projectService.coroutineScope.launch(Dispatchers.EDT) {
+            withBackgroundProgress(project, "Stylua format documents") {
+                files.map { file ->
+                    formatFile(project, file)
+                }
+            }
         }
-        val currentFile = files[0]
+    }
 
+    private suspend fun formatFile(project: Project, file: VirtualFile): FormatResult? {
         val hasReadonlyFiles =
-            ReadonlyStatusHandler.getInstance(project).ensureFilesWritable(listOf(currentFile)).hasReadonlyFiles()
+            ReadonlyStatusHandler.getInstance(project).ensureFilesWritable(listOf(file)).hasReadonlyFiles()
         if (hasReadonlyFiles) return null
 
         var content: String? = null
         // PsiFile might be not committed at this point, take text from document
         readAction {
             // Maybe it's not that great for performance, as charSequence but elm plugin uses text
-            content = FileDocumentManager.getInstance().getDocument(currentFile)?.text
+            content = FileDocumentManager.getInstance().getDocument(file)?.text
         }
         val stdin = content
         if (stdin.isNullOrEmpty()) return null
@@ -76,7 +83,7 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
             withCharset(charset)
             withExePath(styLuaExecutablePath.pathString)
             addParameter("--stdin-filepath")
-            addParameter(currentFile.path)
+            addParameter(file.path)
             addParameter("-")
         }
 
@@ -98,12 +105,21 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
             writeAction {
                 executeCommand(project, "Format with Stylua") {
                     // No idea if I can save document to a variable to reference it safer later, I guess I can. So a plce for future refactoring
-                    FileDocumentManager.getInstance().getDocument(currentFile)?.setText(output.stdout)
-                 }
+                    FileDocumentManager.getInstance().getDocument(file)?.setText(output.stdout)
+                }
             }
             return FormatResult.Success()
         }
         return FormatResult.StyluaError(output.stderr)
+    }
+
+    suspend fun formatDocument(project: Project): FormatResult? {
+        val fileEditorManager = FileEditorManager.getInstance(project)
+        val files: Array<VirtualFile> = fileEditorManager.selectedFiles
+        if (files.isEmpty()) {
+            return null
+        }
+        return formatFile(project, files[0])
     }
 
     sealed class FormatResult(val msg: String, val cause: Throwable? = null) {

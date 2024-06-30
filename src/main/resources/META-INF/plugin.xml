@@ -75,6 +75,13 @@
         <notificationGroup id="Luau notifications"
                            displayType="BALLOON"
                            key="luau.notification.group.name"/>
+        <actionOnSaveInfoProvider
+                id="LuauOnSaveActionInfoProvider"
+                order="after FormatOnSaveInfoProvider"
+                implementation="com.github.aleksandrsl.intellijluau.actions.LuauOnSaveActionInfoProvider"/>
+        <actionOnSave id="LuauExternalFormatOnSaveAction"
+                      implementation="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatOnSaveAction"
+                      order="after FormatOnSaveAction"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
