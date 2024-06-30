@@ -129,7 +129,7 @@ A short literal string can be delimited by matching single or double quotes,
   luau definitely allows other escapes.
 */
 // . doesn't match new lines, so match all the stuff after the \ and allow
-TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})*
+TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})+
 
 /*
  case BrokenInterpDoubleBrace:
@@ -250,7 +250,7 @@ TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})*
 }
 
 <xSHEBANG> {
-    [^\r\n]*                  { popState(); return SHEBANG_CONTENT; }
+    [^\r\n]+                  { popState(); return SHEBANG_CONTENT; }
 }
 
 <xCOMMENT> {
