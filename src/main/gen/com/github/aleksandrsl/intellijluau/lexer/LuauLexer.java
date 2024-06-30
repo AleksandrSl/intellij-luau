@@ -465,60 +465,60 @@ class LuauLexer implements FlexLexer {
   }
   private Stack<Integer> stack = new Stack<>();
   private void pushState(int state) {
-      stack.push(yystate());
-      yybegin(state);
+    stack.push(yystate());
+    yybegin(state);
   }
   private void popState() {
     Integer state = stack.pop();
     yybegin(state);
   }
 
-   private int nBrackets = 0;
-      private boolean checkAhead(char c, int offset) {
-          return this.zzMarkedPos + offset < this.zzBuffer.length() && this.zzBuffer.charAt(this.zzMarkedPos + offset) == c;
-      }
+  private int nBrackets = 0;
+  private boolean checkAhead(char c, int offset) {
+    return this.zzMarkedPos + offset < this.zzBuffer.length() && this.zzBuffer.charAt(this.zzMarkedPos + offset) == c;
+  }
 
-      private boolean checkBlock() {
-          nBrackets = 0;
-          if (checkAhead('[', 0)) {
-              int n = 0;
-              while (checkAhead('=', n + 1)) n++;
-              if (checkAhead('[', n + 1)) {
-                  nBrackets = n;
-                  return true;
-              }
-          }
-          return false;
+  private boolean checkBlock() {
+    nBrackets = 0;
+    if (checkAhead('[', 0)) {
+      int n = 0;
+      while (checkAhead('=', n + 1)) n++;
+      if (checkAhead('[', n + 1)) {
+        nBrackets = n;
+        return true;
       }
+    }
+    return false;
+  }
 
-      private boolean checkDocBlock() {
-          return checkAhead('-', nBrackets + 2)
-              && checkAhead('-', nBrackets + 3)
-              && checkAhead('-', nBrackets + 4);
-      }
+  private boolean checkDocBlock() {
+    return checkAhead('-', nBrackets + 2)
+      && checkAhead('-', nBrackets + 3)
+      && checkAhead('-', nBrackets + 4);
+  }
 
-      private int checkBlockEnd() {
-          int pos = zzMarkedPos;
-          int end = zzEndRead;
-          while(pos < end) {
-              char c = zzBuffer.charAt(pos);
-              if (c == ']') {
-                  pos++;
-                  int size = 0;
-                  while (pos < zzEndRead && zzBuffer.charAt(pos) == '=') {
-                      size++;
-                      pos++;
-                  }
-                  if (size == nBrackets && pos < zzEndRead && zzBuffer.charAt(pos) == ']') {
-                      pos++;
-                      break;
-                  }
-                  continue;
-              }
-              pos++;
-          }
-          return pos - zzMarkedPos;
+  private int checkBlockEnd() {
+    int pos = zzMarkedPos;
+    int end = zzEndRead;
+    while(pos < end) {
+      char c = zzBuffer.charAt(pos);
+      if (c == ']') {
+        pos++;
+        int size = 0;
+        while (pos < zzEndRead && zzBuffer.charAt(pos) == '=') {
+          size++;
+          pos++;
+        }
+        if (size == nBrackets && pos < zzEndRead && zzBuffer.charAt(pos) == ']') {
+          pos++;
+          break;
+        }
+        continue;
       }
+      pos++;
+    }
+    return pos - zzMarkedPos;
+  }
 
 
   /**
@@ -879,13 +879,13 @@ class LuauLexer implements FlexLexer {
           case 103: break;
           case 24:
             { if (checkAhead('=', 0) || checkAhead('[', 0)) {
-             yypushback(yylength());
-             checkBlock();
-             zzMarkedPos += checkBlockEnd();
-             return STRING;
-         } else {
-             return LBRACK;
-         }
+      yypushback(yylength());
+      checkBlock();
+      zzMarkedPos += checkBlockEnd();
+      return STRING;
+    } else {
+      return LBRACK;
+    }
             }
           // fall through
           case 104: break;
@@ -971,13 +971,12 @@ class LuauLexer implements FlexLexer {
           case 120: break;
           case 41:
             { boolean block = checkBlock();
-          if (block) {
-              boolean docBlock = checkDocBlock();
-              yypushback(yylength());
-              zzMarkedPos += checkBlockEnd();
-              return docBlock ? DOC_BLOCK_COMMENT : BLOCK_COMMENT;
-          }
-          else { yypushback(yylength()); pushState(xCOMMENT); }
+    if (block) {
+      boolean docBlock = checkDocBlock();
+      yypushback(yylength());
+      zzMarkedPos += checkBlockEnd();
+      return docBlock ? DOC_BLOCK_COMMENT : BLOCK_COMMENT;
+    } else { yypushback(yylength()); pushState(xCOMMENT); }
             }
           // fall through
           case 121: break;
