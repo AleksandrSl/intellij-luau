@@ -204,7 +204,7 @@ func_args ::= list_args | single_arg
 //   that is, the argument list is a single literal string
 // Only STRING is allowed, not template_string
 single_arg ::= table_constructor | STRING { extends = func_args }
-private arg_expr_list ::= (expression ',')* (expression |& ')')
+private arg_expr_list ::= expression (',' expression)*
 list_args ::= '(' arg_expr_list? ')' { extends = func_args; pin = 1 }
 
 

@@ -42,57 +42,36 @@ public class LuauParser implements PsiParser, LightPsiParser {
   };
 
   /* ********************************************************** */
-  // (expression ',')* (expression |& ')')
+  // expression (',' expression)*
   static boolean arg_expr_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "arg_expr_list")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = arg_expr_list_0(b, l + 1);
+    r = expression(b, l + 1, -1);
     r = r && arg_expr_list_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (expression ',')*
-  private static boolean arg_expr_list_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "arg_expr_list_0")) return false;
+  // (',' expression)*
+  private static boolean arg_expr_list_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "arg_expr_list_1")) return false;
     while (true) {
       int c = current_position_(b);
-      if (!arg_expr_list_0_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "arg_expr_list_0", c)) break;
+      if (!arg_expr_list_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "arg_expr_list_1", c)) break;
     }
     return true;
   }
 
-  // expression ','
-  private static boolean arg_expr_list_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "arg_expr_list_0_0")) return false;
+  // ',' expression
+  private static boolean arg_expr_list_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "arg_expr_list_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = expression(b, l + 1, -1);
-    r = r && consumeToken(b, COMMA);
+    r = consumeToken(b, COMMA);
+    r = r && expression(b, l + 1, -1);
     exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // expression |& ')'
-  private static boolean arg_expr_list_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "arg_expr_list_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = expression(b, l + 1, -1);
-    if (!r) r = arg_expr_list_1_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // & ')'
-  private static boolean arg_expr_list_1_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "arg_expr_list_1_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _AND_);
-    r = consumeToken(b, RPAREN);
-    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
