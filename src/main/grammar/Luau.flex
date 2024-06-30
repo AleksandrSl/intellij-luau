@@ -101,8 +101,6 @@ NUMBER={JIT_EXT_NUMBER}|{HEX_NUMBER}|{BIN_NUMBER}|{DEC_NUMBER}
 //Comments
 REGION_START =--(region|\{\{\{)([^\r\n]*)*
 REGION_END =--(endregion|\}\}\})([^\r\n]*)*
-BLOCK_COMMENT=--\[=*\[[\s\S]*(\]=*\])?
-DOC_BLOCK_COMMENT=--\[=*\[---+[\s\S]*(\]=*\])?
 SHORT_COMMENT=--[^\r\n]*
 DOC_COMMENT=----*[^\r\n]*(\r?\n{LINE_WS}*----*[^\r\n]*)*
 
@@ -132,8 +130,6 @@ A short literal string can be delimited by matching single or double quotes,
 */
 // . doesn't match new lines, so match all the stuff after the \ and allow
 TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})*
-//[[]]
-LONG_STRING=\[=*\[[\s\S]*\]=*\]
 
 /*
  case BrokenInterpDoubleBrace:
@@ -145,9 +141,7 @@ LONG_STRING=\[=*\[[\s\S]*\]=*\]
 %state xSHEBANG
 %state xDOUBLE_QUOTED_STRING
 %state xSINGLE_QUOTED_STRING
-%state xBLOCK_STRING
 %state xCOMMENT
-%state xBLOCK_COMMENT
 %state xTEMPLATE_STRING
 %state xTEMPLATE_STRING_EXPRESSION
 
