@@ -12,7 +12,7 @@ public interface LuauLocalFuncDefStatement extends PsiElement {
   LuauFuncBody getFuncBody();
 
   @Nullable
-  LuauFuncName getFuncName();
+  PsiElement getId();
 
   @NotNull
   ItemPresentation getPresentation();

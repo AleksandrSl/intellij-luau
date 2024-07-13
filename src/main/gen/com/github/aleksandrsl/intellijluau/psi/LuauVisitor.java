@@ -104,11 +104,7 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitFuncDefStatement(@NotNull LuauFuncDefStatement o) {
-    visitPsiElement(o);
-  }
-
-  public void visitFuncName(@NotNull LuauFuncName o) {
-    visitPsiElement(o);
+    visitNamedElement(o);
   }
 
   public void visitFunctionType(@NotNull LuauFunctionType o) {

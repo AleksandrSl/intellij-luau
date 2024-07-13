@@ -8,11 +8,11 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
+import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
 import com.github.aleksandrsl.intellijluau.psi.*;
 import com.intellij.navigation.ItemPresentation;
 
-public class LuauFuncDefStatementImpl extends ASTWrapperPsiElement implements LuauFuncDefStatement {
+public class LuauFuncDefStatementImpl extends LuauNamedElementImpl implements LuauFuncDefStatement {
 
   public LuauFuncDefStatementImpl(@NotNull ASTNode node) {
     super(node);
@@ -36,8 +36,8 @@ public class LuauFuncDefStatementImpl extends ASTWrapperPsiElement implements Lu
 
   @Override
   @Nullable
-  public LuauFuncName getFuncName() {
-    return findChildByClass(LuauFuncName.class);
+  public PsiElement getId() {
+    return findChildByType(ID);
   }
 
   @Override
