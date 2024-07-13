@@ -6,13 +6,13 @@ import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.navigation.ItemPresentation;
 
-public interface LuauFuncDefStatement extends PsiElement {
+public interface LuauFuncDefStatement extends LuauNamedElement {
 
   @Nullable
   LuauFuncBody getFuncBody();
 
   @Nullable
-  LuauFuncName getFuncName();
+  PsiElement getId();
 
   @NotNull
   ItemPresentation getPresentation();

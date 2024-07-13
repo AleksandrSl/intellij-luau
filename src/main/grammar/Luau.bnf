@@ -149,7 +149,12 @@ type_soft_keyword ::= 'type'
 typeof_soft_keyword ::= 'typeof'
 
 local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }
-func_def_statement ::= 'function' func_name func_body { pin = 1; methods=[getPresentation] }
+func_def_statement ::= 'function' ID func_body {
+  pin = 1
+  methods=[getPresentation]
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+}
 
 // Without pinning somehow it won't match the function but local_def_statement instead even though it is later in the variants.
 // Looks like parser first searches for pins if there are any in the rules.
@@ -162,10 +167,13 @@ func_def_statement ::= 'function' func_name func_body { pin = 1; methods=[getPre
 
 // Even if the code is perfectly normal.
 // 'function' is pinned because pinning local won't allow to match variable definitions
-local_func_def_statement ::= 'local' 'function' func_name func_body { pin = 2; methods=[getPresentation] }
+local_func_def_statement ::= 'local' 'function' ID func_body {
+  pin = 2
+  methods=[getPresentation]
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+}
 method_def_statement ::= 'function' method_name func_body { pin = 2; methods=[getPresentation] }
 
-func_name ::= ID
 // ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
 method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
 func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
@@ -178,7 +186,7 @@ exp_list ::= expression (',' expression)*
 binding ::= ID (':' type)?  {
   // No idea why they use mixins or methods instead of extend, probably because they need more than one implementation
   // But usually it's not the case.
-  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl";
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
   implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
   methods=[getPresentation]
 }

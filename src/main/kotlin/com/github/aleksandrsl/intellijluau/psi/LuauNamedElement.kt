@@ -27,10 +27,11 @@ open class LuauNamedElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), Lua
         return nameIdentifier?.text
     }
 
+    // Seems to be called everytime you put your cursor inside the element extending this class.
+    // The offset returned here seems to control the highlight of
     // Should be implemented as said in PsiNameIdentifierOwner docs. How the hell should I know? Should I read all the docs? lol
     override fun getTextOffset(): Int {
-        // TODO: I guess !! is fair enough, since without ID this element won't exist.
-        // But probably I'll have to subclass this to a specific psi element later
-        return nameIdentifier!!.textOffset
+        // TODO (AleksandrSl 14/07/2024): node.startOffset is a temporary fix while I develop references
+        return nameIdentifier?.textOffset ?: node.startOffset
     }
 }

@@ -34,7 +34,6 @@ public interface LuauTypes {
   IElementType FUNC_ARGS = new LuauElementType("FUNC_ARGS");
   IElementType FUNC_BODY = new LuauElementType("FUNC_BODY");
   IElementType FUNC_DEF_STATEMENT = new LuauElementType("FUNC_DEF_STATEMENT");
-  IElementType FUNC_NAME = new LuauElementType("FUNC_NAME");
   IElementType GENERIC_TYPE_LIST = new LuauElementType("GENERIC_TYPE_LIST");
   IElementType GENERIC_TYPE_LIST_WITH_DEFAULTS = new LuauElementType("GENERIC_TYPE_LIST_WITH_DEFAULTS");
   IElementType GENERIC_TYPE_PACK = new LuauElementType("GENERIC_TYPE_PACK");
@@ -236,9 +235,6 @@ public interface LuauTypes {
       }
       else if (type == FUNC_DEF_STATEMENT) {
         return new LuauFuncDefStatementImpl(node);
-      }
-      else if (type == FUNC_NAME) {
-        return new LuauFuncNameImpl(node);
       }
       else if (type == GENERIC_TYPE_LIST) {
         return new LuauGenericTypeListImpl(node);

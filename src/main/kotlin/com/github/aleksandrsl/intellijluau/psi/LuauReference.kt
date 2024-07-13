@@ -11,8 +11,8 @@ class LuauReference(element: LuauVarReference) : PsiReferenceBase<LuauVarReferen
 
     override fun resolve(): PsiElement? {
         // (╯°□°)╯︵ ┻━┻ getChildrenOfType is not recursive.
-        return PsiTreeUtil.findChildrenOfType(myElement.containingFile, LuauBinding::class.java)
-            .find { it.id.text == id.text }
+        return PsiTreeUtil.findChildrenOfType(myElement.containingFile, LuauNamedElement::class.java)
+            .find { it.name == id.text }
     }
 
     // If I don't want to override this, I need that fckng ElementManipulator.
@@ -21,7 +21,7 @@ class LuauReference(element: LuauVarReference) : PsiReferenceBase<LuauVarReferen
         return TextRange(start, start + id.textLength)
     }
 
-    // Most people don't give a fuck about ElementManipulator, should I?
+    // Most people don't care about ElementManipulator, should I?
     override fun handleElementRename(newElementName: String): PsiElement {
         val newId = createIdentifier(myElement.project, newElementName)
         myElement.id.replace(newId)

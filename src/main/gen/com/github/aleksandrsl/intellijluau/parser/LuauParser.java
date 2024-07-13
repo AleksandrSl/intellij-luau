@@ -683,30 +683,17 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'function' func_name func_body
+  // 'function' ID func_body
   public static boolean func_def_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "func_def_statement")) return false;
     if (!nextTokenIs(b, FUNCTION)) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, FUNC_DEF_STATEMENT, null);
-    r = consumeToken(b, FUNCTION);
+    r = consumeTokens(b, 1, FUNCTION, ID);
     p = r; // pin = 1
-    r = r && report_error_(b, func_name(b, l + 1));
-    r = p && func_body(b, l + 1) && r;
+    r = r && func_body(b, l + 1);
     exit_section_(b, l, m, r, p, null);
     return r || p;
-  }
-
-  /* ********************************************************** */
-  // ID
-  public static boolean func_name(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "func_name")) return false;
-    if (!nextTokenIs(b, ID)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, ID);
-    exit_section_(b, m, FUNC_NAME, r);
-    return r;
   }
 
   /* ********************************************************** */
@@ -1264,16 +1251,15 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'local' 'function' func_name func_body
+  // 'local' 'function' ID func_body
   public static boolean local_func_def_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "local_func_def_statement")) return false;
     if (!nextTokenIs(b, LOCAL)) return false;
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, LOCAL_FUNC_DEF_STATEMENT, null);
-    r = consumeTokens(b, 2, LOCAL, FUNCTION);
+    r = consumeTokens(b, 2, LOCAL, FUNCTION, ID);
     p = r; // pin = 2
-    r = r && report_error_(b, func_name(b, l + 1));
-    r = p && func_body(b, l + 1) && r;
+    r = r && func_body(b, l + 1);
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
