@@ -255,8 +255,8 @@ type ::= simple_type '?'? (union_suffix | intersection_suffix)*
 generic_type_pack_parameter ::= ID '...'
 generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack)
 
-// Having just ID before the ... fucks everything up, because T... will match just ID and go another step and then later fail, but it won't backtrack and try ...
-generic_type_list ::= generic_type_pack_parameter (',' generic_type_pack_parameter)* | ID (',' ID)* (',' generic_type_pack_parameter)*
+// Having just ID before the ... breaks everything, because T... will match just ID and go another step and then later fail, but it won't backtrack and try ...
+generic_type_list ::= generic_type_pack_parameter (',' generic_type_pack_parameter)* | ID (',' generic_type_list)?
 
 generic_type_list_with_defaults ::= generic_type_list (',' generic_type_list_with_defaults_item)* | generic_type_list_with_defaults_item (',' generic_type_list_with_defaults_item)*
 private generic_type_list_with_defaults_item ::=
