@@ -11,10 +11,6 @@ import com.intellij.util.containers.ContainerUtil
 
 private val LOG = logger<LuauExternalFormatOnSaveAction>()
 
-// TODO (AleksandrSl 30/06/2024): It looks like this works and reacts to settings changes.
-//  However I don't get why it sometimes don't call on save action when I explicitly save a file.
-//  I also don't understand why my action is not listed in the onSave section - for this I need actionOnSaveInfoProvider
-//  take a look at biome and maybe fix link to sources there - https://github.com/biomejs/biome-intellij/blob/main/src/main/resources/META-INF/plugin.xml
 class LuauExternalFormatOnSaveAction : ActionsOnSaveFileDocumentManagerListener.ActionOnSave() {
     override fun isEnabledForProject(project: Project): Boolean {
         return ProjectSettingsState.instance.runStyLuaOnSave
