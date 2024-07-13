@@ -753,7 +753,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // generic_type_pack_parameter (',' generic_type_pack_parameter)* | ID (',' ID)* (',' generic_type_pack_parameter)*
+  // generic_type_pack_parameter (',' generic_type_pack_parameter)* | ID (',' generic_type_list)?
   public static boolean generic_type_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list")) return false;
     if (!nextTokenIs(b, ID)) return false;
@@ -798,57 +798,31 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // ID (',' ID)* (',' generic_type_pack_parameter)*
+  // ID (',' generic_type_list)?
   private static boolean generic_type_list_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, ID);
     r = r && generic_type_list_1_1(b, l + 1);
-    r = r && generic_type_list_1_2(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (',' ID)*
+  // (',' generic_type_list)?
   private static boolean generic_type_list_1_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_1_1")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!generic_type_list_1_1_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "generic_type_list_1_1", c)) break;
-    }
+    generic_type_list_1_1_0(b, l + 1);
     return true;
   }
 
-  // ',' ID
+  // ',' generic_type_list
   private static boolean generic_type_list_1_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_1_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokens(b, 0, COMMA, ID);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // (',' generic_type_pack_parameter)*
-  private static boolean generic_type_list_1_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generic_type_list_1_2")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!generic_type_list_1_2_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "generic_type_list_1_2", c)) break;
-    }
-    return true;
-  }
-
-  // ',' generic_type_pack_parameter
-  private static boolean generic_type_list_1_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generic_type_list_1_2_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
-    r = r && generic_type_pack_parameter(b, l + 1);
+    r = r && generic_type_list(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
