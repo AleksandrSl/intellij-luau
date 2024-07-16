@@ -30,6 +30,7 @@ class LuauExternalFormatAction : AnAction() {
         event.presentation.isEnabled = tool.exists()
     }
 
+    // TODO (AleksandrSl 14/07/2024): Wouldn't it be better to use BGT?
     override fun getActionUpdateThread(): ActionUpdateThread {
         return ActionUpdateThread.EDT
     }
