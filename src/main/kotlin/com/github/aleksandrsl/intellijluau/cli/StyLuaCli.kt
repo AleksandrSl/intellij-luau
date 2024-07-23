@@ -60,7 +60,7 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         val projectService = project.service<LuauCliService>()
         projectService.coroutineScope.launch(Dispatchers.EDT) {
             withBackgroundProgress(project, "Stylua format documents") {
-                val results = files.associateWith { file ->
+                @Suppress("UNCHECKED_CAST") val results = files.associateWith { file ->
                     _formatFile(project, file)
                 }.filterValues { it is FormatResult.Success } as Map<VirtualFile, FormatResult.Success>
 
