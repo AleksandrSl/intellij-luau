@@ -10,11 +10,11 @@ interface LuauNamedElement: PsiNameIdentifierOwner {
 
 open class LuauNamedElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), LuauNamedElement {
     override fun setName(name: String): PsiElement {
-        val keyNode = node.firstChildNode
+        val keyNode = nameIdentifier
         if (keyNode != null) {
+            // We use this for things other than local variable, but the psi element is the same
             val property = createIdentifier(node.psi.project, name)
-            val newKeyNode = property.node
-            node.replaceChild(keyNode, newKeyNode)
+            node.replaceChild(keyNode.node, property.node)
         }
         return node.psi
     }
