@@ -8,7 +8,10 @@ import com.intellij.psi.PsiElement;
 public interface LuauGenericTypeListWithDefaults extends PsiElement {
 
   @Nullable
-  LuauGenericTypeList getGenericTypeList();
+  LuauGenericTypeListWithDefaults getGenericTypeListWithDefaults();
+
+  @Nullable
+  LuauGenericTypePackParameter getGenericTypePackParameter();
 
   @NotNull
   List<LuauGenericTypePackParameterWithDefault> getGenericTypePackParameterWithDefaultList();

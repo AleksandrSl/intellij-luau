@@ -15,6 +15,10 @@ class LuauParsingTestCase: ParsingTestCase("", LuauFileType.defaultExtension, Lu
         doTest(true)
     }
 
+    fun testGenericsWithDefaults() {
+        doTest(true)
+    }
+
     fun testDefinitions() {
         doTest(true)
     }

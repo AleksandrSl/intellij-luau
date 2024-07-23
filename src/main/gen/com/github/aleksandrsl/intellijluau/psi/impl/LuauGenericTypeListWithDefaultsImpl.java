@@ -29,8 +29,14 @@ public class LuauGenericTypeListWithDefaultsImpl extends ASTWrapperPsiElement im
 
   @Override
   @Nullable
-  public LuauGenericTypeList getGenericTypeList() {
-    return findChildByClass(LuauGenericTypeList.class);
+  public LuauGenericTypeListWithDefaults getGenericTypeListWithDefaults() {
+    return findChildByClass(LuauGenericTypeListWithDefaults.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauGenericTypePackParameter getGenericTypePackParameter() {
+    return findChildByClass(LuauGenericTypePackParameter.class);
   }
 
   @Override
