@@ -815,7 +815,10 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // generic_type_list (',' generic_type_list_with_defaults_item)* | generic_type_list_with_defaults_item (',' generic_type_list_with_defaults_item)*
+  // generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+  //  | ID '=' type (',' generic_type_list_with_defaults_only)?
+  //  | generic_type_pack_parameters_with_default
+  //  | ID (',' generic_type_list_with_defaults)?
   public static boolean generic_type_list_with_defaults(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_with_defaults")) return false;
     if (!nextTokenIs(b, ID)) return false;
@@ -823,22 +826,24 @@ public class LuauParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b);
     r = generic_type_list_with_defaults_0(b, l + 1);
     if (!r) r = generic_type_list_with_defaults_1(b, l + 1);
+    if (!r) r = generic_type_pack_parameters_with_default(b, l + 1);
+    if (!r) r = generic_type_list_with_defaults_3(b, l + 1);
     exit_section_(b, m, GENERIC_TYPE_LIST_WITH_DEFAULTS, r);
     return r;
   }
 
-  // generic_type_list (',' generic_type_list_with_defaults_item)*
+  // generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
   private static boolean generic_type_list_with_defaults_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_with_defaults_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = generic_type_list(b, l + 1);
+    r = generic_type_pack_parameter_with_default(b, l + 1);
     r = r && generic_type_list_with_defaults_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (',' generic_type_list_with_defaults_item)*
+  // (',' generic_type_pack_parameter_with_default)*
   private static boolean generic_type_list_with_defaults_0_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_with_defaults_0_1")) return false;
     while (true) {
@@ -849,71 +854,149 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return true;
   }
 
-  // ',' generic_type_list_with_defaults_item
+  // ',' generic_type_pack_parameter_with_default
   private static boolean generic_type_list_with_defaults_0_1_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_with_defaults_0_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
-    r = r && generic_type_list_with_defaults_item(b, l + 1);
+    r = r && generic_type_pack_parameter_with_default(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // generic_type_list_with_defaults_item (',' generic_type_list_with_defaults_item)*
+  // ID '=' type (',' generic_type_list_with_defaults_only)?
   private static boolean generic_type_list_with_defaults_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "generic_type_list_with_defaults_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = generic_type_list_with_defaults_item(b, l + 1);
-    r = r && generic_type_list_with_defaults_1_1(b, l + 1);
+    r = consumeTokens(b, 0, ID, ASSIGN);
+    r = r && type(b, l + 1);
+    r = r && generic_type_list_with_defaults_1_3(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // (',' generic_type_list_with_defaults_item)*
-  private static boolean generic_type_list_with_defaults_1_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_1_1")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!generic_type_list_with_defaults_1_1_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "generic_type_list_with_defaults_1_1", c)) break;
-    }
+  // (',' generic_type_list_with_defaults_only)?
+  private static boolean generic_type_list_with_defaults_1_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_1_3")) return false;
+    generic_type_list_with_defaults_1_3_0(b, l + 1);
     return true;
   }
 
-  // ',' generic_type_list_with_defaults_item
-  private static boolean generic_type_list_with_defaults_1_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_1_1_0")) return false;
+  // ',' generic_type_list_with_defaults_only
+  private static boolean generic_type_list_with_defaults_1_3_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_1_3_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
-    r = r && generic_type_list_with_defaults_item(b, l + 1);
+    r = r && generic_type_list_with_defaults_only(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // ID (',' generic_type_list_with_defaults)?
+  private static boolean generic_type_list_with_defaults_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_3")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, ID);
+    r = r && generic_type_list_with_defaults_3_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (',' generic_type_list_with_defaults)?
+  private static boolean generic_type_list_with_defaults_3_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_3_1")) return false;
+    generic_type_list_with_defaults_3_1_0(b, l + 1);
+    return true;
+  }
+
+  // ',' generic_type_list_with_defaults
+  private static boolean generic_type_list_with_defaults_3_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_3_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, COMMA);
+    r = r && generic_type_list_with_defaults(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   /* ********************************************************** */
-  // generic_type_pack_parameter_with_default
-  //     | ID '=' type
-  static boolean generic_type_list_with_defaults_item(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_item")) return false;
+  // generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+  //      | ID '=' type (',' generic_type_list_with_defaults_only)?
+  static boolean generic_type_list_with_defaults_only(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_only")) return false;
     if (!nextTokenIs(b, ID)) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = generic_type_pack_parameter_with_default(b, l + 1);
-    if (!r) r = generic_type_list_with_defaults_item_1(b, l + 1);
+    r = generic_type_list_with_defaults_only_0(b, l + 1);
+    if (!r) r = generic_type_list_with_defaults_only_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // ID '=' type
-  private static boolean generic_type_list_with_defaults_item_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_item_1")) return false;
+  // generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+  private static boolean generic_type_list_with_defaults_only_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_only_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = generic_type_pack_parameter_with_default(b, l + 1);
+    r = r && generic_type_list_with_defaults_only_0_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (',' generic_type_pack_parameter_with_default)*
+  private static boolean generic_type_list_with_defaults_only_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_only_0_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!generic_type_list_with_defaults_only_0_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "generic_type_list_with_defaults_only_0_1", c)) break;
+    }
+    return true;
+  }
+
+  // ',' generic_type_pack_parameter_with_default
+  private static boolean generic_type_list_with_defaults_only_0_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_only_0_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, COMMA);
+    r = r && generic_type_pack_parameter_with_default(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // ID '=' type (',' generic_type_list_with_defaults_only)?
+  private static boolean generic_type_list_with_defaults_only_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_only_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeTokens(b, 0, ID, ASSIGN);
     r = r && type(b, l + 1);
+    r = r && generic_type_list_with_defaults_only_1_3(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (',' generic_type_list_with_defaults_only)?
+  private static boolean generic_type_list_with_defaults_only_1_3(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_only_1_3")) return false;
+    generic_type_list_with_defaults_only_1_3_0(b, l + 1);
+    return true;
+  }
+
+  // ',' generic_type_list_with_defaults_only
+  private static boolean generic_type_list_with_defaults_only_1_3_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_list_with_defaults_only_1_3_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, COMMA);
+    r = r && generic_type_list_with_defaults_only(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
@@ -962,6 +1045,74 @@ public class LuauParser implements PsiParser, LightPsiParser {
     r = type_pack(b, l + 1);
     if (!r) r = variadic_type_pack(b, l + 1);
     if (!r) r = generic_type_pack(b, l + 1);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // generic_type_pack_parameter ((',' generic_type_pack_parameter_with_default)+ | (',' generic_type_pack_parameters_with_default)?)
+  static boolean generic_type_pack_parameters_with_default(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_pack_parameters_with_default")) return false;
+    if (!nextTokenIs(b, ID)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = generic_type_pack_parameter(b, l + 1);
+    r = r && generic_type_pack_parameters_with_default_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (',' generic_type_pack_parameter_with_default)+ | (',' generic_type_pack_parameters_with_default)?
+  private static boolean generic_type_pack_parameters_with_default_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_pack_parameters_with_default_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = generic_type_pack_parameters_with_default_1_0(b, l + 1);
+    if (!r) r = generic_type_pack_parameters_with_default_1_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (',' generic_type_pack_parameter_with_default)+
+  private static boolean generic_type_pack_parameters_with_default_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_pack_parameters_with_default_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = generic_type_pack_parameters_with_default_1_0_0(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!generic_type_pack_parameters_with_default_1_0_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "generic_type_pack_parameters_with_default_1_0", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // ',' generic_type_pack_parameter_with_default
+  private static boolean generic_type_pack_parameters_with_default_1_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_pack_parameters_with_default_1_0_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, COMMA);
+    r = r && generic_type_pack_parameter_with_default(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // (',' generic_type_pack_parameters_with_default)?
+  private static boolean generic_type_pack_parameters_with_default_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_pack_parameters_with_default_1_1")) return false;
+    generic_type_pack_parameters_with_default_1_1_0(b, l + 1);
+    return true;
+  }
+
+  // ',' generic_type_pack_parameters_with_default
+  private static boolean generic_type_pack_parameters_with_default_1_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "generic_type_pack_parameters_with_default_1_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, COMMA);
+    r = r && generic_type_pack_parameters_with_default(b, l + 1);
+    exit_section_(b, m, null, r);
     return r;
   }
 

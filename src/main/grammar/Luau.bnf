@@ -266,10 +266,17 @@ generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_
 // Having just ID before the ... breaks everything, because T... will match just ID and go another step and then later fail, but it won't backtrack and try ...
 generic_type_list ::= generic_type_pack_parameter (',' generic_type_pack_parameter)* | ID (',' generic_type_list)?
 
-generic_type_list_with_defaults ::= generic_type_list (',' generic_type_list_with_defaults_item)* | generic_type_list_with_defaults_item (',' generic_type_list_with_defaults_item)*
-private generic_type_list_with_defaults_item ::=
-    generic_type_pack_parameter_with_default
-    | ID '=' type
+generic_type_list_with_defaults ::=
+  generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+ | ID '=' type (',' generic_type_list_with_defaults_only)?
+ | generic_type_pack_parameters_with_default
+ | ID (',' generic_type_list_with_defaults)?
+
+private generic_type_list_with_defaults_only ::=
+      generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+     | ID '=' type (',' generic_type_list_with_defaults_only)?
+
+private generic_type_pack_parameters_with_default ::= generic_type_pack_parameter ((',' generic_type_pack_parameter_with_default)+ | (',' generic_type_pack_parameters_with_default)?)
 
 type_list ::= type (',' type_list)? | '...' type
 bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)? { recoverWhile = bound_type_list_recover }
