@@ -11,7 +11,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
-    id("org.jetbrains.grammarkit") version "2022.3.2.2"
+    alias(libs.plugins.grammarkit)
 }
 
 group = properties("pluginGroup").get()
@@ -57,11 +57,6 @@ kover {
             }
         }
     }
-}
-
-grammarKit {
-    jflexRelease.set("1.9.2")
-    grammarKitRelease.set("2022.3.2")
 }
 
 sourceSets["main"].java.srcDirs("src/main/gen")
