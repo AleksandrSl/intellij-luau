@@ -40,9 +40,9 @@ public class LuauFunctionTypeImpl extends ASTWrapperPsiElement implements LuauFu
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauReturnType getReturnType() {
-    return findNotNullChildByClass(LuauReturnType.class);
+    return findChildByClass(LuauReturnType.class);
   }
 
 }

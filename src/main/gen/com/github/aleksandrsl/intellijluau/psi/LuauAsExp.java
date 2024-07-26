@@ -10,7 +10,7 @@ public interface LuauAsExp extends LuauExpression {
   @NotNull
   LuauSimpleExp getSimpleExp();
 
-  @NotNull
+  @Nullable
   LuauType getType();
 
 }

@@ -1,0 +1,6 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <platform.lsp.serverSupportProvider
+                implementation="com.github.aleksandrsl.intellijluau.LuauLspServerSupportProvider"/>
+    </extensions>
+</idea-plugin>

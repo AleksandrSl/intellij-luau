@@ -34,9 +34,21 @@ public class LuauBoundTypeListImpl extends ASTWrapperPsiElement implements LuauB
   }
 
   @Override
-  @NotNull
+  @Nullable
+  public LuauGenericTypePack getGenericTypePack() {
+    return findChildByClass(LuauGenericTypePack.class);
+  }
+
+  @Override
+  @Nullable
   public LuauType getType() {
-    return findNotNullChildByClass(LuauType.class);
+    return findChildByClass(LuauType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauVariadicTypePack getVariadicTypePack() {
+    return findChildByClass(LuauVariadicTypePack.class);
   }
 
   @Override

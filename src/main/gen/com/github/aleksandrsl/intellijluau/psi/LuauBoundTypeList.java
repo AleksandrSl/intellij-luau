@@ -10,8 +10,14 @@ public interface LuauBoundTypeList extends PsiElement {
   @Nullable
   LuauBoundTypeList getBoundTypeList();
 
-  @NotNull
+  @Nullable
+  LuauGenericTypePack getGenericTypePack();
+
+  @Nullable
   LuauType getType();
+
+  @Nullable
+  LuauVariadicTypePack getVariadicTypePack();
 
   @Nullable
   PsiElement getId();

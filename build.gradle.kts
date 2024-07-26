@@ -11,7 +11,7 @@ plugins {
     alias(libs.plugins.changelog) // Gradle Changelog Plugin
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
-    id("org.jetbrains.grammarkit") version "2022.3.2.2"
+    alias(libs.plugins.grammarkit)
 }
 
 group = properties("pluginGroup").get()
@@ -49,17 +49,14 @@ changelog {
 }
 
 // Configure Gradle Kover Plugin - read more: https://github.com/Kotlin/kotlinx-kover#configuration
-koverReport {
-    defaults {
-        xml {
-            onCheck = true
+kover {
+    reports {
+        total {
+            xml {
+                onCheck = true
+            }
         }
     }
-}
-
-grammarKit {
-    jflexRelease.set("1.9.2")
-    grammarKitRelease.set("2022.3.2")
 }
 
 sourceSets["main"].java.srcDirs("src/main/gen")
@@ -79,27 +76,16 @@ tasks {
         purgeOldFiles.set(true)
     }
 
-    generateParser {
-        // source bnf file
-        sourceFile.set(file("src/main/grammar/Luau.bnf"))
-
-        // optional, task-specific root for the generated files. Default: none
-        targetRootOutputDir.set(file("src/main/gen"))
-
-        pathToParser.set("/com/github/aleksandrsl/intellijluau/parser/LuauParserGenerated.java")
-
-        // path to a directory with generated psi files, relative to the targetRoot
-        pathToPsiRoot.set("/com/github/aleksandrsl/intellijluau/psi")
-
-        // if set, plugin will remove a parser output file and psi output directory before generating new ones. Default: false
-        purgeOldFiles.set(true)
-    }
+    // There is no parser generation, since it doesn't support stuff I use.
+    // Generate parser from the file via Grammar kit plugin.
 
     prepareSandbox {
+        val projectDirPath: String = project.projectDir.path
+        val injected = project.objects.newInstance<Injected>()
         doLast {
-            copy {
-                from("${project.projectDir}/src/main/resources/typeDeclarations")
-                into("${destinationDir.path}/${properties("pluginName").get()}/typeDeclarations")
+            injected.fs.copy {
+                from("${projectDirPath}/src/main/resources/typeDeclarations")
+                into("${destinationDir}/${pluginName.get()}/typeDeclarations")
             }
         }
     }
@@ -159,4 +145,8 @@ tasks {
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
         channels = properties("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
+}
+
+interface Injected {
+    @get:Inject val fs: FileSystemOperations
 }

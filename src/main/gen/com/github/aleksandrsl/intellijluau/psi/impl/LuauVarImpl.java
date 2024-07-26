@@ -29,14 +29,8 @@ public class LuauVarImpl extends ASTWrapperPsiElement implements LuauVar {
 
   @Override
   @NotNull
-  public List<LuauPostfixExp> getPostfixExpList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauPostfixExp.class);
-  }
-
-  @Override
-  @NotNull
-  public LuauSimpleVar getSimpleVar() {
-    return findNotNullChildByClass(LuauSimpleVar.class);
+  public LuauPrimaryExp getPrimaryExp() {
+    return findNotNullChildByClass(LuauPrimaryExp.class);
   }
 
 }

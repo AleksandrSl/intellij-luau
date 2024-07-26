@@ -7,13 +7,13 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauForeachStatement extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauBindingList getBindingList();
 
-  @NotNull
+  @Nullable
   LuauBlock getBlock();
 
-  @NotNull
+  @Nullable
   LuauExpList getExpList();
 
 }

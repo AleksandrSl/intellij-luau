@@ -28,15 +28,21 @@ public class LuauFieldImpl extends ASTWrapperPsiElement implements LuauField {
   }
 
   @Override
-  @NotNull
-  public List<LuauExpression> getExpressionList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauExpression.class);
+  @Nullable
+  public LuauIndexedField getIndexedField() {
+    return findChildByClass(LuauIndexedField.class);
   }
 
   @Override
   @Nullable
-  public PsiElement getId() {
-    return findChildByType(ID);
+  public LuauKeyedField getKeyedField() {
+    return findChildByClass(LuauKeyedField.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauStringKeyedField getStringKeyedField() {
+    return findChildByClass(LuauStringKeyedField.class);
   }
 
 }

@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauDoStatement extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauBlock getBlock();
 
 }

@@ -4,13 +4,17 @@ package com.github.aleksandrsl.intellijluau.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.navigation.ItemPresentation;
 
-public interface LuauFuncDefStatement extends PsiElement {
+public interface LuauFuncDefStatement extends LuauNamedElement {
 
-  @NotNull
+  @Nullable
   LuauFuncBody getFuncBody();
 
+  @Nullable
+  PsiElement getId();
+
   @NotNull
-  LuauFuncName getFuncName();
+  ItemPresentation getPresentation();
 
 }

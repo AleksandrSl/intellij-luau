@@ -8,9 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface LuauVar extends PsiElement {
 
   @NotNull
-  List<LuauPostfixExp> getPostfixExpList();
-
-  @NotNull
-  LuauSimpleVar getSimpleVar();
+  LuauPrimaryExp getPrimaryExp();
 
 }

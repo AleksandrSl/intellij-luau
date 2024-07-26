@@ -8,6 +8,7 @@ import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.gridLayout.GridLayout
 import com.intellij.ui.dsl.gridLayout.HorizontalAlign
@@ -35,6 +36,13 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
             this.styLuaPathComponent.text = newText ?: ""
         }
 
+    var runStyLuaOnSave: Boolean?
+        get() = this.styluaRunOnSaveComponent.isSelected
+        set(newValue) {
+            this.styluaRunOnSaveComponent.isSelected = newValue ?: false
+        }
+
+
     private var styLuaVersion: String? = null
     val panel: JPanel
     private val lspPathComponent = TextFieldWithBrowseButton().apply {
@@ -61,6 +69,7 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
         })
     }
     private val styluaVersionLabelComponent = JBLabel()
+    private val styluaRunOnSaveComponent = JBCheckBox("Run StyLua on save")
 
     init {
         panel = FormBuilder.createFormBuilder()
@@ -82,7 +91,9 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
                         verticalAlign = VerticalAlign.CENTER,
                         resizableColumn = true
                     )
-            }).addComponentFillVertically(JPanel(), 0).panel
+            })
+            .addComponent(styluaRunOnSaveComponent)
+            .addComponentFillVertically(JPanel(), 0).panel
     }
 
     private fun setStyluaVersion(newVersion: String) {

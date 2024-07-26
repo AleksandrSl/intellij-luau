@@ -12,6 +12,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 internal class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState> {
     var lspPath: String = ""
     var styLuaPath: String = ""
+    var runStyLuaOnSave: Boolean = false
 
     override fun getState(): ProjectSettingsState {
         return this

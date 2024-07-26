@@ -7,10 +7,13 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauField extends PsiElement {
 
-  @NotNull
-  List<LuauExpression> getExpressionList();
+  @Nullable
+  LuauIndexedField getIndexedField();
 
   @Nullable
-  PsiElement getId();
+  LuauKeyedField getKeyedField();
+
+  @Nullable
+  LuauStringKeyedField getStringKeyedField();
 
 }

@@ -4,13 +4,14 @@ package com.github.aleksandrsl.intellijluau.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
 
-public interface LuauFunctionCall extends PsiElement {
-
-  @NotNull
-  LuauPostfixExp getPostfixExp();
+public interface LuauVarReference extends PsiElement {
 
   @NotNull
-  LuauPrefixExp getPrefixExp();
+  PsiElement getId();
+
+  @NotNull
+  PsiReference[] getReferences();
 
 }

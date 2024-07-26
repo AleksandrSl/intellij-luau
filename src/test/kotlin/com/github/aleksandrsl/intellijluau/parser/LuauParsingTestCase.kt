@@ -11,6 +11,18 @@ class LuauParsingTestCase: ParsingTestCase("", LuauFileType.defaultExtension, Lu
         doTest(true)
     }
 
+    fun testComplexTypes() {
+        doTest(true)
+    }
+
+    fun testGenericsWithDefaults() {
+        doTest(true)
+    }
+
+    fun testDefinitions() {
+        doTest(true)
+    }
+
     override fun getTestDataPath(): String {
         return baseTestDataPath
     }

@@ -7,10 +7,10 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauWhileStatement extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauBlock getBlock();
 
-  @NotNull
+  @Nullable
   LuauExpression getExpression();
 
 }

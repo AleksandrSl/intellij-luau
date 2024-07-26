@@ -7,6 +7,7 @@
   psiImplClassSuffix="Impl"
   psiPackage="com.github.aleksandrsl.intellijluau.psi"
   psiImplPackage="com.github.aleksandrsl.intellijluau.psi.impl"
+  psiImplUtilClass="com.github.aleksandrsl.intellijluau.psi.LuauPsiImplUtilKt"
 
   elementTypeHolderClass="com.github.aleksandrsl.intellijluau.psi.LuauTypes"
   elementTypeClass="com.github.aleksandrsl.intellijluau.psi.LuauElementType"
@@ -99,75 +100,143 @@ luau_file ::= shebang_line? block
 shebang_line ::= SHEBANG SHEBANG_CONTENT
 
 block ::= (statement ';'?)* (last_statement ';'?)?
+
 statement ::=
-     assignment_statement
-     | type_declaration_statement
-     | function_call
+     type_declaration_statement
      | do_statement
      | while_statement
      | repeat_statement
      | if_statement
-     // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
-     // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
-     | expression_statement
      | classic_for_statement
      | foreach_statement
      | def_statement
+     | compound_op_statement
+     | assignment_statement
+     // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
+     // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
+     | expression_statement
+     { recoverWhile = statement_recover }
 
-do_statement ::= 'do' block 'end'
-while_statement ::= 'while' expression 'do' block 'end'
-repeat_statement ::= 'repeat' block 'until' expression
-if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end'
-// TODO: Should I have a binding list here?
-classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end'
-foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end'
-assignment_statement ::= varList '=' exp_list | 'local' binding_list ('=' exp_list)? | var compound_op expression
+// TODO (AleksandrSl 20/06/2024): I don't know how lua plugin avoid having all the else stuff here,
+//  probably because they do manual expressions parsing
+private statement_recover ::= !(
+  ID
+  | ',' | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '(' | TEMPLATE_STRING_EQUOTE | '}'
+  | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | 'break'
+  | 'nil' | 'true' | 'false' | STRING | NUMBER | export_soft_keyword | type_soft_keyword
+  | un_op
+)
+
+do_statement ::= 'do' block 'end' { pin = 1 }
+while_statement ::= 'while' expression 'do' block 'end' { pin = 1 }
+repeat_statement ::= 'repeat' block 'until' expression { pin = 1 }
+if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end' { pin = 1 }
+// Yes, we can only have one variable here, and yes we can type it: `for i: number=10,1,-1 do print(i) end`
+classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end' { pin = 3 }
+// Rename for into numeric_for and generic_for as in lua docs
+foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 1 }
+// I guess the problem is here, at least part of it. Because the error is bin_op or , is expected. And bin_op is a part of expression
+assignment_statement ::= var_list '=' exp_list { pin = 2 }
+compound_op_statement ::= var compound_op expression { pin = 2 }
 expression_statement ::= expression
-private def_statement ::= class_method_def_statement | func_def_statement | local_func_def_statement
+private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
-type_declaration_statement ::= export_soft_keyword ? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type
+// TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
+type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type { pin = 2 }
 export_soft_keyword ::= 'export'
 continue_soft_keyword ::= 'continue'
 type_soft_keyword ::= 'type'
 typeof_soft_keyword ::= 'typeof'
 
-func_def_statement ::= 'function' func_name func_body
-//classMethodName ::=  nameExpr (funcPrefixRef)* (('.' ID) | (':' ID))
-//class_method_def_statement ::= 'function' classMethodName funcBody
-local_func_def_statement ::= 'local' 'function' func_name func_body
+local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }
+func_def_statement ::= 'function' ID func_body {
+  pin = 1
+  methods=[getPresentation]
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+}
 
-func_name ::= ID ('.' ID)* (':' ID)?
+// Without pinning somehow it won't match the function but local_def_statement instead even though it is later in the variants.
+// Looks like parser first searches for pins if there are any in the rules.
+
+// Rule also scans until it encounters recoverWhile symbol and then tries something else for unknown reason.
+// There no errors what are you recovering from?
+// Moreover, it safely parses name of the function (it's also an ID) and then stops inside the generic_type_list, what the actual fuck is this?
+// Ok, it actually fails to parse conditions and assignments inside the body, so it actually fails to parse function and starts doing this shit.
+// I broke somethings with pinning
+
+// Even if the code is perfectly normal.
+// 'function' is pinned because pinning local won't allow to match variable definitions
+local_func_def_statement ::= 'local' 'function' ID func_body {
+  pin = 2
+  methods=[getPresentation]
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+}
+method_def_statement ::= 'function' method_name func_body { pin = 2; methods=[getPresentation] }
+
+// ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
+method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
 func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
-par_list ::= binding_list (',' '...')? | '...' (':' (type | generic_type_pack))?
+par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
+private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
-exp_list ::= (expression ',')* expression
+exp_list ::= expression (',' expression)*
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
-binding ::= ID (':' type)?
+binding ::= ID (':' type)?  {
+  // No idea why they use mixins or methods instead of extend, probably because they need more than one implementation
+  // But usually it's not the case.
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+  methods=[getPresentation]
+}
 binding_list ::= binding (',' binding)* // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
-varList ::= var (',' var)*
-var ::= simple_var postfix_exp*
-simple_var ::= ID | '(' expression ')'
-prefix_exp ::= (var | '(' expression ')') postfix_exp*
-postfix_exp ::= func_args | ':' ID func_args | '[' expression ']' | '.' ID
-function_call ::= prefix_exp postfix_exp
+var_list ::= var (',' var)*
+var ::= primary_exp
+var_reference ::= ID { methods=[getReferences] }
+prefix_exp ::= var_reference | '(' expression ')' | table_constructor
+postfix_exp ::= func_args | index_expr
+
+// I guess this is a bit more permissive that it should be? e.g. it allows {}()
+primary_exp ::= prefix_exp postfix_exp*
+
+index_expr ::= '[' expression ']' | '.' ID | ':' ID { pin(".*") = 1 }
+
+func_args ::= list_args | single_arg
+// TODO (AleksandrSl 21/06/2024): I wonder when you may have table and string as an arg without the parenthesis
+// Well, shit, sugar we deserved
+// > A call of the form f{fields} is syntactic sugar for f({fields});
+//   that is, the argument list is a single new table.
+//   A call of the form f'string' (or f"string" or f[[string]]) is syntactic sugar for f('string');
+//   that is, the argument list is a single literal string
+// Only STRING is allowed, not template_string
+single_arg ::= table_constructor | STRING { extends = func_args }
+private arg_expr_list ::= expression (',' expression)*
+list_args ::= '(' arg_expr_list? ')' { extends = func_args; pin = 1 }
+
 
 expression ::= simple_exp | as_exp | unary_exp | binary_exp
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
-unary_exp ::= un_op expression {extends=expression}
-binary_exp ::= expression bin_op expression {extends=expression}
-ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression
-as_exp ::= simple_exp '::' type {extends=expression}
-template_string ::= TEMPLATE_STRING_SQUOTE (STRING | ('{' expression '}'))* TEMPLATE_STRING_EQUOTE
-simple_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | table_constructor | closure_exp | prefix_exp | ifelse_exp | template_string {extends=expression}
-func_args ::=  '(' exp_list? ')' | table_constructor | STRING
+unary_exp ::= un_op expression {extends=expression; pin = 1}
+binary_exp ::= expression bin_op expression {extends=expression; pin = 2}
+ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression { pin = 1 }
+// TODO (AleksandrSl 21/06/2024): I guess I may have () around cast and they maybe be even necessary? Can I cast all simple expressions?
+as_exp ::= simple_exp '::' type { extends=expression; pin = 2}
+template_string ::= TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE { pin = 1 }
+simple_exp ::=  table_constructor | closure_exp | ifelse_exp | literal_exp | template_string | primary_exp {extends=expression}
 
-closure_exp ::= 'function' func_body
+private literal_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
 
-table_constructor ::= '{' field_list? '}'
+closure_exp ::= 'function' func_body { pin = 1 }
+
+table_constructor ::= '{' field_list? '}' { pin = 1 }
 field_list ::= field (field_sep field)* field_sep?
-field ::= '[' expression ']' '=' expression | ID '=' expression | expression
+field ::= keyed_field | string_keyed_field | indexed_field { recoverWhile = field_recover }
+keyed_field ::= '[' expression ']' '=' expression { pin = 1}
+string_keyed_field ::= ID '=' expression { pin = 2 }
+indexed_field ::= expression
+private field_recover ::= !(',' | ';' | '}' | '[')
 // Why the hell they allow two separators
 field_sep ::= ',' | ';'
 
@@ -192,18 +261,27 @@ intersection_suffix ::= ('&' simple_type)+
 type ::= simple_type '?'? (union_suffix | intersection_suffix)*
 
 generic_type_pack_parameter ::= ID '...'
-generic_type_list ::= ID (',' generic_type_list)? | generic_type_pack_parameter (',' generic_type_pack_parameter)*
-
 generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack)
+
+// Having just ID before the ... breaks everything, because T... will match just ID and go another step and then later fail, but it won't backtrack and try ...
+generic_type_list ::= generic_type_pack_parameter (',' generic_type_pack_parameter)* | ID (',' generic_type_list)?
+
 generic_type_list_with_defaults ::=
-    generic_type_list (',' generic_type_pack_parameter_with_default)*
-    | ID (',' ID)* (',' ID '=' type)* (',' generic_type_pack_parameter_with_default)*
-    | ID '=' type (',' generic_type_pack_parameter_with_default)*
-    | generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+  generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+ | ID '=' type (',' generic_type_list_with_defaults_only)?
+ | generic_type_pack_parameters_with_default
+ | ID (',' generic_type_list_with_defaults)?
+
+private generic_type_list_with_defaults_only ::=
+      generic_type_pack_parameter_with_default (',' generic_type_pack_parameter_with_default)*
+     | ID '=' type (',' generic_type_list_with_defaults_only)?
+
+private generic_type_pack_parameters_with_default ::= generic_type_pack_parameter ((',' generic_type_pack_parameter_with_default)+ | (',' generic_type_pack_parameters_with_default)?)
 
 type_list ::= type (',' type_list)? | '...' type
-bound_type_list ::= (ID ':')? type (',' bound_type_list)? | '...' type
-type_params ::= (type | type_pack | variadic_type_pack | generic_type_pack) (',' type_params)?
+bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)? { recoverWhile = bound_type_list_recover }
+private bound_type_list_recover ::= !(')')
+type_params ::= (variadic_type_pack | generic_type_pack | type_pack | type) (',' type_params)?
 type_pack ::= '(' type_list? ')'
 generic_type_pack ::= ID '...'
 variadic_type_pack ::= '...' type
@@ -213,4 +291,5 @@ table_prop ::= ID ':' type
 private table_prop_or_indexer ::= table_prop | table_indexer
 prop_list ::= table_prop_or_indexer (field_sep table_prop_or_indexer)* field_sep?
 table_type ::= '{' type '}' | '{' prop_list? '}'
-function_type ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type
+// I can't pin '(' because there is '(' type ')' type as well
+function_type ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type { pin = 5; }

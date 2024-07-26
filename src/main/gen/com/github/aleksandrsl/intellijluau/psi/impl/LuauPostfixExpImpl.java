@@ -29,20 +29,14 @@ public class LuauPostfixExpImpl extends ASTWrapperPsiElement implements LuauPost
 
   @Override
   @Nullable
-  public LuauExpression getExpression() {
-    return findChildByClass(LuauExpression.class);
-  }
-
-  @Override
-  @Nullable
   public LuauFuncArgs getFuncArgs() {
     return findChildByClass(LuauFuncArgs.class);
   }
 
   @Override
   @Nullable
-  public PsiElement getId() {
-    return findChildByType(ID);
+  public LuauIndexExpr getIndexExpr() {
+    return findChildByClass(LuauIndexExpr.class);
   }
 
 }

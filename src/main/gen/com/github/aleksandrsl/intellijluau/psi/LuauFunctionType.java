@@ -13,7 +13,7 @@ public interface LuauFunctionType extends PsiElement {
   @Nullable
   LuauGenericTypeList getGenericTypeList();
 
-  @NotNull
+  @Nullable
   LuauReturnType getReturnType();
 
 }

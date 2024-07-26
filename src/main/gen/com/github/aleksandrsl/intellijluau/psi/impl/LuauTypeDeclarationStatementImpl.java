@@ -40,9 +40,9 @@ public class LuauTypeDeclarationStatementImpl extends ASTWrapperPsiElement imple
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauType getType() {
-    return findNotNullChildByClass(LuauType.class);
+    return findChildByClass(LuauType.class);
   }
 
   @Override
@@ -52,9 +52,9 @@ public class LuauTypeDeclarationStatementImpl extends ASTWrapperPsiElement imple
   }
 
   @Override
-  @NotNull
+  @Nullable
   public PsiElement getId() {
-    return findNotNullChildByType(ID);
+    return findChildByType(ID);
   }
 
 }

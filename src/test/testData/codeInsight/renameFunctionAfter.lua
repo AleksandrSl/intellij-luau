@@ -1,0 +1,3 @@
+function renamed() end
+
+renamed()

@@ -7,13 +7,4 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauFuncArgs extends PsiElement {
 
-  @Nullable
-  LuauExpList getExpList();
-
-  @Nullable
-  LuauTableConstructor getTableConstructor();
-
-  @Nullable
-  PsiElement getString();
-
 }

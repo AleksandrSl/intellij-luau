@@ -14,7 +14,7 @@ public interface LuauSimpleExp extends LuauExpression {
   LuauIfelseExp getIfelseExp();
 
   @Nullable
-  LuauPrefixExp getPrefixExp();
+  LuauPrimaryExp getPrimaryExp();
 
   @Nullable
   LuauTableConstructor getTableConstructor();

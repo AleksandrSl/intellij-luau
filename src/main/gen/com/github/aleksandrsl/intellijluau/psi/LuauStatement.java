@@ -14,6 +14,9 @@ public interface LuauStatement extends PsiElement {
   LuauClassicForStatement getClassicForStatement();
 
   @Nullable
+  LuauCompoundOpStatement getCompoundOpStatement();
+
+  @Nullable
   LuauDoStatement getDoStatement();
 
   @Nullable
@@ -26,13 +29,16 @@ public interface LuauStatement extends PsiElement {
   LuauFuncDefStatement getFuncDefStatement();
 
   @Nullable
-  LuauFunctionCall getFunctionCall();
-
-  @Nullable
   LuauIfStatement getIfStatement();
 
   @Nullable
+  LuauLocalDefStatement getLocalDefStatement();
+
+  @Nullable
   LuauLocalFuncDefStatement getLocalFuncDefStatement();
+
+  @Nullable
+  LuauMethodDefStatement getMethodDefStatement();
 
   @Nullable
   LuauRepeatStatement getRepeatStatement();

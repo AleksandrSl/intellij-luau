@@ -28,15 +28,15 @@ public class LuauWhileStatementImpl extends ASTWrapperPsiElement implements Luau
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauBlock getBlock() {
-    return findNotNullChildByClass(LuauBlock.class);
+    return findChildByClass(LuauBlock.class);
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauExpression getExpression() {
-    return findNotNullChildByClass(LuauExpression.class);
+    return findChildByClass(LuauExpression.class);
   }
 
 }

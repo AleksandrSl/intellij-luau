@@ -11,7 +11,7 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauFuncArgsImpl extends ASTWrapperPsiElement implements LuauFuncArgs {
+public abstract class LuauFuncArgsImpl extends ASTWrapperPsiElement implements LuauFuncArgs {
 
   public LuauFuncArgsImpl(@NotNull ASTNode node) {
     super(node);
@@ -25,24 +25,6 @@ public class LuauFuncArgsImpl extends ASTWrapperPsiElement implements LuauFuncAr
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof LuauVisitor) accept((LuauVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @Nullable
-  public LuauExpList getExpList() {
-    return findChildByClass(LuauExpList.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauTableConstructor getTableConstructor() {
-    return findChildByClass(LuauTableConstructor.class);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getString() {
-    return findChildByType(STRING);
   }
 
 }
