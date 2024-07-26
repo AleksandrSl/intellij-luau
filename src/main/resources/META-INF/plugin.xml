@@ -89,5 +89,9 @@
                 text="StyLua: format">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action class="com.github.aleksandrsl.intellijluau.actions.CreateLuauFileAction"
+                id="luau.newFile">
+            <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
+        </action>
     </actions>
 </idea-plugin>
