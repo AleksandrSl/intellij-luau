@@ -8,9 +8,11 @@
 <!-- Plugin description -->
 This plugin adds support for Luau language, it's very raw, but I hope to shape it with time
 
-- [x] Luau LSP
+- [x] Luau LSP ([Only for IDEs with LSP support](https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html#supported-ides))
 - [x] Basic syntax highlighting
 - [x] StyLua: format action to format current file
+
+Visit Luau settings for LSP and other tools configuration `File | Settings | Languages & Frameworks | Luau`
 
 <!-- Plugin description end -->
 
@@ -25,7 +27,6 @@ This plugin adds support for Luau language, it's very raw, but I hope to shape i
 
   Download the [latest release](https://github.com/AleksandrSl/intellij-luau/releases/latest) and install it manually using
   <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
-
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
