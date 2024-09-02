@@ -215,14 +215,13 @@ single_arg ::= table_constructor | STRING { extends = func_args }
 private arg_expr_list ::= expression (',' expression)*
 list_args ::= '(' arg_expr_list? ')' { extends = func_args; pin = 1 }
 
-
-expression ::= simple_exp | as_exp | unary_exp | binary_exp
+expression ::= unary_exp | binary_exp | as_exp | simple_exp
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
 unary_exp ::= un_op expression {extends=expression; pin = 1}
 binary_exp ::= expression bin_op expression {extends=expression; pin = 2}
 ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression { pin = 1 }
 // TODO (AleksandrSl 21/06/2024): I guess I may have () around cast and they maybe be even necessary? Can I cast all simple expressions?
-as_exp ::= simple_exp '::' type { extends=expression; pin = 2}
+as_exp ::= simple_exp '::' type { extends=expression; pin = 2 }
 template_string ::= TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE { pin = 1 }
 simple_exp ::=  table_constructor | closure_exp | ifelse_exp | literal_exp | template_string | primary_exp {extends=expression}
 

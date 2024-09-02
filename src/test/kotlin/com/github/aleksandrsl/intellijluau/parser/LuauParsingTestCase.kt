@@ -23,6 +23,10 @@ class LuauParsingTestCase: ParsingTestCase("", LuauFileType.defaultExtension, Lu
         doTest(true)
     }
 
+    fun testCastInExpression() {
+        doTest(true)
+    }
+
     override fun getTestDataPath(): String {
         return baseTestDataPath
     }
