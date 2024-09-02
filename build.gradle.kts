@@ -138,7 +138,6 @@ kover {
     }
 }
 
-
 intellijPlatformTesting {
     runIde {
         register("runIdeForUiTests") {
