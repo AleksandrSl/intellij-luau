@@ -18,7 +18,7 @@ jobs:
       pull-requests: write
     steps:
 
-      # Check out current repository
+      # Check out the current repository
       - name: Fetch Sources
         uses: actions/checkout@v4
         with:
@@ -51,7 +51,7 @@ jobs:
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      # Update Unreleased section with the current release note
+      # Update the Unreleased section with the current release note
       - name: Patch Changelog
         if: ${{ steps.properties.outputs.changelog != '' }}
         env:
