@@ -2499,17 +2499,17 @@ public class LuauParser implements PsiParser, LightPsiParser {
   /* ********************************************************** */
   // Expression root: expression
   // Operator priority table:
-  // 0: ATOM(simple_exp)
-  // 1: POSTFIX(as_exp)
-  // 2: ATOM(unary_exp)
-  // 3: BINARY(binary_exp)
+  // 0: ATOM(unary_exp)
+  // 1: BINARY(binary_exp)
+  // 2: POSTFIX(as_exp)
+  // 3: ATOM(simple_exp)
   public static boolean expression(PsiBuilder b, int l, int g) {
     if (!recursion_guard_(b, l, "expression")) return false;
     addVariant(b, "<expression>");
     boolean r, p;
     Marker m = enter_section_(b, l, _NONE_, "<expression>");
-    r = simple_exp(b, l + 1);
-    if (!r) r = unary_exp(b, l + 1);
+    r = unary_exp(b, l + 1);
+    if (!r) r = simple_exp(b, l + 1);
     p = r;
     r = r && expression_0(b, l + 1, g);
     exit_section_(b, l, m, null, r, p, null);
@@ -2521,19 +2521,42 @@ public class LuauParser implements PsiParser, LightPsiParser {
     boolean r = true;
     while (true) {
       Marker m = enter_section_(b, l, _LEFT_, null);
-      if (g < 1 && leftMarkerIs(b, SIMPLE_EXP) && as_exp_0(b, l + 1)) {
+      if (g < 1 && bin_op(b, l + 1)) {
+        r = expression(b, l, 1);
+        exit_section_(b, l, m, BINARY_EXP, r, true, null);
+      }
+      else if (g < 2 && leftMarkerIs(b, SIMPLE_EXP) && as_exp_0(b, l + 1)) {
         r = true;
         exit_section_(b, l, m, AS_EXP, r, true, null);
-      }
-      else if (g < 3 && bin_op(b, l + 1)) {
-        r = expression(b, l, 3);
-        exit_section_(b, l, m, BINARY_EXP, r, true, null);
       }
       else {
         exit_section_(b, l, m, null, false, false, null);
         break;
       }
     }
+    return r;
+  }
+
+  // un_op expression
+  public static boolean unary_exp(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "unary_exp")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, UNARY_EXP, "<unary exp>");
+    r = un_op(b, l + 1);
+    p = r; // pin = 1
+    r = r && expression(b, l + 1, -1);
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // '::' type
+  private static boolean as_exp_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "as_exp_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokenSmart(b, DOUBLE_COLON);
+    r = r && type(b, l + 1);
+    exit_section_(b, m, null, r);
     return r;
   }
 
@@ -2550,29 +2573,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = primary_exp(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
-  }
-
-  // '::' type
-  private static boolean as_exp_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "as_exp_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokenSmart(b, DOUBLE_COLON);
-    r = r && type(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // un_op expression
-  public static boolean unary_exp(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "unary_exp")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, UNARY_EXP, "<unary exp>");
-    r = un_op(b, l + 1);
-    p = r; // pin = 1
-    r = r && expression(b, l + 1, -1);
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
   }
 
 }
