@@ -108,7 +108,8 @@ intellijPlatform {
         // The pluginVersion is based on the SemVer (https://semver.org) and supports pre-release labels, like 2.1.7-alpha.3
         // Specify pre-release label to publish the plugin in a custom Release Channel automatically. Read more:
         // https://plugins.jetbrains.com/docs/intellij/deployment.html#specifying-a-release-channel
-        channels = providers.gradleProperty("pluginVersion").map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
+        channels = providers.gradleProperty("pluginVersion")
+            .map { listOf(it.substringAfter('-', "").substringBefore('.').ifEmpty { "default" }) }
     }
 
     pluginVerification {
@@ -177,22 +178,12 @@ tasks {
     // Generate parser from the file via Grammar kit plugin.
 
     prepareSandbox {
-        val projectDirPath: String = project.projectDir.path
-        val injected = project.objects.newInstance<Injected>()
-        val pluginName = intellijPlatform.pluginConfiguration.name.get()
-        doLast {
-            injected.fs.copy {
-                from("${projectDirPath}/src/main/resources/typeDeclarations")
-                into("${destinationDir}/${pluginName}/typeDeclarations")
-            }
+        from(layout.projectDirectory.dir("/src/main/resources/typeDeclarations")) {
+            into(intellijPlatform.pluginConfiguration.name.map { "$it/typeDeclarations" })
         }
     }
 
     publishPlugin {
         dependsOn(patchChangelog)
     }
-}
-
-interface Injected {
-    @get:Inject val fs: FileSystemOperations
 }
