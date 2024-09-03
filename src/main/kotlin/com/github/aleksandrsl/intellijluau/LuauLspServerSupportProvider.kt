@@ -33,7 +33,8 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
         )
 }
 
-private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "Luau") {
+private class LuauLspServerDescriptor(project: Project) :
+    ProjectWideLspServerDescriptor(project, LuauBundle.message("luau.lsp.name")) {
     override fun isSupportedFile(file: VirtualFile) = file.fileType == LuauFileType
 
     override fun createCommandLine(): GeneralCommandLine {
