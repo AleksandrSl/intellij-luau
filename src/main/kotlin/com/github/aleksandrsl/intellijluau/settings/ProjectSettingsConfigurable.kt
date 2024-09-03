@@ -45,6 +45,16 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         settings.customDefinitionsPaths = _component?.customDefinitionsPaths ?: listOf()
     }
 
+    override fun reset() {
+        _component?.run {
+            lspPath = settings.lspPath
+            styLuaPath = settings.styLuaPath
+            runStyLuaOnSave = settings.runStyLuaOnSave
+            robloxSecurityLevel = settings.robloxSecurityLevel.name
+            customDefinitionsPaths = settings.customDefinitionsPaths
+        }
+    }
+
     override fun getDisplayName(): String {
         return "Luau"
     }
