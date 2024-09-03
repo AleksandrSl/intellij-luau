@@ -3,7 +3,6 @@
 package com.github.aleksandrsl.intellijluau
 
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
-import com.github.aleksandrsl.intellijluau.settings.RobloxSecurityLevel
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.application.PluginPathManager
@@ -33,30 +32,24 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
             throw ExecutionException(LuauBundle.message("luau.language.server.not.found"))
         }
 
-        val robloxSecurityLevel = ProjectSettingsState.getInstance(project).robloxSecurityLevel
-        val declarations = when (robloxSecurityLevel) {
-            RobloxSecurityLevel.Custom -> {
-                val custom = File(ProjectSettingsState.getInstance(project).customDefinitionsPath)
-                if (custom.exists()) {
-                    custom
-                } else {
-                    null
-                }
+        val settings = ProjectSettingsState.getInstance(project)
+        val file = PluginPathManager.getPluginResource(
+            javaClass, "typeDeclarations/globalTypes.${settings.robloxSecurityLevel.name}.d.luau"
+        )
+        val declarations = settings.customDefinitionsPaths.map { File(it) }.toMutableList().apply {
+            if (file != null) {
+                add(file)
             }
-
-            else -> PluginPathManager.getPluginResource(
-                javaClass, "typeDeclarations/globalTypes.${robloxSecurityLevel.name}.d.luau"
-            )
-        }
+        }.filter { it.exists() }.map { it.path }
 
         return GeneralCommandLine().apply {
             withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
             withCharset(Charsets.UTF_8)
             withExePath(lsp.path)
             addParameter("lsp")
-            if (declarations != null) {
+            declarations.forEach {
                 addParameter("--definitions")
-                addParameter(declarations.path)
+                addParameter(it)
             }
         }
     }
