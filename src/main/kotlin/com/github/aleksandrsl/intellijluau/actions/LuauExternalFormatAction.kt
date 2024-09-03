@@ -22,11 +22,12 @@ private val LOG = logger<LuauExternalFormatAction>()
 
 class LuauExternalFormatAction : AnAction() {
 
-    private var tool = File(ProjectSettingsState.instance.styLuaPath)
+    private fun getToolPath(project: Project) = File(ProjectSettingsState.getInstance(project).styLuaPath)
 
     override fun update(event: AnActionEvent) {
         super.update(event)
-        tool = File(ProjectSettingsState.instance.styLuaPath)
+        val project = event.project ?: return
+        val tool = getToolPath(project)
         event.presentation.isEnabled = tool.exists()
     }
 
@@ -45,10 +46,16 @@ class LuauExternalFormatAction : AnAction() {
             // Why is not modal progress working?
             // Do I need different contexts here?
             withBackgroundProgress(project, "Stylua format current document") {
-                when (val result = StyLuaCli(tool.toPath()).formatDocument(project)) {
-                    is StyLuaCli.FormatResult.Success -> notificationGroupManager.createNotification("File formatted", NotificationType.INFORMATION)
+                when (val result = StyLuaCli(getToolPath(project).toPath()).formatDocument(project)) {
+                    is StyLuaCli.FormatResult.Success -> notificationGroupManager.createNotification(
+                        "File formatted",
+                        NotificationType.INFORMATION
+                    )
                         .notify(project);
-                    is StyLuaCli.FormatResult.StyluaError -> notificationGroupManager.createNotification(result.msg, NotificationType.ERROR)
+                    is StyLuaCli.FormatResult.StyluaError -> notificationGroupManager.createNotification(
+                        result.msg,
+                        NotificationType.ERROR
+                    )
                         .notify(project);
                     null -> null
                 }
@@ -59,12 +66,13 @@ class LuauExternalFormatAction : AnAction() {
 
     companion object {
         // TODO: Do I really need this of this is an old rudiment?
-        const val ID = "com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction" // must stay in-sync with `plugin.xml`
+        const val ID =
+            "com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction" // must stay in-sync with `plugin.xml`
 
         // I added this function here, because I used prettier plugin as a reference.
         // Might make sense to reconsider, and call StyLua from on save directly.
         fun processVirtualFiles(project: Project, files: Collection<VirtualFile>) {
-            val tool = File(ProjectSettingsState.instance.styLuaPath)
+            val tool = File(ProjectSettingsState.getInstance(project).styLuaPath)
             StyLuaCli(tool.toPath()).formatFiles(project, files)
         }
     }

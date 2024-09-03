@@ -33,7 +33,7 @@ private class LuauExternalFormatOnSaveActionInfo(actionOnSaveContext: ActionOnSa
 
     override fun getActionOnSaveName() = LuauBundle.message("luau.run.on.save.checkbox.on.actions.on.save.page")
 
-    override fun isActionOnSaveEnabledAccordingToStoredState(): Boolean = ProjectSettingsState.instance.runStyLuaOnSave
+    override fun isActionOnSaveEnabledAccordingToStoredState(): Boolean = ProjectSettingsState.getInstance(project).runStyLuaOnSave
 
     override fun isActionOnSaveEnabledAccordingToUiState(configurable: ProjectSettingsConfigurable): Boolean =
         configurable.component?.runStyLuaOnSave ?: false

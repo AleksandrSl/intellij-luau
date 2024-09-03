@@ -1,18 +1,20 @@
 package com.github.aleksandrsl.intellijluau.settings
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 
-@Service
+@Service(Service.Level.PROJECT)
 @State(name = "LuauPluginSettings", storages = [Storage("luauPlugin.xml")])
 internal class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState> {
     var lspPath: String = ""
     var styLuaPath: String = ""
     var runStyLuaOnSave: Boolean = false
+    var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel
+    var customDefinitionsPath: String = ""
 
     override fun getState(): ProjectSettingsState {
         return this
@@ -23,7 +25,17 @@ internal class ProjectSettingsState : PersistentStateComponent<ProjectSettingsSt
     }
 
     companion object {
-        val instance: ProjectSettingsState
-            get() = ApplicationManager.getApplication().getService(ProjectSettingsState::class.java)
+        fun getInstance(project: Project): ProjectSettingsState = project.getService(ProjectSettingsState::class.java)
     }
 }
+
+
+enum class RobloxSecurityLevel {
+    None,
+    LocalUserSecurity,
+    PluginSecurity,
+    RobloxScriptSecurity,
+    Custom
+}
+
+val defaultRobloxSecurityLevel = RobloxSecurityLevel.None
