@@ -104,7 +104,7 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
                 }
                 collapsibleGroup("Custom Definitions") {
                     row {
-                        cell(customDefinitionsToolbar.panel).resizableColumn()
+                        cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL)
                     }
                 }
             }
