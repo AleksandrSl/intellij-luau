@@ -3,6 +3,7 @@
 package com.github.aleksandrsl.intellijluau
 
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.settings.RobloxSecurityLevel
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.application.PluginPathManager
@@ -14,9 +15,7 @@ import java.io.File
 
 class LuauLspServerSupportProvider : LspServerSupportProvider {
     override fun fileOpened(
-        project: Project,
-        file: VirtualFile,
-        serverStarter: LspServerSupportProvider.LspServerStarter
+        project: Project, file: VirtualFile, serverStarter: LspServerSupportProvider.LspServerStarter
     ) {
         if (file.fileType == LuauFileType) {
             serverStarter.ensureServerStarted(LuauLspServerDescriptor(project))
@@ -28,13 +27,28 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
     override fun isSupportedFile(file: VirtualFile) = file.fileType == LuauFileType
 
     override fun createCommandLine(): GeneralCommandLine {
-        val lsp = File(ProjectSettingsState.instance.lspPath)
+        val lsp = File(ProjectSettingsState.getInstance(project).lspPath)
 
         if (!lsp.exists()) {
             throw ExecutionException(LuauBundle.message("luau.language.server.not.found"))
         }
 
-        val declarations = PluginPathManager.getPluginResource(javaClass, "typeDeclarations/globalTypes.PluginSecurity.d.luau")
+        val robloxSecurityLevel = ProjectSettingsState.getInstance(project).robloxSecurityLevel
+        val declarations = when (robloxSecurityLevel) {
+            RobloxSecurityLevel.Custom -> {
+                val custom = File(ProjectSettingsState.getInstance(project).customDefinitionsPath)
+                if (custom.exists()) {
+                    custom
+                } else {
+                    null
+                }
+            }
+
+            else -> PluginPathManager.getPluginResource(
+                javaClass, "typeDeclarations/globalTypes.${robloxSecurityLevel.name}.d.luau"
+            )
+        }
+
         return GeneralCommandLine().apply {
             withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
             withCharset(Charsets.UTF_8)

@@ -9,7 +9,7 @@ import javax.swing.JComponent
 class ProjectSettingsConfigurable(val project: Project) : Configurable {
 
     private var _component: ProjectSettingsComponent? = null
-    private val settings = ProjectSettingsState.instance
+    private val settings = ProjectSettingsState.getInstance(project)
 
     val component: ProjectSettingsComponent?
         get() = _component
@@ -19,6 +19,8 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             lspPath = settings.lspPath
             styLuaPath = settings.styLuaPath
             runStyLuaOnSave = settings.runStyLuaOnSave
+            robloxSecurityLevel = settings.robloxSecurityLevel.name
+            customDefinitionsPath = settings.customDefinitionsPath
         }.also {
             _component = it
         }.panel
@@ -28,6 +30,8 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         return settings.lspPath != _component?.lspPath
                 || settings.styLuaPath != _component?.styLuaPath
                 || settings.runStyLuaOnSave != _component?.runStyLuaOnSave
+                || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel
+                || settings.customDefinitionsPath != _component?.customDefinitionsPath
     }
 
     override fun getPreferredFocusedComponent(): JComponent? = _component?.preferredFocusedComponent
@@ -36,6 +40,9 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         settings.lspPath = _component?.lspPath ?: ""
         settings.styLuaPath = _component?.styLuaPath ?: ""
         settings.runStyLuaOnSave = _component?.runStyLuaOnSave ?: false
+        settings.robloxSecurityLevel =
+            _component?.robloxSecurityLevel?.let { RobloxSecurityLevel.valueOf(it) } ?: defaultRobloxSecurityLevel
+        settings.customDefinitionsPath = _component?.customDefinitionsPath ?: ""
     }
 
     override fun getDisplayName(): String {
