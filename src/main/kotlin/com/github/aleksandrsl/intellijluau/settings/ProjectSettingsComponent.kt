@@ -1,5 +1,6 @@
 package com.github.aleksandrsl.intellijluau.settings
 
+import com.github.aleksandrsl.intellijluau.cli.LspCli
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.intellij.openapi.diagnostic.logger
@@ -56,10 +57,28 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
             this.styluaRunOnSaveComponent.isSelected = newValue ?: false
         }
 
+    private var lspVersion: String? = null
     private var styLuaVersion: String? = null
     val panel: JPanel
+
     private val lspPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
+        textField.document.addDocumentListener(object : DocumentAdapter() {
+            override fun textChanged(event: javax.swing.event.DocumentEvent) {
+                if (text.isEmpty()) {
+                    return
+                }
+                val maybePath = text.toNioPathOrNull()
+                if (maybePath == null || !maybePath.exists()) {
+                    return
+                }
+                // I guess this will launch in project scope, so the coroutine will finish even if I close the settings.
+                // Not sure if I should about it or not.
+                service.coroutineScope.launch {
+                    setLspVersion(LspCli(maybePath).queryVersion())
+                }
+            }
+        })
     }
     private val styLuaPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
@@ -81,6 +100,7 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
             }
         })
     }
+    private val lspVersionLabelComponent = JBLabel()
     private val styluaVersionLabelComponent = JBLabel()
     private val styluaRunOnSaveComponent = JBCheckBox("Run StyLua on save")
     private lateinit var robloxSecurityLevelComponent: JComboBox<String>
@@ -91,6 +111,9 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
             group("LSP") {
                 row("Path to luau lsp:") {
                     cell(lspPathComponent).align(AlignX.FILL).resizableColumn()
+                }
+                row {
+                    cell(lspVersionLabelComponent).align(AlignX.FILL).resizableColumn()
                 }
                 row("Roblox Security Level:") {
                     robloxSecurityLevelComponent = comboBox(
@@ -126,6 +149,11 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
         styLuaVersion = newVersion
         // styluaVersionLabel.bindTextIn() Experimental but suits my purpose I guess?
         styluaVersionLabelComponent.text = "Version: $styLuaVersion"
+    }
+
+    private fun setLspVersion(newVersion: String) {
+        lspVersion = newVersion
+        lspVersionLabelComponent.text = "Version: $lspVersion"
     }
 
     val preferredFocusedComponent: JComponent = this.lspPathComponent
