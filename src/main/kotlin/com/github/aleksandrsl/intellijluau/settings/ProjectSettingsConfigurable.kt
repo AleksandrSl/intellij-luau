@@ -1,5 +1,6 @@
 package com.github.aleksandrsl.intellijluau.settings
 
+import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.restartLspServerAsync
 import com.intellij.openapi.components.service
@@ -59,7 +60,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     }
 
     override fun getDisplayName(): String {
-        return "Luau"
+        return LuauBundle.message("luau.settings.name")
     }
 
     override fun disposeUIResources() {
