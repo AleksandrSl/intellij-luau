@@ -20,7 +20,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             styLuaPath = settings.styLuaPath
             runStyLuaOnSave = settings.runStyLuaOnSave
             robloxSecurityLevel = settings.robloxSecurityLevel.name
-            customDefinitionsPath = settings.customDefinitionsPath
+            customDefinitionsPaths = settings.customDefinitionsPaths
         }.also {
             _component = it
         }.panel
@@ -31,7 +31,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
                 || settings.styLuaPath != _component?.styLuaPath
                 || settings.runStyLuaOnSave != _component?.runStyLuaOnSave
                 || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel
-                || settings.customDefinitionsPath != _component?.customDefinitionsPath
+                || settings.customDefinitionsPaths != _component?.customDefinitionsPaths
     }
 
     override fun getPreferredFocusedComponent(): JComponent? = _component?.preferredFocusedComponent
@@ -42,7 +42,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         settings.runStyLuaOnSave = _component?.runStyLuaOnSave ?: false
         settings.robloxSecurityLevel =
             _component?.robloxSecurityLevel?.let { RobloxSecurityLevel.valueOf(it) } ?: defaultRobloxSecurityLevel
-        settings.customDefinitionsPath = _component?.customDefinitionsPath ?: ""
+        settings.customDefinitionsPaths = _component?.customDefinitionsPaths ?: listOf()
     }
 
     override fun getDisplayName(): String {

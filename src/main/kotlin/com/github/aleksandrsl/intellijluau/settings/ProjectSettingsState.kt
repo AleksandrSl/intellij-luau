@@ -14,7 +14,7 @@ internal class ProjectSettingsState : PersistentStateComponent<ProjectSettingsSt
     var styLuaPath: String = ""
     var runStyLuaOnSave: Boolean = false
     var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel
-    var customDefinitionsPath: String = ""
+    var customDefinitionsPaths: List<String> = listOf()
 
     override fun getState(): ProjectSettingsState {
         return this
@@ -35,7 +35,6 @@ enum class RobloxSecurityLevel {
     LocalUserSecurity,
     PluginSecurity,
     RobloxScriptSecurity,
-    Custom
 }
 
 val defaultRobloxSecurityLevel = RobloxSecurityLevel.None
