@@ -2,14 +2,17 @@
 
 package com.github.aleksandrsl.intellijluau
 
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.application.PluginPathManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.platform.lsp.api.LspServer
 import com.intellij.platform.lsp.api.LspServerSupportProvider
 import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
+import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
 import java.io.File
 
 class LuauLspServerSupportProvider : LspServerSupportProvider {
@@ -20,6 +23,12 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
             serverStarter.ensureServerStarted(LuauLspServerDescriptor(project))
         }
     }
+
+    override fun createLspServerWidgetItem(lspServer: LspServer, currentFile: VirtualFile?): LspServerWidgetItem =
+        LspServerWidgetItem(
+            lspServer, currentFile,
+            LuauIcons.FILE, ProjectSettingsConfigurable::class.java
+        )
 }
 
 private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(project, "Luau") {
