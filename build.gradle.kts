@@ -178,7 +178,7 @@ tasks {
 
     prepareSandbox {
         from(layout.projectDirectory.dir("/src/main/resources/typeDeclarations")) {
-            into(intellijPlatform.pluginConfiguration.name.map { "$it/typeDeclarations" })
+            into(intellijPlatform.projectName.map { "$it/typeDeclarations" })
         }
     }
 
