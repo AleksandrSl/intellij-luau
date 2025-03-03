@@ -232,7 +232,9 @@ closure_exp ::= 'function' func_body { pin = 1 }
 table_constructor ::= '{' field_list? '}' { pin = 1 }
 field_list ::= field (field_sep field)* field_sep?
 field ::= keyed_field | string_keyed_field | indexed_field { recoverWhile = field_recover }
-keyed_field ::= '[' expression ']' '=' expression { pin = 1}
+// Added for the nice scope selection in the first place
+computed_key ::= '[' expression ']'
+keyed_field ::= computed_key '=' expression { pin = 1}
 string_keyed_field ::= ID '=' expression { pin = 2 }
 indexed_field ::= expression
 private field_recover ::= !(',' | ';' | '}' | '[')
@@ -243,13 +245,14 @@ compound_op ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..=' | '//='
 bin_op ::= '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
 un_op ::= '-' | 'not' | '#'
 
+// Types
 simple_type ::=
     'nil'
     | singleton_type
     | typeof_soft_keyword '(' expression ')'
     | ID ('.' ID)? ('<' type_params? '>')?
-    | table_type
-    | function_type
+    | type_function
+    | type_table
     | '(' type ')'
 
 singleton_type ::= STRING | 'true' | 'false'
@@ -285,10 +288,12 @@ type_pack ::= '(' type_list? ')'
 generic_type_pack ::= ID '...'
 variadic_type_pack ::= '...' type
 return_type ::= type | type_pack
-table_indexer ::= '[' type ']' ':' type
-table_prop ::= ID ':' type
-private table_prop_or_indexer ::= table_prop | table_indexer
-prop_list ::= table_prop_or_indexer (field_sep table_prop_or_indexer)* field_sep?
-table_type ::= '{' type '}' | '{' prop_list? '}'
+type_computed_key ::= '[' type ']'
+type_keyed_field ::= type_computed_key ':' type
+type_string_keyed_field ::= ID ':' type
+type_field ::= type_string_keyed_field | type_keyed_field
+type_field_list ::= type_field (field_sep type_field)* field_sep?
+// First branch is array type, second branch is table and empty table
+type_table ::= '{' type '}' | '{' type_field_list? '}'
 // I can't pin '(' because there is '(' type ')' type as well
-function_type ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type { pin = 5; }
+type_function ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type { pin = 5; }
