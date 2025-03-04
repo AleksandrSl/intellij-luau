@@ -176,7 +176,8 @@ method_def_statement ::= 'function' method_name func_body { pin = 2; methods=[ge
 
 // ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
 method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
-func_body ::= ('<' generic_type_list '>')? '(' par_list? ')' (':' return_type)? block 'end'
+type_parameters_list ::= ('<' generic_type_list '>')
+func_body ::= type_parameters_list? '(' par_list? ')' (':' return_type)? block 'end'
 par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
@@ -296,4 +297,4 @@ type_field_list ::= type_field (field_sep type_field)* field_sep?
 // First branch is array type, second branch is table and empty table
 type_table ::= '{' type '}' | '{' type_field_list? '}'
 // I can't pin '(' because there is '(' type ')' type as well
-type_function ::= ('<' generic_type_list '>')? '(' bound_type_list? ')' '->' return_type { pin = 5; }
+type_function ::= type_parameters_list? '(' bound_type_list? ')' '->' return_type { pin = 5; }
