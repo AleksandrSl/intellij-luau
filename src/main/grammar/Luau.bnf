@@ -55,6 +55,7 @@
     ASSIGN = "="
     GT = ">"
     LT = "<"
+    AT = "@"
     LPAREN = "("
     RPAREN = ")"
     LBRACK = "["
@@ -124,7 +125,7 @@ private statement_recover ::= !(
   | ',' | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '(' | TEMPLATE_STRING_EQUOTE | '}'
   | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | 'break'
   | 'nil' | 'true' | 'false' | STRING | NUMBER | export_soft_keyword | type_soft_keyword
-  | un_op
+  | un_op | '@'
 )
 
 do_statement ::= 'do' block 'end' { pin = 1 }
@@ -148,9 +149,25 @@ continue_soft_keyword ::= 'continue'
 type_soft_keyword ::= 'type'
 typeof_soft_keyword ::= 'typeof'
 
+/* Attributes */
+// See https://github.com/luau-lang/rfcs/blob/master/docs/syntax-attribute-functions-deprecated.md for the example of parametrized attributes
+// They are a bit in the future, but no one will die if I support the syntax now
+literal_table ::= '{' literal_field_list? '}'
+private literal_field_list ::= literal_field (',' literal_field)* ','?
+literal_field ::= (ID '=')? literal
+
+private literal ::= NUMBER | STRING | 'nil' | 'true' | 'false' | literal_table
+literal_list ::= literal (',' literal)*
+
+parameters ::= '(' literal_list? ')' | literal_table | STRING
+parametrized_attribute ::= ID parameters?
+attribute ::= '@' ID | '@' '[' parametrized_attribute (',' parametrized_attribute)* ']'
+attributes ::= attribute+
+/* Attributes End */
+
 local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }
-func_def_statement ::= 'function' ID func_body {
-  pin = 1
+func_def_statement ::= attributes? 'function' ID func_body {
+  pin = 2
   methods=[getPresentation]
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
   implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
@@ -167,12 +184,12 @@ func_def_statement ::= 'function' ID func_body {
 
 // Even if the code is perfectly normal.
 // 'function' is pinned because pinning local won't allow to match variable definitions
-local_func_def_statement ::= 'local' 'function' ID func_body {
-  pin = 2
+local_func_def_statement ::= attributes? 'local' 'function' ID func_body {
+  pin = 3
   methods=[getPresentation]
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
 }
-method_def_statement ::= 'function' method_name func_body { pin = 2; methods=[getPresentation] }
+method_def_statement ::= attributes? 'function' method_name func_body { pin = 3; methods=[getPresentation] }
 
 // ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
 method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
@@ -228,7 +245,7 @@ simple_exp ::= table_constructor | closure_exp | ifelse_exp | literal_exp | temp
 
 private literal_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
 
-closure_exp ::= 'function' func_body { pin = 1 }
+closure_exp ::= attributes? 'function' func_body { pin = 2 }
 
 table_constructor ::= '{' field_list? '}' { pin = 1 }
 field_list ::= field (field_sep field)* field_sep?

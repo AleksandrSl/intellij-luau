@@ -8,18 +8,17 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
+import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
-import com.intellij.navigation.ItemPresentation;
 
-public class LuauBindingImpl extends LuauNamedElementImpl implements LuauBinding {
+public class LuauLiteralFieldImpl extends ASTWrapperPsiElement implements LuauLiteralField {
 
-  public LuauBindingImpl(@NotNull ASTNode node) {
+  public LuauLiteralFieldImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitBinding(this);
+    visitor.visitLiteralField(this);
   }
 
   @Override
@@ -30,20 +29,26 @@ public class LuauBindingImpl extends LuauNamedElementImpl implements LuauBinding
 
   @Override
   @Nullable
-  public LuauType getType() {
-    return findChildByClass(LuauType.class);
+  public LuauLiteralTable getLiteralTable() {
+    return findChildByClass(LuauLiteralTable.class);
   }
 
   @Override
-  @NotNull
+  @Nullable
   public PsiElement getId() {
-    return findNotNullChildByType(ID);
+    return findChildByType(ID);
   }
 
   @Override
-  @NotNull
-  public ItemPresentation getPresentation() {
-    return LuauPsiImplUtilKt.getPresentation(this);
+  @Nullable
+  public PsiElement getNumber() {
+    return findChildByType(NUMBER);
+  }
+
+  @Override
+  @Nullable
+  public PsiElement getString() {
+    return findChildByType(STRING);
   }
 
 }
