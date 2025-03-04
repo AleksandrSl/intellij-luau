@@ -39,8 +39,8 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
-        // Did I comment this because I set webstorm below?
-        // create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+        // Comment this if you want to run webstorm. But at the same time webstorm fails to run tests.
+         create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(providers.gradleProperty("platformBundledPlugins").map { it.split(',') })
@@ -51,7 +51,7 @@ dependencies {
         instrumentationTools()
         pluginVerifier()
         zipSigner()
-        webstorm("2024.3")
+//        webstorm("2024.3")
         testFramework(TestFrameworkType.Platform)
     }
 }
