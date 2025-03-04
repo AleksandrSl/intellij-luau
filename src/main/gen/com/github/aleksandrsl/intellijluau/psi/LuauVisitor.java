@@ -147,10 +147,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitIntersectionSuffix(@NotNull LuauIntersectionSuffix o) {
-    visitPsiElement(o);
-  }
-
   public void visitKeyedField(@NotNull LuauKeyedField o) {
     visitPsiElement(o);
   }
@@ -263,6 +259,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitTypeIntersection(@NotNull LuauTypeIntersection o) {
+    visitPsiElement(o);
+  }
+
   public void visitTypeKeyedField(@NotNull LuauTypeKeyedField o) {
     visitPsiElement(o);
   }
@@ -295,6 +295,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitTypeUnion(@NotNull LuauTypeUnion o) {
+    visitPsiElement(o);
+  }
+
   public void visitTypeofSoftKeyword(@NotNull LuauTypeofSoftKeyword o) {
     visitSoftKeyword(o);
   }
@@ -305,10 +309,6 @@ public class LuauVisitor extends PsiElementVisitor {
 
   public void visitUnaryExp(@NotNull LuauUnaryExp o) {
     visitExpression(o);
-  }
-
-  public void visitUnionSuffix(@NotNull LuauUnionSuffix o) {
-    visitPsiElement(o);
   }
 
   public void visitVar(@NotNull LuauVar o) {

@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauUnionSuffix extends PsiElement {
+public interface LuauTypeIntersection extends PsiElement {
 
   @NotNull
   List<LuauSimpleType> getSimpleTypeList();
