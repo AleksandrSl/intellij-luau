@@ -6,7 +6,7 @@ import com.intellij.testFramework.ParsingTestCase
 
 const val baseTestDataPath = "src/test/testData/parser"
 
-class LuauParsingTestCase: ParsingTestCase("", LuauFileType.defaultExtension, LuauParserDefinition()) {
+class LuauParsingTestCase : ParsingTestCase("", LuauFileType.defaultExtension, LuauParserDefinition()) {
     fun testStringTemplate() {
         doTest(true)
     }
@@ -27,7 +27,27 @@ class LuauParsingTestCase: ParsingTestCase("", LuauFileType.defaultExtension, Lu
         doTest(true)
     }
 
-    fun testComplexGenericDefaults_error(){
+    fun testComplexGenericDefaults_error() {
+        doTest(true)
+    }
+
+    fun testAlgebraicTypesWithLeadingSymbol() {
+        doTest(true)
+    }
+
+    fun testAlgebraicTypes() {
+        doTest(true)
+    }
+
+    fun testTypeDeclarations() {
+        doTest(true)
+    }
+
+    fun testAlgebraicTypes_error() {
+        doTest(true)
+    }
+
+    fun testAlgebraicTypes_error2() {
         doTest(true)
     }
 

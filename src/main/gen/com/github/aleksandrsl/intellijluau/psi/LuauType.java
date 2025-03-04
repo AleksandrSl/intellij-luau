@@ -7,13 +7,13 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauType extends PsiElement {
 
-  @NotNull
-  List<LuauIntersectionSuffix> getIntersectionSuffixList();
-
-  @NotNull
+  @Nullable
   LuauSimpleType getSimpleType();
 
-  @NotNull
-  List<LuauUnionSuffix> getUnionSuffixList();
+  @Nullable
+  LuauTypeIntersection getTypeIntersection();
+
+  @Nullable
+  LuauTypeUnion getTypeUnion();
 
 }

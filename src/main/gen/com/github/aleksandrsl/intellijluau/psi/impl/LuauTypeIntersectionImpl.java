@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauIntersectionSuffixImpl extends ASTWrapperPsiElement implements LuauIntersectionSuffix {
+public class LuauTypeIntersectionImpl extends ASTWrapperPsiElement implements LuauTypeIntersection {
 
-  public LuauIntersectionSuffixImpl(@NotNull ASTNode node) {
+  public LuauTypeIntersectionImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitIntersectionSuffix(this);
+    visitor.visitTypeIntersection(this);
   }
 
   @Override

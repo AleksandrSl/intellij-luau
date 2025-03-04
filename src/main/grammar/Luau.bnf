@@ -258,10 +258,16 @@ simple_type ::=
 
 singleton_type ::= STRING | 'true' | 'false'
 
-// Why ? is used in UnionSuffix only, is it not possible to use with &? I'll move it for now.
-union_suffix ::= ('|' simple_type '?'?)+
-intersection_suffix ::= ('&' simple_type)+
-type ::= simple_type '?'? (union_suffix | intersection_suffix)*
+// [06/05/2024] Why ? is used in UnionSuffix only, is it not possible to use with &?
+// [04/03/2025] Because ? is a union and union and intersection cannot be mixed without parenthesis
+
+// I intentionally diverged from the grammar here and allowed simple_type as a separate option,
+// because type_union and type_intersection match empty input if does strictly as in grammar.
+// Plus it's strange to have a union node when there are no union in reality, just a type.
+type_union ::= (simple_type '?'?)? ('|' simple_type '?'?)+
+type_intersection ::= simple_type? ('&' simple_type)+
+// As always complex types go first otherwise simple_type is parsed and then complains that you wrote a bad thing.
+type ::= type_union | type_intersection | simple_type '?'?
 
 generic_type_pack_parameter ::= ID '...'
 generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack)

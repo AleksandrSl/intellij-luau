@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauUnionSuffixImpl extends ASTWrapperPsiElement implements LuauUnionSuffix {
+public class LuauTypeUnionImpl extends ASTWrapperPsiElement implements LuauTypeUnion {
 
-  public LuauUnionSuffixImpl(@NotNull ASTNode node) {
+  public LuauTypeUnionImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitUnionSuffix(this);
+    visitor.visitTypeUnion(this);
   }
 
   @Override

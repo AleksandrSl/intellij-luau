@@ -1217,34 +1217,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // ('&' simple_type)+
-  public static boolean intersection_suffix(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "intersection_suffix")) return false;
-    if (!nextTokenIs(b, INTERSECTION)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = intersection_suffix_0(b, l + 1);
-    while (r) {
-      int c = current_position_(b);
-      if (!intersection_suffix_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "intersection_suffix", c)) break;
-    }
-    exit_section_(b, m, INTERSECTION_SUFFIX, r);
-    return r;
-  }
-
-  // '&' simple_type
-  private static boolean intersection_suffix_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "intersection_suffix_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, INTERSECTION);
-    r = r && simple_type(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  /* ********************************************************** */
   // computed_key '=' expression
   public static boolean keyed_field(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "keyed_field")) return false;
@@ -1934,43 +1906,34 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // simple_type '?'? (union_suffix | intersection_suffix)*
+  // type_union | type_intersection | simple_type '?'?
   public static boolean type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, TYPE, "<type>");
-    r = simple_type(b, l + 1);
-    r = r && type_1(b, l + 1);
-    r = r && type_2(b, l + 1);
+    r = type_union(b, l + 1);
+    if (!r) r = type_intersection(b, l + 1);
+    if (!r) r = type_2(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
-  // '?'?
-  private static boolean type_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_1")) return false;
-    consumeToken(b, QUESTION);
-    return true;
-  }
-
-  // (union_suffix | intersection_suffix)*
+  // simple_type '?'?
   private static boolean type_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_2")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!type_2_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "type_2", c)) break;
-    }
-    return true;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = simple_type(b, l + 1);
+    r = r && type_2_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
-  // union_suffix | intersection_suffix
-  private static boolean type_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_2_0")) return false;
-    boolean r;
-    r = union_suffix(b, l + 1);
-    if (!r) r = intersection_suffix(b, l + 1);
-    return r;
+  // '?'?
+  private static boolean type_2_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_2_1")) return false;
+    consumeToken(b, QUESTION);
+    return true;
   }
 
   /* ********************************************************** */
@@ -2115,6 +2078,51 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "type_function_2")) return false;
     bound_type_list(b, l + 1);
     return true;
+  }
+
+  /* ********************************************************** */
+  // simple_type? ('&' simple_type)+
+  public static boolean type_intersection(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_intersection")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, TYPE_INTERSECTION, "<type intersection>");
+    r = type_intersection_0(b, l + 1);
+    r = r && type_intersection_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // simple_type?
+  private static boolean type_intersection_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_intersection_0")) return false;
+    simple_type(b, l + 1);
+    return true;
+  }
+
+  // ('&' simple_type)+
+  private static boolean type_intersection_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_intersection_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = type_intersection_1_0(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!type_intersection_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "type_intersection_1", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // '&' simple_type
+  private static boolean type_intersection_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_intersection_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, INTERSECTION);
+    r = r && simple_type(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   /* ********************************************************** */
@@ -2368,6 +2376,77 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // (simple_type '?'?)? ('|' simple_type '?'?)+
+  public static boolean type_union(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_union")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, TYPE_UNION, "<type union>");
+    r = type_union_0(b, l + 1);
+    r = r && type_union_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // (simple_type '?'?)?
+  private static boolean type_union_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_union_0")) return false;
+    type_union_0_0(b, l + 1);
+    return true;
+  }
+
+  // simple_type '?'?
+  private static boolean type_union_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_union_0_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = simple_type(b, l + 1);
+    r = r && type_union_0_0_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // '?'?
+  private static boolean type_union_0_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_union_0_0_1")) return false;
+    consumeToken(b, QUESTION);
+    return true;
+  }
+
+  // ('|' simple_type '?'?)+
+  private static boolean type_union_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_union_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = type_union_1_0(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!type_union_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "type_union_1", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // '|' simple_type '?'?
+  private static boolean type_union_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_union_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, UNION);
+    r = r && simple_type(b, l + 1);
+    r = r && type_union_1_0_2(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // '?'?
+  private static boolean type_union_1_0_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_union_1_0_2")) return false;
+    consumeToken(b, QUESTION);
+    return true;
+  }
+
+  /* ********************************************************** */
   // 'typeof'
   public static boolean typeof_soft_keyword(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "typeof_soft_keyword")) return false;
@@ -2389,42 +2468,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, GETN);
     exit_section_(b, l, m, r, false, null);
     return r;
-  }
-
-  /* ********************************************************** */
-  // ('|' simple_type '?'?)+
-  public static boolean union_suffix(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "union_suffix")) return false;
-    if (!nextTokenIs(b, UNION)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = union_suffix_0(b, l + 1);
-    while (r) {
-      int c = current_position_(b);
-      if (!union_suffix_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "union_suffix", c)) break;
-    }
-    exit_section_(b, m, UNION_SUFFIX, r);
-    return r;
-  }
-
-  // '|' simple_type '?'?
-  private static boolean union_suffix_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "union_suffix_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeToken(b, UNION);
-    r = r && simple_type(b, l + 1);
-    r = r && union_suffix_0_2(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // '?'?
-  private static boolean union_suffix_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "union_suffix_0_2")) return false;
-    consumeToken(b, QUESTION);
-    return true;
   }
 
   /* ********************************************************** */
