@@ -1,61 +1,33 @@
 package com.github.aleksandrsl.intellijluau.parser
 
-import com.github.aleksandrsl.intellijluau.LuauFileType
-import com.github.aleksandrsl.intellijluau.LuauParserDefinition
-import com.intellij.testFramework.ParsingTestCase
+import com.intellij.psi.PsiFile
 
-const val baseTestDataPath = "src/test/testData/parser"
 
-class LuauParsingTestCase : ParsingTestCase("", LuauFileType.defaultExtension, LuauParserDefinition()) {
-    fun testStringTemplate() {
-        doTest(true)
-    }
+class LuauParsingTestCase : LuauParsingBaseTestCase() {
+    fun testStringTemplate() = doTest(true)
 
-    fun testComplexTypes() {
-        doTest(true)
-    }
+    fun testComplexTypes() = doTest(true)
 
-    fun testGenericsWithDefaults() {
-        doTest(true)
-    }
+    fun testGenericsWithDefaults() = doTest(true)
 
-    fun testDefinitions() {
-        doTest(true)
-    }
+    fun testDefinitions() = doTest(true)
 
-    fun testCastInExpression() {
-        doTest(true)
-    }
+    fun testCastInExpression() = doTest(true)
 
-    fun testComplexGenericDefaults_error() {
-        doTest(true)
-    }
+    fun testAlgebraicTypesWithLeadingSymbol() = doTest(true)
 
-    fun testAlgebraicTypesWithLeadingSymbol() {
-        doTest(true)
-    }
+    fun testAlgebraicTypes() = doTest(true)
 
-    fun testAlgebraicTypes() {
-        doTest(true)
-    }
+    fun testTypeDeclarations() = doTest(true)
 
-    fun testTypeDeclarations() {
-        doTest(true)
-    }
-
-    fun testAlgebraicTypes_error() {
-        doTest(true)
-    }
-
-    fun testAlgebraicTypes_error2() {
-        doTest(true)
-    }
-
-    override fun getTestDataPath(): String {
-        return baseTestDataPath
-    }
-
-    override fun includeRanges(): Boolean {
-        return true
+    override fun checkResult(targetDataName: String, file: PsiFile) {
+        // I took a peek at how they do the tests in rust https://github.com/search?q=repo%3Aintellij-rust/intellij-rust%20hasError&type=code,
+        // and the super call is positioned differently in checkResult for valid and invalid files.
+        // I guess for valid files all other errors should go first so the super call is first,
+        // or it is a bug and I just copied it, lol.
+        super.checkResult(targetDataName, file)
+        check(!hasErrors(file)) {
+            "Valid file was parsed with errors: ${file.name}"
+        }
     }
 }
