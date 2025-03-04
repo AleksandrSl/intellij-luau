@@ -29,6 +29,12 @@ public class LuauClosureExpImpl extends ASTWrapperPsiElement implements LuauClos
 
   @Override
   @Nullable
+  public LuauAttributes getAttributes() {
+    return findChildByClass(LuauAttributes.class);
+  }
+
+  @Override
+  @Nullable
   public LuauFuncBody getFuncBody() {
     return findChildByClass(LuauFuncBody.class);
   }

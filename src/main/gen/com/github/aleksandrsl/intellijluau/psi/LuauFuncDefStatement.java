@@ -4,8 +4,12 @@ package com.github.aleksandrsl.intellijluau.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.navigation.ItemPresentation;
 
 public interface LuauFuncDefStatement extends LuauNamedElement {
+
+  @Nullable
+  LuauAttributes getAttributes();
 
   @Nullable
   LuauFuncBody getFuncBody();
@@ -13,8 +17,7 @@ public interface LuauFuncDefStatement extends LuauNamedElement {
   @Nullable
   PsiElement getId();
 
-  //WARNING: getPresentation(...) is skipped
-  //matching getPresentation(LuauFuncDefStatement, ...)
-  //methods are not found in LuauPsiImplUtilKt
+  @NotNull
+  ItemPresentation getPresentation();
 
 }

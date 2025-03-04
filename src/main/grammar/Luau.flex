@@ -234,6 +234,7 @@ TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})+
   "->"                        { return ARROW; }
   "&"                         { return INTERSECTION; }
   "|"                         { return UNION; }
+  "@"                         { return AT; }
   "\""                        { pushState(xDOUBLE_QUOTED_STRING); yypushback(yylength()); }
   "'"                         { pushState(xSINGLE_QUOTED_STRING); yypushback(yylength()); }
   "`"                         { pushState(xTEMPLATE_STRING); return TEMPLATE_STRING_SQUOTE; }

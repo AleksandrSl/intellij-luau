@@ -5,12 +5,18 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauClosureExp extends PsiElement {
+public interface LuauLiteralField extends PsiElement {
 
   @Nullable
-  LuauAttributes getAttributes();
+  LuauLiteralTable getLiteralTable();
 
   @Nullable
-  LuauFuncBody getFuncBody();
+  PsiElement getId();
+
+  @Nullable
+  PsiElement getNumber();
+
+  @Nullable
+  PsiElement getString();
 
 }

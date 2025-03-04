@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
+import com.intellij.navigation.ItemPresentation;
 
 public class LuauMethodDefStatementImpl extends ASTWrapperPsiElement implements LuauMethodDefStatement {
 
@@ -29,6 +30,12 @@ public class LuauMethodDefStatementImpl extends ASTWrapperPsiElement implements 
 
   @Override
   @Nullable
+  public LuauAttributes getAttributes() {
+    return findChildByClass(LuauAttributes.class);
+  }
+
+  @Override
+  @Nullable
   public LuauFuncBody getFuncBody() {
     return findChildByClass(LuauFuncBody.class);
   }
@@ -37,6 +44,12 @@ public class LuauMethodDefStatementImpl extends ASTWrapperPsiElement implements 
   @NotNull
   public LuauMethodName getMethodName() {
     return findNotNullChildByClass(LuauMethodName.class);
+  }
+
+  @Override
+  @NotNull
+  public ItemPresentation getPresentation() {
+    return LuauPsiImplUtilKt.getPresentation(this);
   }
 
 }
