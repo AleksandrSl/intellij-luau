@@ -10,6 +10,7 @@ class LuauParsingErrorsTestCase : LuauParsingBaseTestCase() {
     fun testAlgebraicTypes_error3() = doTest(true)
     fun testComplexTypes_error() = doTest(true)
     fun testStringTemplate_error() = doTest(true)
+    fun testTypePacks_error() = doTest(true)
 
     override fun checkResult(targetDataName: String, file: PsiFile) {
         check(hasErrors(file)) {

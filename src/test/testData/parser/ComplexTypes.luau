@@ -8,3 +8,10 @@ local defaultConstructor: Constructor<> = function()
 end
 
 function test2(a: number, ...: boolean) end
+
+-- Function as a parameter in generic
+local a = React.createContext(function() end :: (string) -> string) :: React.Context<(string) -> string>
+
+-- Valid according to the grammar but I'm yet to find a real case where it's not a type error
+type T7 = A<string..., (...() -> (string, string) | nil)>
+type T8 = A<string..., ...number, (...() -> (string, string) | nil)>

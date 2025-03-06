@@ -1,0 +1,10 @@
+type T = A<(string, string, ...number)>
+type T1 = A<(string, string, ...number)>
+type T2 = A<(string)>
+type T3 = A<(string, ...number)>
+type T4 = A<(string, ...T)>
+type T5 = A<(string, ...X<X<X<T>>>)>
+type T6 = A<(string, ...() -> (string, string) | nil)>
+type T7 = A<(string | number, ...() -> (string, string) | nil)>
+type T8 = A<(string & number, ...() -> (string, string) | nil)>
+type T9 = A<(...string)>
