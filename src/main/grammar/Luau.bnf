@@ -307,7 +307,15 @@ private generic_type_pack_parameters_with_default ::= generic_type_pack_paramete
 type_list ::= type (',' type_list)? | '...' type
 bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)? { recoverWhile = bound_type_list_recover }
 private bound_type_list_recover ::= !(')')
-type_params ::= (variadic_type_pack | generic_type_pack | type_pack | type) (',' type_params)?
+/* The order of types here is fragile, and I'm not 100% sure the finally correct one.
+ * If you put type first it boggles the generic type packs by parsing the Type first without ...
+ * If you put type last it won't parse the function, because type_pack will go first and then -> is a garbage
+ * Another solution to resolve both of these problems would be to use negative lookahead and don't parse the type with ... ahead or
+ * type_pack with -> ahead. But I believe it's a bit worse for performance than just the order. Let's see how far we can go.
+ *
+ * Overall I think that relations and possible order of real usages are to hard to explain in grammar. So most of the errors go level above, as TypeError
+ */
+type_params ::= (variadic_type_pack | generic_type_pack | type | type_pack) (',' type_params)?
 type_pack ::= '(' type_list? ')'
 generic_type_pack ::= ID '...'
 variadic_type_pack ::= '...' type

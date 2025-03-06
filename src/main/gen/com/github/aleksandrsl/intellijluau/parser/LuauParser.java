@@ -2556,7 +2556,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (variadic_type_pack | generic_type_pack | type_pack | type) (',' type_params)?
+  // (variadic_type_pack | generic_type_pack | type | type_pack) (',' type_params)?
   public static boolean type_params(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_params")) return false;
     boolean r;
@@ -2567,14 +2567,14 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // variadic_type_pack | generic_type_pack | type_pack | type
+  // variadic_type_pack | generic_type_pack | type | type_pack
   private static boolean type_params_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_params_0")) return false;
     boolean r;
     r = variadic_type_pack(b, l + 1);
     if (!r) r = generic_type_pack(b, l + 1);
-    if (!r) r = type_pack(b, l + 1);
     if (!r) r = type(b, l + 1);
+    if (!r) r = type_pack(b, l + 1);
     return r;
   }
 
