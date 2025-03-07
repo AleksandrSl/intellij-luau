@@ -103,6 +103,7 @@ shebang_line ::= SHEBANG SHEBANG_CONTENT
 block ::= (statement ';'?)* (last_statement ';'?)?
 
 statement ::=
+    // TODO (AleksandrSl 07/03/2025): There will be a type function support shortly.
      type_declaration_statement
      | do_statement
      | while_statement
@@ -113,8 +114,8 @@ statement ::=
      | def_statement
      | compound_op_statement
      | assignment_statement
-     // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
-     // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
+     // Maybe not the best fix, but expression_statement is moved below ifStatement on purpose
+     // expressionStatement includes ifelse_exp but most of the time we want if_statement to be matched first, e.g. to fix nested conditions
      | expression_statement
      { recoverWhile = statement_recover }
 
@@ -139,7 +140,7 @@ foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 
 // I guess the problem is here, at least part of it. Because the error is bin_op or , is expected. And bin_op is a part of expression
 assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= var compound_op expression { pin = 2 }
-expression_statement ::= expression
+expression_statement ::= function_call
 private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
 // TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
@@ -193,7 +194,7 @@ method_def_statement ::= attributes? 'function' method_name func_body { pin = 3;
 
 // ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
 method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
-type_parameters_list ::= ('<' generic_type_list '>')
+type_parameters_list ::= '<' generic_type_list '>'
 func_body ::= type_parameters_list? '(' par_list? ')' (':' return_type)? block 'end'
 par_list ::= binding_list (',' type_pack_parameter)? | type_pack_parameter
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
@@ -215,6 +216,13 @@ var ::= primary_exp
 var_reference ::= ID { methods=[getReferences] }
 prefix_exp ::= var_reference | '(' expression ')' | table_constructor
 postfix_exp ::= func_args | index_expr
+// For sure I duplicate the stuff here. Using expressions parsing from the official grammar doesn't work for left recursion problem.
+// So I have to split it up a different way. Which made it impossible to have a separate thing for a function call.
+// So I allowed all the expressions to be a statement.
+// Let's try to allow only function calls.
+// But I have a feeling that I'll revert this at some point and do a manual expressions parsing as other plugins do?
+// Now I have to make sure that at least I allow all the valid syntax
+function_call ::= prefix_exp (index_expr* func_args)+
 
 // I guess this is a bit more permissive that it should be? e.g. it allows {}()
 primary_exp ::= prefix_exp postfix_exp*

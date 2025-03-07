@@ -11,6 +11,7 @@ class LuauParsingErrorsTestCase : LuauParsingBaseTestCase() {
     fun testComplexTypes_error() = doTest(true)
     fun testStringTemplate_error() = doTest(true)
     fun testTypePacks_error() = doTest(true)
+    fun testLonelyExpressions_error() = doTest(true)
 
     override fun checkResult(targetDataName: String, file: PsiFile) {
         check(hasErrors(file)) {

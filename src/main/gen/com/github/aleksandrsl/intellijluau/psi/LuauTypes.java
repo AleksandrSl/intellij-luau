@@ -33,6 +33,7 @@ public interface LuauTypes {
   IElementType FIELD_LIST = new LuauElementType("FIELD_LIST");
   IElementType FIELD_SEP = new LuauElementType("FIELD_SEP");
   IElementType FOREACH_STATEMENT = new LuauElementType("FOREACH_STATEMENT");
+  IElementType FUNCTION_CALL = new LuauElementType("FUNCTION_CALL");
   IElementType FUNC_ARGS = new LuauElementType("FUNC_ARGS");
   IElementType FUNC_BODY = new LuauElementType("FUNC_BODY");
   IElementType FUNC_DEF_STATEMENT = new LuauElementType("FUNC_DEF_STATEMENT");
@@ -247,6 +248,9 @@ public interface LuauTypes {
       }
       else if (type == FOREACH_STATEMENT) {
         return new LuauForeachStatementImpl(node);
+      }
+      else if (type == FUNCTION_CALL) {
+        return new LuauFunctionCallImpl(node);
       }
       else if (type == FUNC_BODY) {
         return new LuauFuncBodyImpl(node);
