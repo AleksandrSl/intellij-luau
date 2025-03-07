@@ -14,7 +14,7 @@ class LuauParsingTestCase : LuauParsingBaseTestCase() {
     fun testTypeDeclarations() = doTest(true)
     fun testAttributes() = doTest(true)
     fun testAttributesFuture() = doTest(true)
-    fun testTypePacks() = doTest(true)
+    fun testGenericsTypePackParameters() = doTest(true)
     fun testLonelyExpressions() = doTest(true)
 
     override fun checkResult(targetDataName: String, file: PsiFile) {
