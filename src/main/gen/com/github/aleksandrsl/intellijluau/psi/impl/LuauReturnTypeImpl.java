@@ -29,6 +29,12 @@ public class LuauReturnTypeImpl extends ASTWrapperPsiElement implements LuauRetu
 
   @Override
   @Nullable
+  public LuauGenericTypePack getGenericTypePack() {
+    return findChildByClass(LuauGenericTypePack.class);
+  }
+
+  @Override
+  @Nullable
   public LuauType getType() {
     return findChildByClass(LuauType.class);
   }
@@ -37,6 +43,12 @@ public class LuauReturnTypeImpl extends ASTWrapperPsiElement implements LuauRetu
   @Nullable
   public LuauTypePack getTypePack() {
     return findChildByClass(LuauTypePack.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauVariadicTypePack getVariadicTypePack() {
+    return findChildByClass(LuauVariadicTypePack.class);
   }
 
 }
