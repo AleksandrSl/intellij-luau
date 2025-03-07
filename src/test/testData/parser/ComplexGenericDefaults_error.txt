@@ -52,7 +52,7 @@ Luau file(0,131)
                 PsiElement(LuauTokenType.})('}')(69,70)
             LuauBinOpImpl(BIN_OP)(70,71)
               PsiElement(LuauTokenType.>)('>')(70,71)
-            PsiErrorElement:<expression>, <un op>, LuauTokenType.(, LuauTokenType...., LuauTokenType.ID, LuauTokenType.NUMBER, LuauTokenType.STRING, LuauTokenType.TEMPLATE_STRING_SQUOTE, LuauTokenType.false, LuauTokenType.function, LuauTokenType.if, LuauTokenType.nil, LuauTokenType.true or LuauTokenType.{ expected, got '('(71,71)
+            PsiErrorElement:<closure exp>, <expression>, <un op>, LuauTokenType.(, LuauTokenType...., LuauTokenType.ID, LuauTokenType.NUMBER, LuauTokenType.STRING, LuauTokenType.TEMPLATE_STRING_SQUOTE, LuauTokenType.false, LuauTokenType.if, LuauTokenType.nil, LuauTokenType.true or LuauTokenType.{ expected, got '('(71,71)
               <empty list>
   PsiErrorElement:<last statement> expected, got '('(71,72)
     PsiElement(LuauTokenType.()('(')(71,72)
