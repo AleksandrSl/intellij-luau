@@ -1916,12 +1916,14 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // type | type_pack
+  // variadic_type_pack | generic_type_pack | type | type_pack
   public static boolean return_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "return_type")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, RETURN_TYPE, "<return type>");
-    r = type(b, l + 1);
+    r = variadic_type_pack(b, l + 1);
+    if (!r) r = generic_type_pack(b, l + 1);
+    if (!r) r = type(b, l + 1);
     if (!r) r = type_pack(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;

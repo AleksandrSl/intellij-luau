@@ -1,0 +1,9 @@
+-- Type packs
+local function identity<T...>(...: T...): T...
+	return ...
+end
+
+type A<T, U...> = (T) -> U...
+
+-- Variadic types
+type F = (...number) -> ...string

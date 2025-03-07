@@ -8,9 +8,15 @@ import com.intellij.psi.PsiElement;
 public interface LuauReturnType extends PsiElement {
 
   @Nullable
+  LuauGenericTypePack getGenericTypePack();
+
+  @Nullable
   LuauType getType();
 
   @Nullable
   LuauTypePack getTypePack();
+
+  @Nullable
+  LuauVariadicTypePack getVariadicTypePack();
 
 }
