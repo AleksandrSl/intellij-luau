@@ -575,12 +575,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // expression
+  // function_call
   public static boolean expression_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "expression_statement")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, EXPRESSION_STATEMENT, "<expression statement>");
-    r = expression(b, l + 1, -1);
+    r = function_call(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -775,6 +775,55 @@ public class LuauParser implements PsiParser, LightPsiParser {
   private static boolean func_def_statement_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "func_def_statement_0")) return false;
     attributes(b, l + 1);
+    return true;
+  }
+
+  /* ********************************************************** */
+  // prefix_exp (index_expr* func_args)+
+  public static boolean function_call(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "function_call")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, FUNCTION_CALL, "<function call>");
+    r = prefix_exp(b, l + 1);
+    r = r && function_call_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // (index_expr* func_args)+
+  private static boolean function_call_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "function_call_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = function_call_1_0(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!function_call_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "function_call_1", c)) break;
+    }
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // index_expr* func_args
+  private static boolean function_call_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "function_call_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = function_call_1_0_0(b, l + 1);
+    r = r && func_args(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // index_expr*
+  private static boolean function_call_1_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "function_call_1_0_0")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!index_expr(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "function_call_1_0_0", c)) break;
+    }
     return true;
   }
 
@@ -2030,8 +2079,8 @@ public class LuauParser implements PsiParser, LightPsiParser {
   //      | def_statement
   //      | compound_op_statement
   //      | assignment_statement
-  //      // Maybe not the best fix, but expressionStatement is moved below ifStatement on purpose
-  //      // expressionStatement includes ifExpression but most of the time we want ifStatement to be matched first, e.g. to fix nested conditions
+  //      // Maybe not the best fix, but expression_statement is moved below ifStatement on purpose
+  //      // expressionStatement includes ifelse_exp but most of the time we want if_statement to be matched first, e.g. to fix nested conditions
   //      | expression_statement
   public static boolean statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement")) return false;

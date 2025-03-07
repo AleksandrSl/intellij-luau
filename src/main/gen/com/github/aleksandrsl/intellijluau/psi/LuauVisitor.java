@@ -119,6 +119,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitNamedElement(o);
   }
 
+  public void visitFunctionCall(@NotNull LuauFunctionCall o) {
+    visitPsiElement(o);
+  }
+
   public void visitGenericTypeList(@NotNull LuauGenericTypeList o) {
     visitPsiElement(o);
   }
