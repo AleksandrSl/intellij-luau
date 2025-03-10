@@ -8,6 +8,6 @@ import com.intellij.psi.PsiElement;
 public interface LuauVarList extends PsiElement {
 
   @NotNull
-  List<LuauVar> getVarList();
+  List<LuauLvalue> getLvalueList();
 
 }

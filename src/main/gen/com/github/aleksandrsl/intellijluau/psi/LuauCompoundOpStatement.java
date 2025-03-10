@@ -7,13 +7,13 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauCompoundOpStatement extends PsiElement {
 
-  @NotNull
-  LuauCompoundOp getCompoundOp();
-
   @Nullable
   LuauExpression getExpression();
 
   @NotNull
-  LuauVar getVar();
+  LuauLvalue getLvalue();
+
+  @NotNull
+  LuauOperator getOperator();
 
 }

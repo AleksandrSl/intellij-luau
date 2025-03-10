@@ -7,7 +7,4 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauExpressionStatement extends PsiElement {
 
-  @NotNull
-  LuauFunctionCall getFunctionCall();
-
 }

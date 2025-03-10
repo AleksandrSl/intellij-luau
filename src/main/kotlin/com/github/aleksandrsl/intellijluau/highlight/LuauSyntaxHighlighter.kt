@@ -29,8 +29,7 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
             }
             in LuauTokenSets.STRINGS -> STRING_KEYS
             LuauTypes.NUMBER -> NUMBER_KEYS
-            LuauTypes.BIN_OP,
-            LuauTypes.UN_OP -> {
+            LuauTypes.OPERATOR -> {
                 OPERATOR_KEYS
             }
             LuauTypes.ID -> {

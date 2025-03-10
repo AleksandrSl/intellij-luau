@@ -25,6 +25,7 @@ object LuauTokenSets {
         LuauTypes.THEN,
         LuauTypes.UNTIL,
         LuauTypes.WHILE,
+        // Why is this a keyword?
         // Luau type cast operator
         LuauTypes.DOUBLE_COLON,
     )

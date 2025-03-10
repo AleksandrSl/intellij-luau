@@ -29,8 +29,8 @@ public class LuauVarListImpl extends ASTWrapperPsiElement implements LuauVarList
 
   @Override
   @NotNull
-  public List<LuauVar> getVarList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauVar.class);
+  public List<LuauLvalue> getLvalueList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauLvalue.class);
   }
 
 }

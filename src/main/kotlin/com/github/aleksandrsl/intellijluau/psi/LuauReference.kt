@@ -5,7 +5,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
 import com.intellij.psi.util.PsiTreeUtil
 
-class LuauReference(element: LuauVarReference) : PsiReferenceBase<LuauVarReference>(element) {
+class LuauReference(element: LuauSimpleReference) : PsiReferenceBase<LuauSimpleReference>(element) {
 
     val id = myElement.id
 

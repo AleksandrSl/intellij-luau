@@ -27,10 +27,4 @@ public class LuauExpressionStatementImpl extends ASTWrapperPsiElement implements
     else super.accept(visitor);
   }
 
-  @Override
-  @NotNull
-  public LuauFunctionCall getFunctionCall() {
-    return findNotNullChildByClass(LuauFunctionCall.class);
-  }
-
 }
