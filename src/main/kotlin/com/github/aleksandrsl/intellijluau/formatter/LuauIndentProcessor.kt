@@ -47,8 +47,7 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
             return true
         }
 
-        if (parentType == LuauTypes.TYPE_TABLE && elementType == LuauTypes.TYPE_FIELD_LIST
-            || parentType == LuauTypes.TABLE_CONSTRUCTOR && elementType == LuauTypes.FIELD_LIST) {
+        if (parentType == LuauTypes.TYPE_TABLE || parentType == LuauTypes.TABLE_CONSTRUCTOR || parentType == LuauTypes.LIST_ARGS) {
             return true
         }
 
