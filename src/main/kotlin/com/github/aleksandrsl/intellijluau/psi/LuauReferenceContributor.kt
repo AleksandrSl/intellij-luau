@@ -7,12 +7,12 @@ import com.intellij.util.ProcessingContext
 
 class LuauReferenceContributor: PsiReferenceContributor() {
     override fun registerReferenceProviders(registrar: PsiReferenceRegistrar) {
-        registrar.registerReferenceProvider(psiElement().withElementType(LuauTypes.VAR_REFERENCE), NameReferenceProvider())
+        registrar.registerReferenceProvider(psiElement().withElementType(LuauTypes.SIMPLE_REFERENCE), NameReferenceProvider())
     }
 
     internal inner class NameReferenceProvider : PsiReferenceProvider() {
         override fun getReferencesByElement(psiElement: PsiElement, processingContext: ProcessingContext): Array<PsiReference> {
-            return arrayOf(LuauReference(psiElement as LuauVarReference))
+            return arrayOf(LuauReference(psiElement as LuauSimpleReference))
         }
     }
 }

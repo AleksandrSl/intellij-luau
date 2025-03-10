@@ -1,5 +1,6 @@
 {
   parserClass="com.github.aleksandrsl.intellijluau.parser.LuauParser"
+  parserUtilClass="com.github.aleksandrsl.intellijluau.parser.LuauParserUtilBase"
 
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
@@ -93,15 +94,24 @@
     STRING = "regexp:\"\S*\""
   ]
 
+  // TODO (AleksandrSl 08/03/2025): Consider adding the line below, they say it improves performance, but I didn't understand the cons.
+  //consumeTokenMethod(".*_expr|expression")="consumeTokenFast"
+  extends(".*expr")=expression
   implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
+  // I guess element type is not necessary here, but it reduced the amount of types generated
+  elementType(".*_op")=operator
+  extends(".*_op")=operator
 }
-
+// Why do I use postfix and not suffix. It's prevalent in many grammars, not other reasons.
 
 luau_file ::= shebang_line? block
 shebang_line ::= SHEBANG SHEBANG_CONTENT
 
+// TODO (AleksandrSl 10/03/2025): I don't understand do I ned a rule here at all or it can be empty
+fake operator ::= "+"
 block ::= (statement ';'?)* (last_statement ';'?)?
 
+// TODO (AleksandrSl 10/03/2025): MAke private
 statement ::=
     // TODO (AleksandrSl 07/03/2025): There will be a type function support shortly.
      type_declaration_statement
@@ -114,19 +124,22 @@ statement ::=
      | def_statement
      | compound_op_statement
      | assignment_statement
+     // TODO (AleksandrSl 07/03/2025): This comment is no longer valid since I made expresion statment to consist only of cuntino call
      // Maybe not the best fix, but expression_statement is moved below ifStatement on purpose
      // expressionStatement includes ifelse_exp but most of the time we want if_statement to be matched first, e.g. to fix nested conditions
+     // Actually expressions go last everywhere
      | expression_statement
      { recoverWhile = statement_recover }
 
 // TODO (AleksandrSl 20/06/2024): I don't know how lua plugin avoid having all the else stuff here,
-//  probably because they do manual expressions parsing
+//  probably because they do manual expressions parsing.
+// As far as I see, in the Haxe plugin it's totally fine to have all these here.
 private statement_recover ::= !(
   ID
   | ',' | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '(' | TEMPLATE_STRING_EQUOTE | '}'
   | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | 'break'
   | 'nil' | 'true' | 'false' | STRING | NUMBER | export_soft_keyword | type_soft_keyword
-  | un_op | '@'
+  | '@' | un_length_op | un_minus_op | un_not_op
 )
 
 do_statement ::= 'do' block 'end' { pin = 1 }
@@ -139,8 +152,8 @@ classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expre
 foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 1 }
 // I guess the problem is here, at least part of it. Because the error is bin_op or , is expected. And bin_op is a part of expression
 assignment_statement ::= var_list '=' exp_list { pin = 2 }
-compound_op_statement ::= var compound_op expression { pin = 2 }
-expression_statement ::= function_call
+compound_op_statement ::= lvalue compound_op expression { pin = 2 }
+expression_statement ::= <<parseExprStatement index_or_call_expr>>
 private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
 last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
 // TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
@@ -211,26 +224,20 @@ binding ::= ID (':' type)?  {
 }
 binding_list ::= binding (',' binding)* // equivalent of Lua 5.1 'namelist', except with optional type annotations
 
-var_list ::= var (',' var)*
-var ::= primary_exp
-var_reference ::= ID { methods=[getReferences] }
-prefix_exp ::= var_reference | '(' expression ')' | table_constructor
-postfix_exp ::= func_args | index_expr
-// For sure I duplicate the stuff here. Using expressions parsing from the official grammar doesn't work for left recursion problem.
-// So I have to split it up a different way. Which made it impossible to have a separate thing for a function call.
-// So I allowed all the expressions to be a statement.
-// Let's try to allow only function calls.
-// But I have a feeling that I'll revert this at some point and do a manual expressions parsing as other plugins do?
-// Now I have to make sure that at least I allow all the valid syntax
-function_call ::= prefix_exp (index_expr* func_args)+
+var_list ::= lvalue (',' lvalue)*
+lvalue ::= <<parseIndexAccess index_or_call_expr>> | simple_reference
 
-// I guess this is a bit more permissive that it should be? e.g. it allows {}()
-primary_exp ::= prefix_exp postfix_exp*
+simple_reference ::= ID { methods=[getReferences] }
 
-index_expr ::= '[' expression ']' | '.' ID | ':' ID { pin(".*") = 1 }
+// I don't really need this expression, but I can't make it private. Making it inner has no effect.
+value_expr ::= index_or_call_expr | paren_expr | simple_reference
+
+private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)+
+// These are postfixes. not actual access and call, but since they are left and take over the index_or_call_expr above the names suit well
+left index_access ::= '[' expression ']' | '.' simple_reference { pin(".*") = 1 }
+left func_call ::= func_args | ':' simple_reference func_args { pin(".*") = 1 }
 
 func_args ::= list_args | single_arg
-// TODO (AleksandrSl 21/06/2024): I wonder when you may have table and string as an arg without the parenthesis
 // Well, shit, sugar we deserved
 // > A call of the form f{fields} is syntactic sugar for f({fields});
 //   that is, the argument list is a single new table.
@@ -241,19 +248,73 @@ single_arg ::= table_constructor | STRING { extends = func_args }
 private arg_expr_list ::= expression (',' expression)*
 list_args ::= '(' arg_expr_list? ')' { extends = func_args; pin = 1 }
 
-expression ::= unary_exp | binary_exp | as_exp | simple_exp
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
-unary_exp ::= un_op expression {extends=expression; pin = 1}
-binary_exp ::= expression bin_op expression {extends=expression; pin = 2}
-ifelse_exp ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression { pin = 1 }
+// TODO (AleksandrSl 07/03/2025): Figure out priorities later
+// 2.5.6 – Precedence Take a look at this
+expression ::= ifelse_expr
+  | or_expr
+  | and_expr
+  | comparison_expr
+  | add_group
+  | mul_group
+  | unary_group
+  | exp_expr
+  | as_expr
+  | primary_group
+//  Why do I need this? I just found this in the example
+  {extraRoot=true}
+
+// private rules to define operators with the same priority
+private unary_group ::= length_expr | not_expr | unary_min_expr
+private mul_group ::= mul_expr | div_expr | floor_div_expr | mod_expr | concat_expr
+private add_group ::= plus_expr | minus_expr
+// It's impossible to call on index values expect for ID and parenthesised expression. That's why the first 4 are not considered a value here. Naming sucks
+private primary_group ::= table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr
+
+// public rules for each expression
+unary_min_expr ::= un_minus_op expression
+length_expr ::= un_length_op expression
+not_expr ::= un_not_op expression
+div_expr ::= expression div_op expression
+floor_div_expr ::= expression floor_div_op expression
+mod_expr ::= expression mod_op expression
+concat_expr ::= expression concat_op expression
+mul_expr ::= expression mul_op expression
+minus_expr ::= expression minus_op expression
+plus_expr ::= expression plus_op expression
+
+div_op ::= '/'
+floor_div_op ::= '//'
+mod_op ::= '%'
+concat_op ::= '..'
+mul_op ::= '*'
+minus_op ::= '-'
+plus_op ::= '+'
+comparison_op ::= '<' | '<=' | '>' | '>=' | '==' | '~='
+and_op ::= 'and'
+or_op ::= 'or'
+
+comparison_expr ::= expression comparison_op expression { pin = 2 }
+and_expr ::= expression and_op expression
+or_expr ::= expression or_op expression
+exp_expr ::= expression ('^' expression) + // N-ary variant, the "(<op> expr ) +" syntax is mandatory.
+paren_expr ::= '(' expression ')'
+
+literal_expr ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
+
+closure_expr ::= attributes? 'function' func_body { pin = 2 }
+template_string_expr ::= TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE { pin = 1 }
+// Since as_expr has power greater then the rest of the expressions, the list below can be simplified to expr. At least I didn't find a case where I'd see a difference.
+// I may try this at some point.
 // TODO (AleksandrSl 21/06/2024): I guess I may have () around cast and they maybe be even necessary? Can I cast all simple expressions?
-as_exp ::= simple_exp '::' type { extends=expression; pin = 2 }
-template_string ::= TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE { pin = 1 }
-simple_exp ::= table_constructor | closure_exp | ifelse_exp | literal_exp | template_string | primary_exp { extends=expression }
+as_expr ::= (ifelse_expr | table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr) '::' type { pin = 2 }
+ifelse_expr ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression { pin = 1 }
+table_constructor_expr ::= table_constructor
 
-private literal_exp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
-
-closure_exp ::= attributes? 'function' func_body { pin = 2 }
+compound_op ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..=' | '//='
+un_minus_op ::= '-'
+un_not_op ::= 'not'
+un_length_op ::= '#'
 
 table_constructor ::= '{' field_list? '}' { pin = 1 }
 field_list ::= field (field_sep field)* field_sep?
@@ -266,10 +327,6 @@ indexed_field ::= expression
 private field_recover ::= !(',' | ';' | '}' | '[')
 // Why the hell they allow two separators
 field_sep ::= ',' | ';'
-
-compound_op ::= '+=' | '-=' | '*=' | '/=' | '%=' | '^=' | '..=' | '//='
-bin_op ::= '+' | '-' | '*' | '/' | '//' | '^' | '%' | '..' | '<' | '<=' | '>' | '>=' | '==' | '~=' | 'and' | 'or'
-un_op ::= '-' | 'not' | '#'
 
 // Types
 simple_type ::=

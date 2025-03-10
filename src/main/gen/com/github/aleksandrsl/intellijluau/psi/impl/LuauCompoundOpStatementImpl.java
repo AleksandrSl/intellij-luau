@@ -28,12 +28,6 @@ public class LuauCompoundOpStatementImpl extends ASTWrapperPsiElement implements
   }
 
   @Override
-  @NotNull
-  public LuauCompoundOp getCompoundOp() {
-    return findNotNullChildByClass(LuauCompoundOp.class);
-  }
-
-  @Override
   @Nullable
   public LuauExpression getExpression() {
     return findChildByClass(LuauExpression.class);
@@ -41,8 +35,14 @@ public class LuauCompoundOpStatementImpl extends ASTWrapperPsiElement implements
 
   @Override
   @NotNull
-  public LuauVar getVar() {
-    return findNotNullChildByClass(LuauVar.class);
+  public LuauLvalue getLvalue() {
+    return findNotNullChildByClass(LuauLvalue.class);
+  }
+
+  @Override
+  @NotNull
+  public LuauOperator getOperator() {
+    return findNotNullChildByClass(LuauOperator.class);
   }
 
 }
