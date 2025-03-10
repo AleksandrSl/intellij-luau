@@ -28,6 +28,54 @@ public class LuauBlockImpl extends ASTWrapperPsiElement implements LuauBlock {
   }
 
   @Override
+  @NotNull
+  public List<LuauAssignmentStatement> getAssignmentStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauAssignmentStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauClassicForStatement> getClassicForStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauClassicForStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauCompoundOpStatement> getCompoundOpStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauCompoundOpStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauDoStatement> getDoStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauDoStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauExpressionStatement> getExpressionStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauExpressionStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauForeachStatement> getForeachStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauForeachStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauFuncDefStatement> getFuncDefStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauFuncDefStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauIfStatement> getIfStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauIfStatement.class);
+  }
+
+  @Override
   @Nullable
   public LuauLastStatement getLastStatement() {
     return findChildByClass(LuauLastStatement.class);
@@ -35,8 +83,38 @@ public class LuauBlockImpl extends ASTWrapperPsiElement implements LuauBlock {
 
   @Override
   @NotNull
-  public List<LuauStatement> getStatementList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauStatement.class);
+  public List<LuauLocalDefStatement> getLocalDefStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauLocalDefStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauLocalFuncDefStatement> getLocalFuncDefStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauLocalFuncDefStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauMethodDefStatement> getMethodDefStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauMethodDefStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauRepeatStatement> getRepeatStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauRepeatStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauTypeDeclarationStatement> getTypeDeclarationStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauTypeDeclarationStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauWhileStatement> getWhileStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauWhileStatement.class);
   }
 
 }

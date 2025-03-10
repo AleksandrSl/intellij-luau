@@ -107,12 +107,11 @@
 luau_file ::= shebang_line? block
 shebang_line ::= SHEBANG SHEBANG_CONTENT
 
-// TODO (AleksandrSl 10/03/2025): I don't understand do I ned a rule here at all or it can be empty
+// TODO (AleksandrSl 10/03/2025): I don't understand do I need a rule here at all or it can be empty
 fake operator ::= "+"
 block ::= (statement ';'?)* (last_statement ';'?)?
 
-// TODO (AleksandrSl 10/03/2025): MAke private
-statement ::=
+private statement ::=
     // TODO (AleksandrSl 07/03/2025): There will be a type function support shortly.
      type_declaration_statement
      | do_statement
