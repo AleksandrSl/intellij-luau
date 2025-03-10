@@ -80,7 +80,6 @@ public interface LuauTypes {
   IElementType SIMPLE_TYPE = new LuauElementType("SIMPLE_TYPE");
   IElementType SINGLETON_TYPE = new LuauElementType("SINGLETON_TYPE");
   IElementType SINGLE_ARG = new LuauElementType("SINGLE_ARG");
-  IElementType STATEMENT = new LuauElementType("STATEMENT");
   IElementType STRING_KEYED_FIELD = new LuauElementType("STRING_KEYED_FIELD");
   IElementType TABLE_CONSTRUCTOR = new LuauElementType("TABLE_CONSTRUCTOR");
   IElementType TABLE_CONSTRUCTOR_EXPR = new LuauElementType("TABLE_CONSTRUCTOR_EXPR");
@@ -396,9 +395,6 @@ public interface LuauTypes {
       }
       else if (type == SINGLE_ARG) {
         return new LuauSingleArgImpl(node);
-      }
-      else if (type == STATEMENT) {
-        return new LuauStatementImpl(node);
       }
       else if (type == STRING_KEYED_FIELD) {
         return new LuauStringKeyedFieldImpl(node);

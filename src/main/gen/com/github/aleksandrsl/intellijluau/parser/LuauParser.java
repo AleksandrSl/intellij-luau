@@ -2128,10 +2128,10 @@ public class LuauParser implements PsiParser, LightPsiParser {
   //      // expressionStatement includes ifelse_exp but most of the time we want if_statement to be matched first, e.g. to fix nested conditions
   //      // Actually expressions go last everywhere
   //      | expression_statement
-  public static boolean statement(PsiBuilder b, int l) {
+  static boolean statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, STATEMENT, "<statement>");
+    Marker m = enter_section_(b, l, _NONE_);
     r = type_declaration_statement(b, l + 1);
     if (!r) r = do_statement(b, l + 1);
     if (!r) r = while_statement(b, l + 1);

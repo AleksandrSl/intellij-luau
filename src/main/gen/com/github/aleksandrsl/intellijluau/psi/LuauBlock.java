@@ -7,10 +7,49 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauBlock extends PsiElement {
 
+  @NotNull
+  List<LuauAssignmentStatement> getAssignmentStatementList();
+
+  @NotNull
+  List<LuauClassicForStatement> getClassicForStatementList();
+
+  @NotNull
+  List<LuauCompoundOpStatement> getCompoundOpStatementList();
+
+  @NotNull
+  List<LuauDoStatement> getDoStatementList();
+
+  @NotNull
+  List<LuauExpressionStatement> getExpressionStatementList();
+
+  @NotNull
+  List<LuauForeachStatement> getForeachStatementList();
+
+  @NotNull
+  List<LuauFuncDefStatement> getFuncDefStatementList();
+
+  @NotNull
+  List<LuauIfStatement> getIfStatementList();
+
   @Nullable
   LuauLastStatement getLastStatement();
 
   @NotNull
-  List<LuauStatement> getStatementList();
+  List<LuauLocalDefStatement> getLocalDefStatementList();
+
+  @NotNull
+  List<LuauLocalFuncDefStatement> getLocalFuncDefStatementList();
+
+  @NotNull
+  List<LuauMethodDefStatement> getMethodDefStatementList();
+
+  @NotNull
+  List<LuauRepeatStatement> getRepeatStatementList();
+
+  @NotNull
+  List<LuauTypeDeclarationStatement> getTypeDeclarationStatementList();
+
+  @NotNull
+  List<LuauWhileStatement> getWhileStatementList();
 
 }
