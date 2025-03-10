@@ -2,7 +2,7 @@ package com.github.aleksandrsl.intellijluau
 
 import com.intellij.lang.Language
 
-class LuauLanguage: Language("luau") {
+class LuauLanguage: Language("Luau") {
     companion object {
         val INSTANCE = LuauLanguage()
     }

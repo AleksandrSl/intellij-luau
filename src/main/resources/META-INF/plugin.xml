@@ -16,46 +16,46 @@
         <fileType name="Luau File"
                   implementationClass="com.github.aleksandrsl.intellijluau.LuauFileType"
                   fieldName="INSTANCE"
-                  language="luau"
+                  language="Luau"
                   extensions="luau;lua"
         />
         <lang.parserDefinition
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauParserDefinition"
         />
         <lang.syntaxHighlighterFactory
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.highlight.LuauSyntaxHighlighterFactory"
         />
         <colorSettingsPage
                 implementation="com.github.aleksandrsl.intellijluau.highlight.LuauColorSettingsPage"
         />
         <annotator
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.highlight.LuauSyntaxHighlightAnnotator"
         />
         <lang.foldingBuilder
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauFoldingBuilder"
         />
         <lang.commenter
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauCommenter"
         />
         <lang.psiStructureViewFactory
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.structureView.LuauStructureViewFactory"/>
         <!--        <completion.contributor-->
-        <!--                language="luau"-->
+        <!--                language="Luau"-->
         <!--                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"-->
         <!--        />-->
-        <lang.refactoringSupport language="luau"
+        <lang.refactoringSupport language="Luau"
                                  implementationClass="com.github.aleksandrsl.intellijluau.refactoring.LuauRefactoringSupportProvider"/>
-        <psi.referenceContributor language="luau"
+        <psi.referenceContributor language="Luau"
                                   implementation="com.github.aleksandrsl.intellijluau.psi.LuauReferenceContributor"/>
-        <lang.quoteHandler language="luau" implementationClass="com.github.aleksandrsl.intellijluau.LuauQuoteHandler"/>
+        <lang.quoteHandler language="Luau" implementationClass="com.github.aleksandrsl.intellijluau.LuauQuoteHandler"/>
         <lang.braceMatcher
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.LuauBraceMatcher"
         />
         <codeStyleSettingsProvider
@@ -63,7 +63,7 @@
         <langCodeStyleSettingsProvider
                 implementation="com.github.aleksandrsl.intellijluau.formatter.LuauLanguageCodeStyleSettingsProvider"/>
         <lang.formatter
-                language="luau"
+                language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.formatter.LuauFormattingModelBuilder"/>
         <projectConfigurable
                 parentId="language"
