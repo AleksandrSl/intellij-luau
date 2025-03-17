@@ -43,24 +43,28 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
             return false
         }
 
+        if (elementType == LuauTypes.LCURLY || elementType == LuauTypes.RCURLY || elementType == LuauTypes.LBRACK || elementType == LuauTypes.RBRACK || elementType == LuauTypes.LPAREN || elementType == LuauTypes.RPAREN) {
+            return false
+        }
+
         if (blockIndentationParents.contains(parentType) && elementType == LuauTypes.BLOCK) {
             return true
         }
 
-        if (parentType == LuauTypes.TYPE_TABLE || parentType == LuauTypes.TABLE_CONSTRUCTOR || parentType == LuauTypes.LIST_ARGS) {
+        if (parentType == LuauTypes.TYPE_TABLE || parentType == LuauTypes.TABLE_CONSTRUCTOR || parentType == LuauTypes.LIST_ARGS || parentType == LuauTypes.PAR_LIST) {
             return true
         }
 
         return false
     }
 
+    // Used in getChildAttributes to get indent for the children that will be inserted in the current node.
     fun getChildIndent(node: ASTNode): Indent {
         val elementType = node.elementType
         if (blockIndentationParents.contains(elementType)) {
             return Indent.getNormalIndent()
         }
-        if (elementType == LuauTypes.TYPE_TABLE
-            || elementType == LuauTypes.TABLE_CONSTRUCTOR) {
+        if (elementType == LuauTypes.TYPE_TABLE || elementType == LuauTypes.TABLE_CONSTRUCTOR || elementType == LuauTypes.PAR_LIST) {
             return Indent.getNormalIndent()
         }
         if (elementType == LuauTypes.FUNC_ARGS) {
