@@ -326,16 +326,18 @@ un_minus_op ::= '-'
 un_not_op ::= 'not'
 un_length_op ::= '#'
 
+/* I see this in Haxe
+    // Do NOT genericize objectLiteral by making objectLiteralElementList optional.  Doing so
+    // makes blockStatement be overridden by objectLiteral in return statements.
+   Does it make sense for me as well?
+*/
 table_constructor ::= '{' <<list_with_trailing_sep field field_sep>>? '}' { pin = 1 }
-// Experimental, I want all fields to have a common base class interface for ease of checks for indentation at least.
-fake table_field ::= ID '=' expression
-private field ::= keyed_field | string_keyed_field | indexed_field { recoverWhile = field_recover }
+field ::= keyed_field | string_keyed_field | indexed_field { recoverWhile = field_recover }
 // Added for the nice scope selection in the first place
 computed_key ::= '[' expression ']' { pin = 1 }
-// extending the parent here removes it from PSI but still allow them all to extend it.
-keyed_field ::= computed_key '=' expression { pin = 1; extends = table_field }
-string_keyed_field ::= ID '=' expression { pin = 2; extends = table_field }
-indexed_field ::= expression { extends = table_field }
+keyed_field ::= computed_key '=' expression { pin = 1; }
+string_keyed_field ::= ID '=' expression { pin = 2; }
+indexed_field ::= expression
 private field_recover ::= !(',' | ';' | '}' | '[')
 // Why the hell they allow two separators
 field_sep ::= ',' | ';'

@@ -43,7 +43,7 @@ class LuauFoldingBuilder: FoldingBuilderEx(), DumbAware {
     override fun getPlaceholderText(node: ASTNode): String {
         return when(node.elementType) {
             LuauTypes.FUNC_BODY -> "..."
-            LuauTypes.TABLE_CONSTRUCTOR -> (node.psi as LuauTableConstructor).tableFieldList.size.let { "{ $it fields }" } ?: ""
+            LuauTypes.TABLE_CONSTRUCTOR -> (node.psi as LuauTableConstructor).fieldList.size.let { "{ $it fields }" } ?: ""
             LuauTypes.BLOCK_COMMENT -> "--[[ ... ]]"
             else -> "..."
         }
