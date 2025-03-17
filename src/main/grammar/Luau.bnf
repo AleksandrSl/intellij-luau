@@ -244,6 +244,8 @@ value_expr ::= index_or_call_expr | paren_expr | simple_reference
 private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)+
 // These are postfixes. not actual access and call, but since they are left and take over the index_or_call_expr above the names suit well
 left index_access ::= '[' expression ']' | '.' simple_reference { pin(".*") = 1 }
+// I can't pin method call because tables have : as well.
+// Nope, I can because it's only in types.
 left func_call ::= func_args | ':' simple_reference func_args { pin(".*") = 1 }
 
 func_args ::= list_args | single_arg
@@ -325,12 +327,15 @@ un_not_op ::= 'not'
 un_length_op ::= '#'
 
 table_constructor ::= '{' <<list_with_trailing_sep field field_sep>>? '}' { pin = 1 }
-field ::= keyed_field | string_keyed_field | indexed_field { recoverWhile = field_recover }
+// Experimental, I want all fields to have a common base class interface for ease of checks for indentation at least.
+fake table_field ::= ID '=' expression
+private field ::= keyed_field | string_keyed_field | indexed_field { recoverWhile = field_recover }
 // Added for the nice scope selection in the first place
-computed_key ::= '[' expression ']'
-keyed_field ::= computed_key '=' expression { pin = 1}
-string_keyed_field ::= ID '=' expression { pin = 2 }
-indexed_field ::= expression
+computed_key ::= '[' expression ']' { pin = 1 }
+// extending the parent here removes it from PSI but still allow them all to extend it.
+keyed_field ::= computed_key '=' expression { pin = 1; extends = table_field }
+string_keyed_field ::= ID '=' expression { pin = 2; extends = table_field }
+indexed_field ::= expression { extends = table_field }
 private field_recover ::= !(',' | ';' | '}' | '[')
 // Why the hell they allow two separators
 field_sep ::= ',' | ';'
@@ -376,6 +381,7 @@ private generic_type_list_with_defaults_only ::=
 
 private generic_type_pack_parameters_with_default ::= generic_type_pack_parameter ((',' generic_type_pack_parameter_with_default)+ | (',' generic_type_pack_parameters_with_default)?)
 
+// TODO: Add pins and recovery here.
 type_list ::= type (',' type_list)? | '...' type
 bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)? { recoverWhile = bound_type_list_recover }
 private bound_type_list_recover ::= !(')')

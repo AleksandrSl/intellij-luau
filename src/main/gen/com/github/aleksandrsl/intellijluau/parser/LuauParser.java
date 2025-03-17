@@ -44,6 +44,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
 
   public static final TokenSet[] EXTENDS_SETS_ = new TokenSet[] {
     create_token_set_(FUNC_ARGS, LIST_ARGS, SINGLE_ARG),
+    create_token_set_(INDEXED_FIELD, KEYED_FIELD, STRING_KEYED_FIELD),
     create_token_set_(AND_EXPR, AS_EXPR, CLOSURE_EXPR, COMPARISON_EXPR,
       CONCAT_EXPR, DIV_EXPR, EXPRESSION, EXP_EXPR,
       FLOOR_DIV_EXPR, IFELSE_EXPR, LENGTH_EXPR, LITERAL_EXPR,
@@ -393,13 +394,14 @@ public class LuauParser implements PsiParser, LightPsiParser {
   public static boolean computed_key(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "computed_key")) return false;
     if (!nextTokenIs(b, LBRACK)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, COMPUTED_KEY, null);
     r = consumeToken(b, LBRACK);
-    r = r && expression(b, l + 1, -1);
-    r = r && consumeToken(b, RBRACK);
-    exit_section_(b, m, COMPUTED_KEY, r);
-    return r;
+    p = r; // pin = 1
+    r = r && report_error_(b, expression(b, l + 1, -1));
+    r = p && consumeToken(b, RBRACK) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
   }
 
   /* ********************************************************** */
@@ -499,10 +501,10 @@ public class LuauParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // keyed_field | string_keyed_field | indexed_field
-  public static boolean field(PsiBuilder b, int l) {
+  static boolean field(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field")) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, FIELD, "<field>");
+    Marker m = enter_section_(b, l, _NONE_);
     r = keyed_field(b, l + 1);
     if (!r) r = string_keyed_field(b, l + 1);
     if (!r) r = indexed_field(b, l + 1);
