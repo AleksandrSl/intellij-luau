@@ -97,6 +97,7 @@
   // TODO (AleksandrSl 08/03/2025): Consider adding the line below, they say it improves performance, but I didn't understand the cons.
   //consumeTokenMethod(".*_expr|expression")="consumeTokenFast"
   extends(".*expr")=expression
+  // TODO (AleksandrSl 24/03/2025): Check soft keywords in Haxe token sets, maybe I don't need an interface?
   implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
   // I guess element type is not necessary here, but it reduced the amount of types generated
   elementType(".*_op")=operator
@@ -114,6 +115,8 @@ private meta list_with_trailing_comma ::= <<p>> (',' <<p>>)* ','?
 private meta list_with_trailing_sep ::= <<p>> (<<sep>> <<p>>)* <<sep>>?
 
 // TODO (AleksandrSl 10/03/2025): I don't understand do I need a rule here at all or it can be empty
+//  Maybe I can just create a token set with all of them
+//  I also saw that people do just ::=
 fake operator ::= "+"
 block ::= (statement ';'?)* (last_statement ';'?)?
 
@@ -278,7 +281,8 @@ expression ::= ifelse_expr
 private unary_group ::= length_expr | not_expr | unary_min_expr
 private mul_group ::= mul_expr | div_expr | floor_div_expr | mod_expr | concat_expr
 private add_group ::= plus_expr | minus_expr
-// It's impossible to call on index values expect for ID and parenthesised expression. That's why the first 4 are not considered a value here. Naming sucks
+// It's impossible to call a function or index a value except for ID and parenthesised expression.
+// That's why the first 4 are not considered a value here. Naming sucks
 private primary_group ::= table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr
 
 // public rules for each expression
