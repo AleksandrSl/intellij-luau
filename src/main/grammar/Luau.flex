@@ -253,7 +253,7 @@ TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})+
 }
 
 <xDOUBLE_QUOTED_STRING> {
-  // \n as a bad token isn't properly highlighted by lexer, let's highlight the whole string wor now, until I know how to do errors js style
+  // \n as a bad token isn't properly highlighted by lexer, let's highlight the whole string for now, until I know how to do errors js style
   {DOUBLE_QUOTED_STRING}      { popState(); if (yycharat(yylength() - 1) == '"') { return STRING; } else { return TokenType.BAD_CHARACTER; } }
   [^]                         { return TokenType.BAD_CHARACTER; }
 }
