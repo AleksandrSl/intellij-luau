@@ -22,6 +22,15 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
             return Indent.getNoneIndent()
         }
 
+        if (elementType == LuauTypes.EXP_LIST) {
+            return Indent.getSmartIndent(Indent.Type.CONTINUATION)
+        }
+
+        if (parentType == LuauTypes.IFELSE_EXPR) {
+            // I have no idea, which indent do I need let's try this one.
+            return Indent.getSmartIndent(Indent.Type.CONTINUATION)
+        }
+
         if (needIndent(parentType, elementType)) {
             val psi = node.psi;
             if (psi.parent is PsiFile) {
@@ -30,6 +39,8 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
             return Indent.getNormalIndent();
         }
 
+        // About continuation indents. From here - https://www.jetbrains.com/help/idea/code-style-sql-tabs-and-indents.html
+        // Specify the indentation for lines that continue from the previous line, making it clear that they are part of the same statement or block of code. Continuation indents are used when a single statement is too long to fit on one line.
         if (parentType == LuauTypes.FUNC_ARGS && elementType == LuauTypes.EXP_LIST) {
             // TODO: No idea why smart indent here, but everyone is doing this
             return Indent.getSmartIndent(Indent.Type.CONTINUATION)
@@ -68,6 +79,9 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
             return Indent.getNormalIndent()
         }
         if (elementType == LuauTypes.FUNC_ARGS) {
+            return Indent.getSmartIndent(Indent.Type.CONTINUATION)
+        }
+        if (elementType == LuauTypes.IFELSE_EXPR) {
             return Indent.getSmartIndent(Indent.Type.CONTINUATION)
         }
         return Indent.getNoneIndent()
