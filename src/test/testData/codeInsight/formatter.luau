@@ -24,6 +24,17 @@ type test = {
   a: number
 }
 
+local test = if a > 5 then 10 else 20
+
+local padding = if cursorDetails.Padding
+then React.createElement("UIPadding", {
+    PaddingTop = UDim.new(0, cursorDetails.Padding),
+    PaddingBottom = UDim.new(0, cursorDetails.Padding),
+    PaddingLeft = UDim.new(0, cursorDetails.Padding),
+    PaddingRight = UDim.new(0, cursorDetails.Padding),
+})
+else nil
+
 local function f(
    a: number,
   b: string,

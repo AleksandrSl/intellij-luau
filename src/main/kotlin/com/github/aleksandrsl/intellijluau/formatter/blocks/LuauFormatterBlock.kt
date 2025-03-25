@@ -6,6 +6,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.TokenType
 import com.intellij.psi.formatter.common.AbstractBlock
 
+// TODO (AleksandrSl 22/03/2025): Take a look at the https://plugins.jetbrains.com/docs/intellij/code-formatting.html#external-code-formatter for stylua
 open class LuauFormatterBlock(
     node: ASTNode, wrap: Wrap?, alignment: Alignment?,
     private val spacingBuilder: SpacingBuilder
@@ -26,6 +27,7 @@ open class LuauFormatterBlock(
     //  2. For tables there is no PSI element other than curly braces plus the internal, and then each key pair is indented on its own.
     //  Each with normal indent. It Values are also normal indented, so if you move them to a new line the have the extra indentation,
     //  and of course the commas are indented
+    //  In JS const a = 3 + 3 has a PSI node of `a = 3 + 3` which is a unit with smart continuation indent, because you can move it to the new line. Do I want this, probably not.
     override fun buildChildren(): List<Block> {
         return myNode.getChildren(null).asSequence().filter {
             it.elementType != TokenType.WHITE_SPACE && it.textLength > 0
