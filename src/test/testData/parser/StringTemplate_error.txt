@@ -13,7 +13,7 @@ Luau file(0,46)
       LuauExpListImpl(EXP_LIST)(42,43)
         LuauTemplateStringExprImpl(TEMPLATE_STRING_EXPR)(42,43)
           PsiElement(LuauTokenType.TEMPLATE_STRING_SQUOTE)('`')(42,43)
-          PsiErrorElement:LuauTokenType.:: or LuauTokenType.TEMPLATE_STRING_EQUOTE expected, got '{'(43,43)
+          PsiErrorElement:LuauTokenType.::, LuauTokenType.STRING, LuauTokenType.TEMPLATE_STRING_EQUOTE or LuauTokenType.{ expected, got '{'(43,43)
             <empty list>
     PsiElement(LuauTokenType.{)('{')(43,44)
   PsiErrorElement:<expression statement>, <func def statement>, <last statement>, <local func def statement>, <lvalue>, <method def statement>, <type declaration statement>, LuauTokenType.;, LuauTokenType.do, LuauTokenType.for, LuauTokenType.if, LuauTokenType.local, LuauTokenType.repeat or LuauTokenType.while expected, got '}'(44,45)

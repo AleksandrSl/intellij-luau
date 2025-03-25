@@ -272,8 +272,7 @@ expression ::= ifelse_expr
   | mul_group
   | unary_group
   | exp_expr
-  | as_expr
-  | primary_group
+  | primary_group_expr
 //  Why do I need this? I just found this in the example
   {extraRoot=true}
 
@@ -281,9 +280,41 @@ expression ::= ifelse_expr
 private unary_group ::= length_expr | not_expr | unary_min_expr
 private mul_group ::= mul_expr | div_expr | floor_div_expr | mod_expr | concat_expr
 private add_group ::= plus_expr | minus_expr
+
+/*
+ * Original grammar from lua
+ * simpleexp ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...' | tableconstructor | attributes 'function' funcbody | prefixexp | ifelseexp | stringinterp
+ * asexp ::= simpleexp ['::' Type]
+ * exp:= asexp { binop exp } | unop exp { binop exp }
+ * I did it the way that I try an as_exp first and a normal one
+ *  | as_expr
+ *  | primary_group
+ * I should have known that this is highly ineffective, because we literally parse the same thing twice.
+ * Because
+ * as_expr ::= (ifelse_expr | table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr) '::' type { pin = 2 }
+ * private primary_group ::= table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr
+ * It's literally the same, except for if else, because I consider it a less prioritized expressions so it's in the top separately (I'm not sure I'm correct)
+ * I think the better way should be to add cast as an left rule, so it will be optional and eat the parent if needed.
+ *
+ * Btw, ifelseexp doesn't make sense in a simpleexp, since it's not simple. You can add a cast after it but it's attributed to the last expression not to if else statement.
+ *
+ */
+
+// private primary_group ::= (table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr) as_expr?
+// Looks like this one doesn't work as I expect. I expect it to parse all the expressions and add as_expr part to the end.
+// But it does
+// if (!r) r = value_expr(b, l + 1);
+// if (!r) r = as_expr(b, l + 1);
+// So as_expr is parse only if the previous ones are not parsed
+// I tried a lot of combinations. The idea is to wrap all these into a cast if it's there. But if the primary_group stays private
+// it doesn't work like this and instead tries to parse cast as one more union option. (most probably it's a bug)
+// If you make primary_group_expr non private (and you have to make it an expr then) then everything is good.
+// I tried making as_expr both upper and left, and they work the same.
+// primary_group_expr basically doesn't exist in the PSI
+left as_expr ::= '::' type { pin = 1 }
 // It's impossible to call a function or index a value except for ID and parenthesised expression.
 // That's why the first 4 are not considered a value here. Naming sucks
-private primary_group ::= table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr
+primary_group_expr ::= (table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr) as_expr?
 
 // public rules for each expression
 unary_min_expr ::= un_minus_op expression
@@ -315,13 +346,8 @@ exp_expr ::= expression ('^' expression) + // N-ary variant, the "(<op> expr ) +
 paren_expr ::= '(' expression ')'
 
 literal_expr ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
-
 closure_expr ::= attributes? 'function' func_body { pin = 2 }
 template_string_expr ::= TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE { pin = 1 }
-// Since as_expr has power greater then the rest of the expressions, the list below can be simplified to expr. At least I didn't find a case where I'd see a difference.
-// I may try this at some point.
-// TODO (AleksandrSl 21/06/2024): I guess I may have () around cast and they maybe be even necessary? Can I cast all simple expressions?
-as_expr ::= (ifelse_expr | table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr) '::' type { pin = 2 }
 ifelse_expr ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression { pin = 1 }
 table_constructor_expr ::= table_constructor
 
