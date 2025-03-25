@@ -48,8 +48,8 @@ public class LuauParser implements PsiParser, LightPsiParser {
       CONCAT_EXPR, DIV_EXPR, EXPRESSION, EXP_EXPR,
       FLOOR_DIV_EXPR, IFELSE_EXPR, LENGTH_EXPR, LITERAL_EXPR,
       MINUS_EXPR, MOD_EXPR, MUL_EXPR, NOT_EXPR,
-      OR_EXPR, PAREN_EXPR, PLUS_EXPR, TABLE_CONSTRUCTOR_EXPR,
-      TEMPLATE_STRING_EXPR, UNARY_MIN_EXPR, VALUE_EXPR),
+      OR_EXPR, PAREN_EXPR, PLUS_EXPR, PRIMARY_GROUP_EXPR,
+      TABLE_CONSTRUCTOR_EXPR, TEMPLATE_STRING_EXPR, UNARY_MIN_EXPR, VALUE_EXPR),
   };
 
   /* ********************************************************** */
@@ -62,6 +62,20 @@ public class LuauParser implements PsiParser, LightPsiParser {
     r = consumeToken(b, AND);
     exit_section_(b, m, OPERATOR, r);
     return r;
+  }
+
+  /* ********************************************************** */
+  // '::' type
+  public static boolean as_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "as_expr")) return false;
+    if (!nextTokenIs(b, DOUBLE_COLON)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _LEFT_, AS_EXPR, null);
+    r = consumeToken(b, DOUBLE_COLON);
+    p = r; // pin = 1
+    r = r && type(b, l + 1);
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
   }
 
   /* ********************************************************** */
@@ -338,6 +352,28 @@ public class LuauParser implements PsiParser, LightPsiParser {
     r = r && expression(b, l + 1, -1);
     exit_section_(b, m, null, r);
     return r;
+  }
+
+  /* ********************************************************** */
+  // attributes? 'function' func_body
+  public static boolean closure_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "closure_expr")) return false;
+    if (!nextTokenIs(b, "<closure expr>", AT, FUNCTION)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, CLOSURE_EXPR, "<closure expr>");
+    r = closure_expr_0(b, l + 1);
+    r = r && consumeToken(b, FUNCTION);
+    p = r; // pin = 2
+    r = r && func_body(b, l + 1);
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // attributes?
+  private static boolean closure_expr_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "closure_expr_0")) return false;
+    attributes(b, l + 1);
+    return true;
   }
 
   /* ********************************************************** */
@@ -1312,6 +1348,22 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
+  public static boolean literal_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "literal_expr")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, LITERAL_EXPR, "<literal expr>");
+    r = consumeToken(b, NUMBER);
+    if (!r) r = consumeToken(b, STRING);
+    if (!r) r = consumeToken(b, NIL);
+    if (!r) r = consumeToken(b, TRUE);
+    if (!r) r = consumeToken(b, FALSE);
+    if (!r) r = consumeToken(b, ELLIPSIS);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
   // (ID '=')? literal
   public static boolean literal_field(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "literal_field")) return false;
@@ -2069,6 +2121,67 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // table_constructor
+  public static boolean table_constructor_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "table_constructor_expr")) return false;
+    if (!nextTokenIs(b, LCURLY)) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = table_constructor(b, l + 1);
+    exit_section_(b, m, TABLE_CONSTRUCTOR_EXPR, r);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE
+  public static boolean template_string_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_expr")) return false;
+    if (!nextTokenIs(b, TEMPLATE_STRING_SQUOTE)) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, TEMPLATE_STRING_EXPR, null);
+    r = consumeToken(b, TEMPLATE_STRING_SQUOTE);
+    p = r; // pin = 1
+    r = r && report_error_(b, template_string_expr_1(b, l + 1));
+    r = p && consumeToken(b, TEMPLATE_STRING_EQUOTE) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // (STRING | '{' expression '}')*
+  private static boolean template_string_expr_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_expr_1")) return false;
+    while (true) {
+      int c = current_position_(b);
+      if (!template_string_expr_1_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "template_string_expr_1", c)) break;
+    }
+    return true;
+  }
+
+  // STRING | '{' expression '}'
+  private static boolean template_string_expr_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_expr_1_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, STRING);
+    if (!r) r = template_string_expr_1_0_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // '{' expression '}'
+  private static boolean template_string_expr_1_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_expr_1_0_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeToken(b, LCURLY);
+    r = r && expression(b, l + 1, -1);
+    r = r && consumeToken(b, RCURLY);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  /* ********************************************************** */
   // type_union | type_intersection | simple_type '?'?
   public static boolean type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type")) return false;
@@ -2614,6 +2727,20 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // index_or_call_expr | paren_expr | simple_reference
+  public static boolean value_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "value_expr")) return false;
+    if (!nextTokenIs(b, "<value expr>", ID, LPAREN)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _COLLAPSE_, VALUE_EXPR, "<value expr>");
+    r = index_or_call_expr(b, l + 1);
+    if (!r) r = paren_expr(b, l + 1);
+    if (!r) r = simple_reference(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
   // <<list lvalue>>
   public static boolean var_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "var_list")) return false;
@@ -2666,9 +2793,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   //    BINARY(concat_expr)
   // 6: PREFIX(length_expr) PREFIX(not_expr) PREFIX(unary_min_expr)
   // 7: N_ARY(exp_expr)
-  // 8: ATOM(as_expr)
-  // 9: ATOM(table_constructor_expr) ATOM(literal_expr) ATOM(closure_expr) ATOM(template_string_expr)
-  //    ATOM(value_expr)
+  // 8: ATOM(primary_group_expr)
   public static boolean expression(PsiBuilder b, int l, int g) {
     if (!recursion_guard_(b, l, "expression")) return false;
     addVariant(b, "<expression>");
@@ -2678,12 +2803,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = length_expr(b, l + 1);
     if (!r) r = not_expr(b, l + 1);
     if (!r) r = unary_min_expr(b, l + 1);
-    if (!r) r = as_expr(b, l + 1);
-    if (!r) r = table_constructor_expr(b, l + 1);
-    if (!r) r = literal_expr(b, l + 1);
-    if (!r) r = closure_expr(b, l + 1);
-    if (!r) r = template_string_expr(b, l + 1);
-    if (!r) r = value_expr(b, l + 1);
+    if (!r) r = primary_group_expr(b, l + 1);
     p = r;
     r = r && expression_0(b, l + 1, g);
     exit_section_(b, l, m, null, r, p, null);
@@ -2828,25 +2948,22 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // (ifelse_expr | table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr) '::' type
-  public static boolean as_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "as_expr")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, AS_EXPR, "<as expr>");
-    r = as_expr_0(b, l + 1);
-    r = r && consumeToken(b, DOUBLE_COLON);
-    p = r; // pin = 2
-    r = r && type(b, l + 1);
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
+  // (table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr) as_expr?
+  public static boolean primary_group_expr(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "primary_group_expr")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _COLLAPSE_, PRIMARY_GROUP_EXPR, "<primary group expr>");
+    r = primary_group_expr_0(b, l + 1);
+    r = r && primary_group_expr_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
   }
 
-  // ifelse_expr | table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr
-  private static boolean as_expr_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "as_expr_0")) return false;
+  // table_constructor_expr | literal_expr | closure_expr | template_string_expr | value_expr
+  private static boolean primary_group_expr_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "primary_group_expr_0")) return false;
     boolean r;
-    r = ifelse_expr(b, l + 1);
-    if (!r) r = table_constructor_expr(b, l + 1);
+    r = table_constructor_expr(b, l + 1);
     if (!r) r = literal_expr(b, l + 1);
     if (!r) r = closure_expr(b, l + 1);
     if (!r) r = template_string_expr(b, l + 1);
@@ -2854,112 +2971,11 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // table_constructor
-  public static boolean table_constructor_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "table_constructor_expr")) return false;
-    if (!nextTokenIsSmart(b, LCURLY)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = table_constructor(b, l + 1);
-    exit_section_(b, m, TABLE_CONSTRUCTOR_EXPR, r);
-    return r;
-  }
-
-  // NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
-  public static boolean literal_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "literal_expr")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NONE_, LITERAL_EXPR, "<literal expr>");
-    r = consumeTokenSmart(b, NUMBER);
-    if (!r) r = consumeTokenSmart(b, STRING);
-    if (!r) r = consumeTokenSmart(b, NIL);
-    if (!r) r = consumeTokenSmart(b, TRUE);
-    if (!r) r = consumeTokenSmart(b, FALSE);
-    if (!r) r = consumeTokenSmart(b, ELLIPSIS);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // attributes? 'function' func_body
-  public static boolean closure_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "closure_expr")) return false;
-    if (!nextTokenIsSmart(b, AT, FUNCTION)) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, CLOSURE_EXPR, "<closure expr>");
-    r = closure_expr_0(b, l + 1);
-    r = r && consumeToken(b, FUNCTION);
-    p = r; // pin = 2
-    r = r && func_body(b, l + 1);
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
-  }
-
-  // attributes?
-  private static boolean closure_expr_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "closure_expr_0")) return false;
-    attributes(b, l + 1);
+  // as_expr?
+  private static boolean primary_group_expr_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "primary_group_expr_1")) return false;
+    as_expr(b, l + 1);
     return true;
-  }
-
-  // TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE
-  public static boolean template_string_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "template_string_expr")) return false;
-    if (!nextTokenIsSmart(b, TEMPLATE_STRING_SQUOTE)) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_, TEMPLATE_STRING_EXPR, null);
-    r = consumeTokenSmart(b, TEMPLATE_STRING_SQUOTE);
-    p = r; // pin = 1
-    r = r && report_error_(b, template_string_expr_1(b, l + 1));
-    r = p && consumeToken(b, TEMPLATE_STRING_EQUOTE) && r;
-    exit_section_(b, l, m, r, p, null);
-    return r || p;
-  }
-
-  // (STRING | '{' expression '}')*
-  private static boolean template_string_expr_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "template_string_expr_1")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!template_string_expr_1_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "template_string_expr_1", c)) break;
-    }
-    return true;
-  }
-
-  // STRING | '{' expression '}'
-  private static boolean template_string_expr_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "template_string_expr_1_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokenSmart(b, STRING);
-    if (!r) r = template_string_expr_1_0_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // '{' expression '}'
-  private static boolean template_string_expr_1_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "template_string_expr_1_0_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokenSmart(b, LCURLY);
-    r = r && expression(b, l + 1, -1);
-    r = r && consumeToken(b, RCURLY);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // index_or_call_expr | paren_expr | simple_reference
-  public static boolean value_expr(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "value_expr")) return false;
-    if (!nextTokenIsSmart(b, ID, LPAREN)) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _COLLAPSE_, VALUE_EXPR, "<value expr>");
-    r = index_or_call_expr(b, l + 1);
-    if (!r) r = paren_expr(b, l + 1);
-    if (!r) r = simple_reference(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
   }
 
   static final Parser expression_parser_ = (b, l) -> expression(b, l + 1, -1);
