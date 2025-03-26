@@ -105,7 +105,7 @@
 }
 // Why do I use postfix and not suffix. It's prevalent in many grammars, not other reasons.
 
-luau_file ::= shebang_line? block
+luau_file ::= shebang_line? root_block
 shebang_line ::= SHEBANG SHEBANG_CONTENT
 
 // meta rules improve readability, save 200 lines of code, don't add more overhead, at least they generate the same 2 methods that were generated everywhere
@@ -118,7 +118,18 @@ private meta list_with_trailing_sep ::= <<p>> (<<sep>> <<p>>)* <<sep>>?
 //  Maybe I can just create a token set with all of them
 //  I also saw that people do just ::=
 fake operator ::= "+"
-block ::= (statement ';'?)* (last_statement ';'?)?
+
+// It's not mandatory to have the different rules for blocks, but the root one can be simpler
+private root_statement_with_recover ::= !('return' | <<eof>>) statement { pin = 1 recoverWhile = statement_recover }
+root_block ::= (root_statement_with_recover ';'?)* (return_statement ';'?)?
+
+/* TODO (AleksandrSl 26/03/2025):
+ *  I don't know how bad 5 element lookahead is, it's good that they all are just one token.
+ *  Consider doing just `statement_with_recover`* and manually checking that last statement is last.
+ *  This will simplify the lookahead to !('end' | <<eof>>)
+ */
+private statement_with_recover ::= !('end' | 'return' | continue_soft_keyword | 'break' | <<eof>>) statement { pin = 1 recoverWhile = statement_recover }
+block ::= (statement_with_recover ';'?)* (last_statement ';'?)?
 
 private statement ::=
     // TODO (AleksandrSl 07/03/2025): There will be a type function support shortly.
@@ -132,23 +143,22 @@ private statement ::=
      | def_statement
      | compound_op_statement
      | assignment_statement
-     // TODO (AleksandrSl 07/03/2025): This comment is no longer valid since I made expresion statment to consist only of cuntino call
-     // Maybe not the best fix, but expression_statement is moved below ifStatement on purpose
-     // expressionStatement includes ifelse_exp but most of the time we want if_statement to be matched first, e.g. to fix nested conditions
-     // Actually expressions go last everywhere
      | expression_statement
-     { recoverWhile = statement_recover }
 
 // TODO (AleksandrSl 20/06/2024): I don't know how lua plugin avoid having all the else stuff here,
 //  probably because they do manual expressions parsing.
 // As far as I see, in the Haxe plugin it's totally fine to have all these here.
 private statement_recover ::= !(
   ID
-  | ',' | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '(' | TEMPLATE_STRING_EQUOTE | '}'
+  | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '(' | TEMPLATE_STRING_EQUOTE | '}'
   | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | 'break'
-  | 'nil' | 'true' | 'false' | STRING | NUMBER | export_soft_keyword | type_soft_keyword
-  | '@' | un_length_op | un_minus_op | un_not_op
+  | export_soft_keyword | type_soft_keyword
+  | '@'
 )
+
+// TODO (AleksandrSl 26/03/2025): What is the lazy parsing thing?
+//  private ShallowBlock ::= <<parseCodeBlockLazy>>
+//  I see a lot of it in other plugins.
 
 do_statement ::= 'do' block 'end' { pin = 1 }
 while_statement ::= 'while' expression 'do' block 'end' { pin = 1 }
@@ -158,13 +168,18 @@ if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)
 classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end' { pin = 3 }
 // Rename for into numeric_for and generic_for as in lua docs
 foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 1 }
+// TODO: Lol, what error I was talking about
 // I guess the problem is here, at least part of it. Because the error is bin_op or , is expected. And bin_op is a part of expression
 assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= lvalue compound_op expression { pin = 2 }
 // Alternative here is to use `external my_external_rule ::= parseMyExternalRule false 10`
 expression_statement ::= <<parseExprStatement index_or_call_expr>>
 private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
-last_statement ::= 'return' exp_list? | 'break' | continue_soft_keyword
+private return_statement ::= 'return' exp_list? { pin = 1 }
+// Though break and continue can only be inside the cycle, I can't create a separate cycle_block.
+// Since many things can be nested inside the cycle. Though functions for example cannot have continue
+// even if they are inside the while. I don't think it's worth trying to check this on parser level.
+last_statement ::= return_statement | 'break' | continue_soft_keyword
 // TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
 type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type { pin = 2 }
 export_soft_keyword ::= 'export'
@@ -217,7 +232,7 @@ method_def_statement ::= attributes? 'function' method_name func_body { pin = 3;
 // ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
 method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
 type_parameters_list ::= '<' generic_type_list '>'
-func_body ::= type_parameters_list? par_list (':' return_type)? block 'end'
+func_body ::= type_parameters_list? par_list (':' return_type)? block 'end' { pin = 2 }
 // binding_list is not used here on purpose to flatter the parameters into one list for better formatting and less PSI
 par_list ::= '(' (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)? ')'
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
@@ -242,6 +257,7 @@ lvalue ::= <<parseIndexAccess index_or_call_expr>> | simple_reference
 simple_reference ::= ID { methods=[getReferences] }
 
 // I don't really need this expression, but I can't make it private. Making it inner has no effect.
+// TODO (AleksandrSl 25/03/2025): Now I can even inline it, or make it private
 value_expr ::= index_or_call_expr | paren_expr | simple_reference
 
 private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)+

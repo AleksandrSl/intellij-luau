@@ -1,5 +1,5 @@
 Luau file(0,73)
-  LuauBlockImpl(BLOCK)(0,73)
+  LuauRootBlockImpl(ROOT_BLOCK)(0,73)
     LuauLocalDefStatementImpl(LOCAL_DEF_STATEMENT)(0,47)
       PsiElement(LuauTokenType.local)('local')(0,5)
       PsiWhiteSpace(' ')(5,6)

@@ -1,7 +1,7 @@
 Luau file(0,289)
   PsiComment(LuauTokenType.SHORT_COMMENT)('-- Once defaults started you can only have defaults.')(0,52)
   PsiWhiteSpace('\n')(52,53)
-  LuauBlockImpl(BLOCK)(53,289)
+  LuauRootBlockImpl(ROOT_BLOCK)(53,289)
     LuauTypeDeclarationStatementImpl(TYPE_DECLARATION_STATEMENT)(53,82)
       LuauTypeSoftKeywordImpl(TYPE_SOFT_KEYWORD)(53,57)
         PsiElement(LuauTokenType.ID)('type')(53,57)

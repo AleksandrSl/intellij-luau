@@ -1,5 +1,5 @@
 Luau file(0,229)
-  LuauBlockImpl(BLOCK)(0,229)
+  LuauRootBlockImpl(ROOT_BLOCK)(0,229)
     LuauLocalFuncDefStatementImpl(LOCAL_FUNC_DEF_STATEMENT)(0,35)
       LuauAttributesImpl(ATTRIBUTES)(0,11)
         LuauAttributeImpl(ATTRIBUTE)(0,11)

@@ -1,7 +1,7 @@
 Luau file(0,65)
   PsiComment(LuauTokenType.SHORT_COMMENT)('-- This is a valid usage if T is defined as T<A...>')(0,51)
   PsiWhiteSpace('\n')(51,52)
-  LuauBlockImpl(BLOCK)(52,65)
+  LuauRootBlockImpl(ROOT_BLOCK)(52,65)
     LuauTypeDeclarationStatementImpl(TYPE_DECLARATION_STATEMENT)(52,65)
       LuauTypeSoftKeywordImpl(TYPE_SOFT_KEYWORD)(52,56)
         PsiElement(LuauTokenType.ID)('type')(52,56)

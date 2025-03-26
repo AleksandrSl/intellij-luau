@@ -1,7 +1,7 @@
 Luau file(0,46)
   PsiComment(LuauTokenType.SHORT_COMMENT)('-- Empty interpolations are not valid')(0,37)
   PsiWhiteSpace('\n')(37,38)
-  LuauBlockImpl(BLOCK)(38,44)
+  LuauRootBlockImpl(ROOT_BLOCK)(38,44)
     LuauAssignmentStatementImpl(ASSIGNMENT_STATEMENT)(38,43)
       LuauVarListImpl(VAR_LIST)(38,39)
         LuauLvalueImpl(LVALUE)(38,39)
@@ -16,6 +16,7 @@ Luau file(0,46)
           PsiErrorElement:LuauTokenType.::, LuauTokenType.STRING, LuauTokenType.TEMPLATE_STRING_EQUOTE or LuauTokenType.{ expected, got '{'(43,43)
             <empty list>
     PsiElement(LuauTokenType.{)('{')(43,44)
-  PsiErrorElement:<expression statement>, <func def statement>, <last statement>, <local func def statement>, <lvalue>, <method def statement>, <type declaration statement>, LuauTokenType.;, LuauTokenType.do, LuauTokenType.for, LuauTokenType.if, LuauTokenType.local, LuauTokenType.repeat or LuauTokenType.while expected, got '}'(44,45)
-    PsiElement(LuauTokenType.})('}')(44,45)
+    PsiErrorElement:<expression statement>, <func def statement>, <local func def statement>, <lvalue>, <method def statement>, <type declaration statement>, LuauTokenType.;, LuauTokenType.do, LuauTokenType.for, LuauTokenType.if, LuauTokenType.local, LuauTokenType.repeat or LuauTokenType.while expected, got '}'(44,44)
+      <empty list>
+  PsiElement(LuauTokenType.})('}')(44,45)
   PsiElement(LuauTokenType.TEMPLATE_STRING_EQUOTE)('`')(45,46)
