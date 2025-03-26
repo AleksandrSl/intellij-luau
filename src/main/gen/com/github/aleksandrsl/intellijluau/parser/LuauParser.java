@@ -2109,6 +2109,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   static boolean statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement")) return false;
     boolean r;
+    Marker m = enter_section_(b, l, _NONE_, null, "<statement>");
     r = type_declaration_statement(b, l + 1);
     if (!r) r = do_statement(b, l + 1);
     if (!r) r = while_statement(b, l + 1);
@@ -2120,6 +2121,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = compound_op_statement(b, l + 1);
     if (!r) r = assignment_statement(b, l + 1);
     if (!r) r = expression_statement(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -2174,7 +2176,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !('end' | 'return' | continue_soft_keyword | 'break' | <<eof>>) statement
+  // !('end' | 'return' | continue_soft_keyword | 'break' | 'else' | 'elseif' | 'until' | <<eof>>) statement
   static boolean statement_with_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement_with_recover")) return false;
     boolean r, p;
@@ -2186,7 +2188,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // !('end' | 'return' | continue_soft_keyword | 'break' | <<eof>>)
+  // !('end' | 'return' | continue_soft_keyword | 'break' | 'else' | 'elseif' | 'until' | <<eof>>)
   private static boolean statement_with_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement_with_recover_0")) return false;
     boolean r;
@@ -2196,7 +2198,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // 'end' | 'return' | continue_soft_keyword | 'break' | <<eof>>
+  // 'end' | 'return' | continue_soft_keyword | 'break' | 'else' | 'elseif' | 'until' | <<eof>>
   private static boolean statement_with_recover_0_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement_with_recover_0_0")) return false;
     boolean r;
@@ -2205,6 +2207,9 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeToken(b, RETURN);
     if (!r) r = continue_soft_keyword(b, l + 1);
     if (!r) r = consumeToken(b, BREAK);
+    if (!r) r = consumeToken(b, ELSE);
+    if (!r) r = consumeToken(b, ELSEIF);
+    if (!r) r = consumeToken(b, UNTIL);
     if (!r) r = eof(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
