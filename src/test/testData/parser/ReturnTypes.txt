@@ -1,7 +1,7 @@
 Luau file(0,160)
   PsiComment(LuauTokenType.SHORT_COMMENT)('-- Type packs')(0,13)
   PsiWhiteSpace('\n')(13,14)
-  LuauBlockImpl(BLOCK)(14,160)
+  LuauRootBlockImpl(ROOT_BLOCK)(14,160)
     LuauLocalFuncDefStatementImpl(LOCAL_FUNC_DEF_STATEMENT)(14,76)
       PsiElement(LuauTokenType.local)('local')(14,19)
       PsiWhiteSpace(' ')(19,20)

@@ -1,7 +1,7 @@
 Luau file(0,97)
   PsiComment(LuauTokenType.SHORT_COMMENT)('-- It's not ok in types, you should do ...boolean')(0,49)
   PsiWhiteSpace('\n')(49,50)
-  LuauBlockImpl(BLOCK)(50,97)
+  LuauRootBlockImpl(ROOT_BLOCK)(50,97)
     LuauTypeDeclarationStatementImpl(TYPE_DECLARATION_STATEMENT)(50,97)
       LuauTypeSoftKeywordImpl(TYPE_SOFT_KEYWORD)(50,54)
         PsiElement(LuauTokenType.ID)('type')(50,54)

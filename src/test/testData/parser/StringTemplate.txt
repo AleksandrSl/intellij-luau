@@ -1,5 +1,5 @@
 Luau file(0,192)
-  LuauBlockImpl(BLOCK)(0,192)
+  LuauRootBlockImpl(ROOT_BLOCK)(0,192)
     LuauAssignmentStatementImpl(ASSIGNMENT_STATEMENT)(0,18)
       LuauVarListImpl(VAR_LIST)(0,1)
         LuauLvalueImpl(LVALUE)(0,1)

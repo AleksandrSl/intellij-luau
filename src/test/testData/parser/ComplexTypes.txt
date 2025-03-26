@@ -1,5 +1,5 @@
 Luau file(0,660)
-  LuauBlockImpl(BLOCK)(0,660)
+  LuauRootBlockImpl(ROOT_BLOCK)(0,660)
     LuauTypeDeclarationStatementImpl(TYPE_DECLARATION_STATEMENT)(0,53)
       LuauExportSoftKeywordImpl(EXPORT_SOFT_KEYWORD)(0,6)
         PsiElement(LuauTokenType.ID)('export')(0,6)
