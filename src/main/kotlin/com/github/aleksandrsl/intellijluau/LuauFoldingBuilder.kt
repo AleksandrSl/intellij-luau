@@ -36,7 +36,6 @@ class LuauFoldingBuilder: FoldingBuilderEx(), DumbAware {
                 super.visitElement(element)
             }
         })
-
         return list.toTypedArray()
     }
 

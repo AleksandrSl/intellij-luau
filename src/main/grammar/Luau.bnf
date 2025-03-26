@@ -127,8 +127,10 @@ root_block ::= (root_statement_with_recover ';'?)* (return_statement ';'?)?
  *  I don't know how bad 5 element lookahead is, it's good that they all are just one token.
  *  Consider doing just `statement_with_recover`* and manually checking that last statement is last.
  *  This will simplify the lookahead to !('end' | <<eof>>)
+ *  One more fix here, is to have all the tokens that may end the block here. And in my case it's also else and elseif and until.
+ *  Probably I can split this into more granular rules if such a long lookahead is a performance problem
  */
-private statement_with_recover ::= !('end' | 'return' | continue_soft_keyword | 'break' | <<eof>>) statement { pin = 1 recoverWhile = statement_recover }
+private statement_with_recover ::= !('end' | 'return' | continue_soft_keyword | 'break' | 'else' | 'elseif' | 'until' | <<eof>>) statement { pin = 1 recoverWhile = statement_recover }
 block ::= (statement_with_recover ';'?)* (last_statement ';'?)?
 
 private statement ::=
@@ -144,6 +146,7 @@ private statement ::=
      | compound_op_statement
      | assignment_statement
      | expression_statement
+{ name = "statement" }
 
 // TODO (AleksandrSl 20/06/2024): I don't know how lua plugin avoid having all the else stuff here,
 //  probably because they do manual expressions parsing.
@@ -290,7 +293,7 @@ expression ::= ifelse_expr
   | exp_expr
   | primary_group_expr
 //  Why do I need this? I just found this in the example
-  {extraRoot=true}
+  { extraRoot = true name = "expression" }
 
 // private rules to define operators with the same priority
 private unary_group ::= length_expr | not_expr | unary_min_expr
