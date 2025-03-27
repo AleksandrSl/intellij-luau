@@ -412,7 +412,7 @@ indexed_field ::= expression
 // TODO (AleksandrSl 27/03/2025): I'm being prompted for Statement even inside the table, that's weird I need to check
 private field_recover ::= !(',' | ';' | '}' | '[')
 // Why the hell they allow two separators
-field_sep ::= ',' | ';'
+private field_sep ::= ',' | ';'
 
 // Types
 simple_type ::=

@@ -10,7 +10,4 @@ public interface LuauTableConstructor extends PsiElement {
   @NotNull
   List<LuauField> getFieldList();
 
-  @NotNull
-  List<LuauFieldSep> getFieldSepList();
-
 }

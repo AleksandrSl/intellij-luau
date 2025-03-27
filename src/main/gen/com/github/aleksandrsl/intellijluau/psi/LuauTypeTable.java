@@ -7,9 +7,6 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauTypeTable extends PsiElement {
 
-  @NotNull
-  List<LuauFieldSep> getFieldSepList();
-
   @Nullable
   LuauType getType();
 

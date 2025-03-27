@@ -33,10 +33,4 @@ public class LuauTableConstructorImpl extends ASTWrapperPsiElement implements Lu
     return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauField.class);
   }
 
-  @Override
-  @NotNull
-  public List<LuauFieldSep> getFieldSepList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauFieldSep.class);
-  }
-
 }

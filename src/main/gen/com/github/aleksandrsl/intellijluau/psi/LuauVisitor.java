@@ -103,10 +103,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitFieldSep(@NotNull LuauFieldSep o) {
-    visitPsiElement(o);
-  }
-
   public void visitFloorDivExpr(@NotNull LuauFloorDivExpr o) {
     visitExpression(o);
   }
