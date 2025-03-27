@@ -268,6 +268,16 @@ private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | f
 left index_access ::= '[' expression ']' | '.' simple_reference { pin(".*") = 1 }
 // I can't pin method call because tables have : as well.
 // Nope, I can because it's only in types.
+//
+// Which version is better optional or union?
+// I guess it depends on which type of call is prevalent.
+// With optional ':' we first try to match it and if it fails match the args
+// With union I try args first. Since they are more prevalent.
+// One more downside of optional is that you can't pin the `:` you can pin only the whole
+// (':' simple_reference)? which literally pins empty space.
+// I did a quick comparison, and it's quite obvious on a file with ~ 10000 method calls with : optional version is faster.
+// if the calls are . then union is faster. But it's hard to use these results since in the . case we have more calls to index_access.
+// Anyway the difference is not visible on normal files. Can be a subject for later investigation.
 left func_call ::= func_args | ':' simple_reference func_args { pin(".*") = 1 }
 
 func_args ::= list_args | single_arg
