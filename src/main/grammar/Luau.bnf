@@ -152,12 +152,11 @@ private statement ::=
 //  probably because they do manual expressions parsing.
 // As far as I see, in the Haxe plugin it's totally fine to have all these here.
 private statement_recover ::= !(
-  ID
-  | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '(' | TEMPLATE_STRING_EQUOTE | '}'
-  | 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | 'return' | 'break'
-  | export_soft_keyword | type_soft_keyword
-  | '@'
+   statement_first | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '}' | 'return' | 'break'
 )
+
+// It's funny that rust don't allow let as the top level statement, we do though, so local is here.
+private statement_first ::= 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | export_soft_keyword | type_soft_keyword | ID | '(' | '@'
 
 // TODO (AleksandrSl 26/03/2025): What is the lazy parsing thing?
 //  private ShallowBlock ::= <<parseCodeBlockLazy>>
@@ -240,7 +239,7 @@ func_body ::= type_parameters_list? par_list (':' return_type)? block 'end' { pi
 par_list ::= '(' (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)? ')'
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
-exp_list ::= <<list expression>>
+exp_list ::= <<list expression>> { name = "expression list" }
 
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
 binding ::= ID (':' type)?  {
@@ -288,7 +287,18 @@ func_args ::= list_args | single_arg
 //   that is, the argument list is a single literal string
 // Only STRING is allowed, not template_string
 single_arg ::= table_constructor | STRING { extends = func_args }
-list_args ::= '(' <<list expression>>? ')' { extends = func_args; pin = 1 }
+// Rust does this a bit differently adding ',' to the arg_with_recover and doing arg_with_recover* and then they do no need ',' in recovery.
+// I like my meta rules though. Unless I found this is a performance issue I'll stick to this.
+// -- One moment later.
+// Damn, no, in this case if I add a comma after the last argument, parser finishes arg_with_recover list rule eats , and then when trying to parse expression again it fails immediately because of !')'.
+// I have a feeling though that (!')' | &',') but it says that it matches empty input. And indeed ',' should be lookbehind, which doesn't exist.
+// The error `')' unexpected` is a bit weird, but I don't see how I can do better, but keep the error recovery good
+list_args ::= '(' arg_with_recover* ')' { extends = func_args; pin = 1 }
+// Every rule tries to match as it can. Once it encounters error, it will continue until the recover is fine.
+// So the correct recover should stop at the start of the symbol which may indicate the beginning of
+// the new element of the same type, on an end of the parent expression
+private arg_with_recover ::= !')' expression (',' !')')? { pin = 1 recoverWhile = arg_recover }
+private arg_recover ::= !(exp_first | ')' | 'end' | '}' | statement_first | ';')
 
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
 // TODO (AleksandrSl 07/03/2025): Figure out priorities later
@@ -304,6 +314,8 @@ expression ::= ifelse_expr
   | primary_group_expr
 //  Why do I need this? I just found this in the example
   { extraRoot = true name = "expression" }
+
+private exp_first ::= '{' | '(' | 'true' | 'false' | ID | STRING | NUMBER | '#' | 'if' | '-' | 'not' | 'function' | 'nil' | '...' | '@' | TEMPLATE_STRING_SQUOTE
 
 // private rules to define operators with the same priority
 private unary_group ::= length_expr | not_expr | unary_min_expr
@@ -397,6 +409,7 @@ computed_key ::= '[' expression ']' { pin = 1 }
 keyed_field ::= computed_key '=' expression { pin = 1; }
 string_keyed_field ::= ID '=' expression { pin = 2; }
 indexed_field ::= expression
+// TODO (AleksandrSl 27/03/2025): I'm being prompted for Statement even inside the table, that's weird I need to check
 private field_recover ::= !(',' | ';' | '}' | '[')
 // Why the hell they allow two separators
 field_sep ::= ',' | ';'
