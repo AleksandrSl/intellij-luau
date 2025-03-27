@@ -671,14 +671,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // ',' | ';'
-  public static boolean field_sep(PsiBuilder b, int l) {
+  static boolean field_sep(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field_sep")) return false;
-    if (!nextTokenIs(b, "<field sep>", COMMA, SEMI)) return false;
+    if (!nextTokenIs(b, "", COMMA, SEMI)) return false;
     boolean r;
-    Marker m = enter_section_(b, l, _NONE_, FIELD_SEP, "<field sep>");
     r = consumeToken(b, COMMA);
     if (!r) r = consumeToken(b, SEMI);
-    exit_section_(b, l, m, r, false, null);
     return r;
   }
 

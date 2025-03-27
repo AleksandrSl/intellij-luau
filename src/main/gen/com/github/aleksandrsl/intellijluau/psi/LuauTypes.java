@@ -32,7 +32,6 @@ public interface LuauTypes {
   IElementType EXP_EXPR = new LuauElementType("EXP_EXPR");
   IElementType EXP_LIST = new LuauElementType("EXP_LIST");
   IElementType FIELD = new LuauElementType("FIELD");
-  IElementType FIELD_SEP = new LuauElementType("FIELD_SEP");
   IElementType FLOOR_DIV_EXPR = new LuauElementType("FLOOR_DIV_EXPR");
   IElementType FOREACH_STATEMENT = new LuauElementType("FOREACH_STATEMENT");
   IElementType FUNC_ARGS = new LuauElementType("FUNC_ARGS");
@@ -254,9 +253,6 @@ public interface LuauTypes {
       }
       else if (type == FIELD) {
         return new LuauFieldImpl(node);
-      }
-      else if (type == FIELD_SEP) {
-        return new LuauFieldSepImpl(node);
       }
       else if (type == FLOOR_DIV_EXPR) {
         return new LuauFloorDivExprImpl(node);
