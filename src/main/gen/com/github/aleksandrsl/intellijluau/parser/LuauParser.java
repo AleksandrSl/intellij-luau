@@ -90,7 +90,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !')' expression (',' !')')?
+  // !')' expression (',' !')' | &')')
   static boolean arg_with_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "arg_with_recover")) return false;
     boolean r, p;
@@ -113,11 +113,15 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // (',' !')')?
+  // ',' !')' | &')'
   private static boolean arg_with_recover_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "arg_with_recover_2")) return false;
-    arg_with_recover_2_0(b, l + 1);
-    return true;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = arg_with_recover_2_0(b, l + 1);
+    if (!r) r = arg_with_recover_2_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   // ',' !')'
@@ -137,6 +141,16 @@ public class LuauParser implements PsiParser, LightPsiParser {
     boolean r;
     Marker m = enter_section_(b, l, _NOT_);
     r = !consumeToken(b, RPAREN);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // &')'
+  private static boolean arg_with_recover_2_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "arg_with_recover_2_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = consumeToken(b, RPAREN);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -644,12 +658,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
     r = keyed_field(b, l + 1);
     if (!r) r = string_keyed_field(b, l + 1);
     if (!r) r = indexed_field(b, l + 1);
-    exit_section_(b, l, m, r, false, LuauParser::field_recover);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
   /* ********************************************************** */
-  // !(',' | ';' | '}' | '[' | ID | exp_first | statement_first | 'end' | last_statement_first)
+  // !('}' | '[' | exp_first | statement_first | 'end' | last_statement_first)
   static boolean field_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field_recover")) return false;
     boolean r;
@@ -659,15 +673,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // ',' | ';' | '}' | '[' | ID | exp_first | statement_first | 'end' | last_statement_first
+  // '}' | '[' | exp_first | statement_first | 'end' | last_statement_first
   private static boolean field_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field_recover_0")) return false;
     boolean r;
-    r = consumeToken(b, COMMA);
-    if (!r) r = consumeToken(b, SEMI);
-    if (!r) r = consumeToken(b, RCURLY);
+    r = consumeToken(b, RCURLY);
     if (!r) r = consumeToken(b, LBRACK);
-    if (!r) r = consumeToken(b, ID);
     if (!r) r = exp_first(b, l + 1);
     if (!r) r = statement_first(b, l + 1);
     if (!r) r = consumeToken(b, END);
@@ -683,6 +694,51 @@ public class LuauParser implements PsiParser, LightPsiParser {
     boolean r;
     r = consumeToken(b, COMMA);
     if (!r) r = consumeToken(b, SEMI);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !'}' field (field_sep | &'}')
+  static boolean field_with_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = field_with_recover_0(b, l + 1);
+    p = r; // pin = 1
+    r = r && report_error_(b, field(b, l + 1));
+    r = p && field_with_recover_2(b, l + 1) && r;
+    exit_section_(b, l, m, r, p, LuauParser::field_recover);
+    return r || p;
+  }
+
+  // !'}'
+  private static boolean field_with_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !consumeToken(b, RCURLY);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // field_sep | &'}'
+  private static boolean field_with_recover_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = field_sep(b, l + 1);
+    if (!r) r = field_with_recover_2_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &'}'
+  private static boolean field_with_recover_2_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover_2_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = consumeToken(b, RCURLY);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -2347,7 +2403,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '{' <<list_with_trailing_sep field field_sep>>? '}'
+  // '{' field_with_recover* '}'
   public static boolean table_constructor(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "table_constructor")) return false;
     if (!nextTokenIs(b, LCURLY)) return false;
@@ -2361,10 +2417,14 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // <<list_with_trailing_sep field field_sep>>?
+  // field_with_recover*
   private static boolean table_constructor_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "table_constructor_1")) return false;
-    list_with_trailing_sep(b, l + 1, LuauParser::field, LuauParser::field_sep);
+    while (true) {
+      int c = current_position_(b);
+      if (!field_with_recover(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "table_constructor_1", c)) break;
+    }
     return true;
   }
 
