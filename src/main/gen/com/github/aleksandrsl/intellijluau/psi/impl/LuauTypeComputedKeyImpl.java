@@ -28,9 +28,9 @@ public class LuauTypeComputedKeyImpl extends ASTWrapperPsiElement implements Lua
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauType getType() {
-    return findNotNullChildByClass(LuauType.class);
+    return findChildByClass(LuauType.class);
   }
 
 }

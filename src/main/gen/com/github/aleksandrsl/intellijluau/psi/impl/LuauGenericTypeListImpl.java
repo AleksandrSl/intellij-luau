@@ -28,21 +28,9 @@ public class LuauGenericTypeListImpl extends ASTWrapperPsiElement implements Lua
   }
 
   @Override
-  @Nullable
-  public LuauGenericTypeList getGenericTypeList() {
-    return findChildByClass(LuauGenericTypeList.class);
-  }
-
-  @Override
   @NotNull
   public List<LuauGenericTypePackParameter> getGenericTypePackParameterList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauGenericTypePackParameter.class);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getId() {
-    return findChildByType(ID);
   }
 
 }

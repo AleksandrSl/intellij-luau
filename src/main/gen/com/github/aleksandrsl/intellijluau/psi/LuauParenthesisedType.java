@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeIntersection extends PsiElement {
+public interface LuauParenthesisedType extends PsiElement {
 
   @NotNull
-  List<LuauSimpleType> getSimpleTypeList();
+  LuauType getType();
 
 }

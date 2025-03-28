@@ -28,33 +28,27 @@ public class LuauTypeParamsImpl extends ASTWrapperPsiElement implements LuauType
   }
 
   @Override
-  @Nullable
-  public LuauGenericTypePack getGenericTypePack() {
-    return findChildByClass(LuauGenericTypePack.class);
+  @NotNull
+  public List<LuauGenericTypePack> getGenericTypePackList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauGenericTypePack.class);
   }
 
   @Override
-  @Nullable
-  public LuauType getType() {
-    return findChildByClass(LuauType.class);
+  @NotNull
+  public List<LuauType> getTypeList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauType.class);
   }
 
   @Override
-  @Nullable
-  public LuauTypePack getTypePack() {
-    return findChildByClass(LuauTypePack.class);
+  @NotNull
+  public List<LuauTypePack> getTypePackList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauTypePack.class);
   }
 
   @Override
-  @Nullable
-  public LuauTypeParams getTypeParams() {
-    return findChildByClass(LuauTypeParams.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauVariadicTypePack getVariadicTypePack() {
-    return findChildByClass(LuauVariadicTypePack.class);
+  @NotNull
+  public List<LuauVariadicTypePack> getVariadicTypePackList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauVariadicTypePack.class);
   }
 
 }

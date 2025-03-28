@@ -29,8 +29,14 @@ public class LuauSimpleTypeImpl extends ASTWrapperPsiElement implements LuauSimp
 
   @Override
   @Nullable
-  public LuauExpression getExpression() {
-    return findChildByClass(LuauExpression.class);
+  public LuauFunctionType getFunctionType() {
+    return findChildByClass(LuauFunctionType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauParenthesisedType getParenthesisedType() {
+    return findChildByClass(LuauParenthesisedType.class);
   }
 
   @Override
@@ -41,32 +47,20 @@ public class LuauSimpleTypeImpl extends ASTWrapperPsiElement implements LuauSimp
 
   @Override
   @Nullable
-  public LuauType getType() {
-    return findChildByClass(LuauType.class);
+  public LuauTableType getTableType() {
+    return findChildByClass(LuauTableType.class);
   }
 
   @Override
   @Nullable
-  public LuauTypeFunction getTypeFunction() {
-    return findChildByClass(LuauTypeFunction.class);
+  public LuauTypeReference getTypeReference() {
+    return findChildByClass(LuauTypeReference.class);
   }
 
   @Override
   @Nullable
-  public LuauTypeParams getTypeParams() {
-    return findChildByClass(LuauTypeParams.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauTypeTable getTypeTable() {
-    return findChildByClass(LuauTypeTable.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauTypeofSoftKeyword getTypeofSoftKeyword() {
-    return findChildByClass(LuauTypeofSoftKeyword.class);
+  public LuauTypeofType getTypeofType() {
+    return findChildByClass(LuauTypeofType.class);
   }
 
 }

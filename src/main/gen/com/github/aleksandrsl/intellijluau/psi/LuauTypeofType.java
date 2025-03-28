@@ -5,9 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeParametersList extends PsiElement {
+public interface LuauTypeofType extends PsiElement {
 
-  @Nullable
-  LuauGenericTypeList getGenericTypeList();
+  @NotNull
+  LuauExpression getExpression();
+
+  @NotNull
+  LuauTypeofSoftKeyword getTypeofSoftKeyword();
 
 }

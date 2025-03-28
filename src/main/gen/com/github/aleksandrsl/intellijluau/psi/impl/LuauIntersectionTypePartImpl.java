@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauTypeIntersectionImpl extends ASTWrapperPsiElement implements LuauTypeIntersection {
+public class LuauIntersectionTypePartImpl extends ASTWrapperPsiElement implements LuauIntersectionTypePart {
 
-  public LuauTypeIntersectionImpl(@NotNull ASTNode node) {
+  public LuauIntersectionTypePartImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitTypeIntersection(this);
+    visitor.visitIntersectionTypePart(this);
   }
 
   @Override
@@ -29,8 +29,8 @@ public class LuauTypeIntersectionImpl extends ASTWrapperPsiElement implements Lu
 
   @Override
   @NotNull
-  public List<LuauSimpleType> getSimpleTypeList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauSimpleType.class);
+  public LuauSimpleType getSimpleType() {
+    return findNotNullChildByClass(LuauSimpleType.class);
   }
 
 }

@@ -34,6 +34,7 @@ public interface LuauTypes {
   IElementType FIELD = new LuauElementType("FIELD");
   IElementType FLOOR_DIV_EXPR = new LuauElementType("FLOOR_DIV_EXPR");
   IElementType FOREACH_STATEMENT = new LuauElementType("FOREACH_STATEMENT");
+  IElementType FUNCTION_TYPE = new LuauElementType("FUNCTION_TYPE");
   IElementType FUNC_ARGS = new LuauElementType("FUNC_ARGS");
   IElementType FUNC_BODY = new LuauElementType("FUNC_BODY");
   IElementType FUNC_CALL = new LuauElementType("FUNC_CALL");
@@ -47,6 +48,8 @@ public interface LuauTypes {
   IElementType IF_STATEMENT = new LuauElementType("IF_STATEMENT");
   IElementType INDEXED_FIELD = new LuauElementType("INDEXED_FIELD");
   IElementType INDEX_ACCESS = new LuauElementType("INDEX_ACCESS");
+  IElementType INTERSECTION_TYPE = new LuauElementType("INTERSECTION_TYPE");
+  IElementType INTERSECTION_TYPE_PART = new LuauElementType("INTERSECTION_TYPE_PART");
   IElementType KEYED_FIELD = new LuauElementType("KEYED_FIELD");
   IElementType LAST_STATEMENT = new LuauElementType("LAST_STATEMENT");
   IElementType LENGTH_EXPR = new LuauElementType("LENGTH_EXPR");
@@ -68,6 +71,7 @@ public interface LuauTypes {
   IElementType OR_EXPR = new LuauElementType("OR_EXPR");
   IElementType PARAMETERS = new LuauElementType("PARAMETERS");
   IElementType PARAMETRIZED_ATTRIBUTE = new LuauElementType("PARAMETRIZED_ATTRIBUTE");
+  IElementType PARENTHESISED_TYPE = new LuauElementType("PARENTHESISED_TYPE");
   IElementType PAREN_EXPR = new LuauElementType("PAREN_EXPR");
   IElementType PAR_LIST = new LuauElementType("PAR_LIST");
   IElementType PLUS_EXPR = new LuauElementType("PLUS_EXPR");
@@ -83,25 +87,25 @@ public interface LuauTypes {
   IElementType STRING_KEYED_FIELD = new LuauElementType("STRING_KEYED_FIELD");
   IElementType TABLE_CONSTRUCTOR = new LuauElementType("TABLE_CONSTRUCTOR");
   IElementType TABLE_CONSTRUCTOR_EXPR = new LuauElementType("TABLE_CONSTRUCTOR_EXPR");
+  IElementType TABLE_TYPE = new LuauElementType("TABLE_TYPE");
   IElementType TEMPLATE_STRING_EXPR = new LuauElementType("TEMPLATE_STRING_EXPR");
   IElementType TYPE = new LuauElementType("TYPE");
   IElementType TYPEOF_SOFT_KEYWORD = new LuauElementType("TYPEOF_SOFT_KEYWORD");
+  IElementType TYPEOF_TYPE = new LuauElementType("TYPEOF_TYPE");
   IElementType TYPE_COMPUTED_KEY = new LuauElementType("TYPE_COMPUTED_KEY");
   IElementType TYPE_DECLARATION_STATEMENT = new LuauElementType("TYPE_DECLARATION_STATEMENT");
   IElementType TYPE_FIELD = new LuauElementType("TYPE_FIELD");
-  IElementType TYPE_FUNCTION = new LuauElementType("TYPE_FUNCTION");
-  IElementType TYPE_INTERSECTION = new LuauElementType("TYPE_INTERSECTION");
   IElementType TYPE_KEYED_FIELD = new LuauElementType("TYPE_KEYED_FIELD");
   IElementType TYPE_LIST = new LuauElementType("TYPE_LIST");
   IElementType TYPE_PACK = new LuauElementType("TYPE_PACK");
   IElementType TYPE_PARAMETERS_LIST = new LuauElementType("TYPE_PARAMETERS_LIST");
   IElementType TYPE_PARAMS = new LuauElementType("TYPE_PARAMS");
+  IElementType TYPE_REFERENCE = new LuauElementType("TYPE_REFERENCE");
   IElementType TYPE_SOFT_KEYWORD = new LuauElementType("TYPE_SOFT_KEYWORD");
   IElementType TYPE_STRING_KEYED_FIELD = new LuauElementType("TYPE_STRING_KEYED_FIELD");
-  IElementType TYPE_TABLE = new LuauElementType("TYPE_TABLE");
-  IElementType TYPE_UNION = new LuauElementType("TYPE_UNION");
   IElementType UNARY_MIN_EXPR = new LuauElementType("UNARY_MIN_EXPR");
-  IElementType VALUE_EXPR = new LuauElementType("VALUE_EXPR");
+  IElementType UNION_TYPE = new LuauElementType("UNION_TYPE");
+  IElementType UNION_TYPE_PART = new LuauElementType("UNION_TYPE_PART");
   IElementType VARIADIC_TYPE_PACK = new LuauElementType("VARIADIC_TYPE_PACK");
   IElementType VAR_LIST = new LuauElementType("VAR_LIST");
   IElementType WHILE_STATEMENT = new LuauElementType("WHILE_STATEMENT");
@@ -260,6 +264,9 @@ public interface LuauTypes {
       else if (type == FOREACH_STATEMENT) {
         return new LuauForeachStatementImpl(node);
       }
+      else if (type == FUNCTION_TYPE) {
+        return new LuauFunctionTypeImpl(node);
+      }
       else if (type == FUNC_BODY) {
         return new LuauFuncBodyImpl(node);
       }
@@ -295,6 +302,12 @@ public interface LuauTypes {
       }
       else if (type == INDEX_ACCESS) {
         return new LuauIndexAccessImpl(node);
+      }
+      else if (type == INTERSECTION_TYPE) {
+        return new LuauIntersectionTypeImpl(node);
+      }
+      else if (type == INTERSECTION_TYPE_PART) {
+        return new LuauIntersectionTypePartImpl(node);
       }
       else if (type == KEYED_FIELD) {
         return new LuauKeyedFieldImpl(node);
@@ -359,6 +372,9 @@ public interface LuauTypes {
       else if (type == PARAMETRIZED_ATTRIBUTE) {
         return new LuauParametrizedAttributeImpl(node);
       }
+      else if (type == PARENTHESISED_TYPE) {
+        return new LuauParenthesisedTypeImpl(node);
+      }
       else if (type == PAREN_EXPR) {
         return new LuauParenExprImpl(node);
       }
@@ -367,6 +383,9 @@ public interface LuauTypes {
       }
       else if (type == PLUS_EXPR) {
         return new LuauPlusExprImpl(node);
+      }
+      else if (type == PRIMARY_GROUP_EXPR) {
+        return new LuauPrimaryGroupExprImpl(node);
       }
       else if (type == REPEAT_STATEMENT) {
         return new LuauRepeatStatementImpl(node);
@@ -401,6 +420,9 @@ public interface LuauTypes {
       else if (type == TABLE_CONSTRUCTOR_EXPR) {
         return new LuauTableConstructorExprImpl(node);
       }
+      else if (type == TABLE_TYPE) {
+        return new LuauTableTypeImpl(node);
+      }
       else if (type == TEMPLATE_STRING_EXPR) {
         return new LuauTemplateStringExprImpl(node);
       }
@@ -410,6 +432,9 @@ public interface LuauTypes {
       else if (type == TYPEOF_SOFT_KEYWORD) {
         return new LuauTypeofSoftKeywordImpl(node);
       }
+      else if (type == TYPEOF_TYPE) {
+        return new LuauTypeofTypeImpl(node);
+      }
       else if (type == TYPE_COMPUTED_KEY) {
         return new LuauTypeComputedKeyImpl(node);
       }
@@ -418,12 +443,6 @@ public interface LuauTypes {
       }
       else if (type == TYPE_FIELD) {
         return new LuauTypeFieldImpl(node);
-      }
-      else if (type == TYPE_FUNCTION) {
-        return new LuauTypeFunctionImpl(node);
-      }
-      else if (type == TYPE_INTERSECTION) {
-        return new LuauTypeIntersectionImpl(node);
       }
       else if (type == TYPE_KEYED_FIELD) {
         return new LuauTypeKeyedFieldImpl(node);
@@ -440,23 +459,23 @@ public interface LuauTypes {
       else if (type == TYPE_PARAMS) {
         return new LuauTypeParamsImpl(node);
       }
+      else if (type == TYPE_REFERENCE) {
+        return new LuauTypeReferenceImpl(node);
+      }
       else if (type == TYPE_SOFT_KEYWORD) {
         return new LuauTypeSoftKeywordImpl(node);
       }
       else if (type == TYPE_STRING_KEYED_FIELD) {
         return new LuauTypeStringKeyedFieldImpl(node);
       }
-      else if (type == TYPE_TABLE) {
-        return new LuauTypeTableImpl(node);
-      }
-      else if (type == TYPE_UNION) {
-        return new LuauTypeUnionImpl(node);
-      }
       else if (type == UNARY_MIN_EXPR) {
         return new LuauUnaryMinExprImpl(node);
       }
-      else if (type == VALUE_EXPR) {
-        return new LuauValueExprImpl(node);
+      else if (type == UNION_TYPE) {
+        return new LuauUnionTypeImpl(node);
+      }
+      else if (type == UNION_TYPE_PART) {
+        return new LuauUnionTypePartImpl(node);
       }
       else if (type == VARIADIC_TYPE_PACK) {
         return new LuauVariadicTypePackImpl(node);

@@ -5,9 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeUnion extends PsiElement {
+public interface LuauTypeReference extends PsiElement {
 
-  @NotNull
-  List<LuauSimpleType> getSimpleTypeList();
+  @Nullable
+  LuauTypeParams getTypeParams();
 
 }

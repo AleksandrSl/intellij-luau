@@ -4,7 +4,6 @@ package com.github.aleksandrsl.intellijluau.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
-import com.intellij.navigation.ItemPresentation;
 
 public interface LuauMethodDefStatement extends PsiElement {
 
@@ -17,7 +16,8 @@ public interface LuauMethodDefStatement extends PsiElement {
   @NotNull
   LuauMethodName getMethodName();
 
-  @NotNull
-  ItemPresentation getPresentation();
+  //WARNING: getPresentation(...) is skipped
+  //matching getPresentation(LuauMethodDefStatement, ...)
+  //methods are not found in LuauPsiImplUtilKt
 
 }

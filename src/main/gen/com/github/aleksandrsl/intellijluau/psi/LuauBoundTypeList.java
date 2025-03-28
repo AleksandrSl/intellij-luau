@@ -8,18 +8,12 @@ import com.intellij.psi.PsiElement;
 public interface LuauBoundTypeList extends PsiElement {
 
   @Nullable
-  LuauBoundTypeList getBoundTypeList();
-
-  @Nullable
   LuauGenericTypePack getGenericTypePack();
 
-  @Nullable
-  LuauType getType();
+  @NotNull
+  List<LuauType> getTypeList();
 
   @Nullable
   LuauVariadicTypePack getVariadicTypePack();
-
-  @Nullable
-  PsiElement getId();
 
 }

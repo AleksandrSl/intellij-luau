@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauTypeTableImpl extends ASTWrapperPsiElement implements LuauTypeTable {
+public class LuauUnionTypeImpl extends ASTWrapperPsiElement implements LuauUnionType {
 
-  public LuauTypeTableImpl(@NotNull ASTNode node) {
+  public LuauUnionTypeImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitTypeTable(this);
+    visitor.visitUnionType(this);
   }
 
   @Override
@@ -29,14 +29,20 @@ public class LuauTypeTableImpl extends ASTWrapperPsiElement implements LuauTypeT
 
   @Override
   @Nullable
-  public LuauType getType() {
-    return findChildByClass(LuauType.class);
+  public LuauSimpleType getSimpleType() {
+    return findChildByClass(LuauSimpleType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauUnionType getUnionType() {
+    return findChildByClass(LuauUnionType.class);
   }
 
   @Override
   @NotNull
-  public List<LuauTypeField> getTypeFieldList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauTypeField.class);
+  public List<LuauUnionTypePart> getUnionTypePartList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauUnionTypePart.class);
   }
 
 }

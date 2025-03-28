@@ -7,4 +7,16 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauPrimaryGroupExpr extends LuauExpression {
 
+  @Nullable
+  LuauExpression getExpression();
+
+  @Nullable
+  LuauFuncCall getFuncCall();
+
+  @Nullable
+  LuauIndexAccess getIndexAccess();
+
+  @Nullable
+  LuauSimpleReference getSimpleReference();
+
 }

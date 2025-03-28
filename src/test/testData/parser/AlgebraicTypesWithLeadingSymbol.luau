@@ -7,3 +7,5 @@ type B =
  & number
 
 type D = | number | string
+
+type C = | number | string | nil

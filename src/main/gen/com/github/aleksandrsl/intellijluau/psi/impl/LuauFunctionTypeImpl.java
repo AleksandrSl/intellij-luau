@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauTypeParametersListImpl extends ASTWrapperPsiElement implements LuauTypeParametersList {
+public class LuauFunctionTypeImpl extends ASTWrapperPsiElement implements LuauFunctionType {
 
-  public LuauTypeParametersListImpl(@NotNull ASTNode node) {
+  public LuauFunctionTypeImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitTypeParametersList(this);
+    visitor.visitFunctionType(this);
   }
 
   @Override
@@ -29,8 +29,20 @@ public class LuauTypeParametersListImpl extends ASTWrapperPsiElement implements 
 
   @Override
   @Nullable
-  public LuauGenericTypeList getGenericTypeList() {
-    return findChildByClass(LuauGenericTypeList.class);
+  public LuauBoundTypeList getBoundTypeList() {
+    return findChildByClass(LuauBoundTypeList.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauReturnType getReturnType() {
+    return findChildByClass(LuauReturnType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauTypeParametersList getTypeParametersList() {
+    return findChildByClass(LuauTypeParametersList.class);
   }
 
 }

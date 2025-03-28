@@ -10,7 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public abstract class LuauPrimaryGroupExprImpl extends LuauExpressionImpl implements LuauPrimaryGroupExpr {
+public class LuauPrimaryGroupExprImpl extends LuauExpressionImpl implements LuauPrimaryGroupExpr {
 
   public LuauPrimaryGroupExprImpl(@NotNull ASTNode node) {
     super(node);
@@ -25,6 +25,30 @@ public abstract class LuauPrimaryGroupExprImpl extends LuauExpressionImpl implem
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof LuauVisitor) accept((LuauVisitor)visitor);
     else super.accept(visitor);
+  }
+
+  @Override
+  @Nullable
+  public LuauExpression getExpression() {
+    return findChildByClass(LuauExpression.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauFuncCall getFuncCall() {
+    return findChildByClass(LuauFuncCall.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauIndexAccess getIndexAccess() {
+    return findChildByClass(LuauIndexAccess.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauSimpleReference getSimpleReference() {
+    return findChildByClass(LuauSimpleReference.class);
   }
 
 }

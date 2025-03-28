@@ -8,9 +8,9 @@ import com.intellij.psi.PsiElement;
 public interface LuauTypeList extends PsiElement {
 
   @NotNull
-  LuauType getType();
+  List<LuauType> getTypeList();
 
   @Nullable
-  LuauTypeList getTypeList();
+  LuauVariadicTypePack getVariadicTypePack();
 
 }

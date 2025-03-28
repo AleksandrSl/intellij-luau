@@ -8,24 +8,21 @@ import com.intellij.psi.PsiElement;
 public interface LuauSimpleType extends PsiElement {
 
   @Nullable
-  LuauExpression getExpression();
+  LuauFunctionType getFunctionType();
+
+  @Nullable
+  LuauParenthesisedType getParenthesisedType();
 
   @Nullable
   LuauSingletonType getSingletonType();
 
   @Nullable
-  LuauType getType();
+  LuauTableType getTableType();
 
   @Nullable
-  LuauTypeFunction getTypeFunction();
+  LuauTypeReference getTypeReference();
 
   @Nullable
-  LuauTypeParams getTypeParams();
-
-  @Nullable
-  LuauTypeTable getTypeTable();
-
-  @Nullable
-  LuauTypeofSoftKeyword getTypeofSoftKeyword();
+  LuauTypeofType getTypeofType();
 
 }

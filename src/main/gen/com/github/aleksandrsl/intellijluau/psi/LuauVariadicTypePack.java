@@ -7,7 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauVariadicTypePack extends PsiElement {
 
-  @NotNull
+  @Nullable
   LuauType getType();
 
 }
