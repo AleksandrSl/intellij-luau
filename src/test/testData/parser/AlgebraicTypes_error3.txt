@@ -19,7 +19,7 @@ Luau file(0,105)
       <empty list>
     PsiWhiteSpace(' ')(89,90)
     PsiElement(()('(')(90,91)
-    PsiErrorElement:'(', <closure expr>, <expression>, <literal expr>, <value expr>, ID, TEMPLATE_STRING_SQUOTE or '{' expected, got 'T8'(91,91)
+    PsiErrorElement:<expression> or ID expected, got 'T8'(91,91)
       <empty list>
     PsiElement(ID)('T8')(91,93)
     PsiWhiteSpace(' ')(93,94)

@@ -13,7 +13,7 @@ Luau file(0,46)
       LuauExpListImpl(EXP_LIST)(42,43)
         LuauTemplateStringExprImpl(TEMPLATE_STRING_EXPR)(42,43)
           PsiElement(TEMPLATE_STRING_SQUOTE)('`')(42,43)
-          PsiErrorElement:'::', STRING, TEMPLATE_STRING_EQUOTE or '{' expected, got '{'(43,43)
+          PsiErrorElement:TEMPLATE_STRING_EQUOTE expected, got '{'(43,43)
             <empty list>
     PsiElement({)('{')(43,44)
     PsiErrorElement:';' or <statement> expected, got '}'(44,44)
