@@ -15,7 +15,7 @@ import io.ktor.util.reflect.*
 
 const val baseTestDataPath = "src/test/testData/parser"
 
-open class LuauParsingBaseTestCase(path: String = "") :
+abstract class LuauParsingBaseTestCase(path: String = "") :
     ParsingTestCase(path, LuauFileType.defaultExtension, LuauParserDefinition()) {
     protected fun hasErrors(file: PsiFile): Boolean {
         var hasErrors = false
