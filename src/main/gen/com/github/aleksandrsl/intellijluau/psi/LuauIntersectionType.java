@@ -5,12 +5,15 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeStringKeyedField extends PsiElement {
+public interface LuauIntersectionType extends PsiElement {
 
   @Nullable
-  LuauType getType();
+  LuauIntersectionType getIntersectionType();
 
   @NotNull
-  PsiElement getId();
+  List<LuauIntersectionTypePart> getIntersectionTypePartList();
+
+  @Nullable
+  LuauSimpleType getSimpleType();
 
 }

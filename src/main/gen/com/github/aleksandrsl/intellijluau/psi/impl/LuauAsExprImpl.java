@@ -28,9 +28,27 @@ public class LuauAsExprImpl extends LuauExpressionImpl implements LuauAsExpr {
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauExpression getExpression() {
-    return findNotNullChildByClass(LuauExpression.class);
+    return findChildByClass(LuauExpression.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauFuncCall getFuncCall() {
+    return findChildByClass(LuauFuncCall.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauIndexAccess getIndexAccess() {
+    return findChildByClass(LuauIndexAccess.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauSimpleReference getSimpleReference() {
+    return findChildByClass(LuauSimpleReference.class);
   }
 
   @Override

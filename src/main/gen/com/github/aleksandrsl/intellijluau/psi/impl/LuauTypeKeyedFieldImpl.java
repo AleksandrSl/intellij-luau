@@ -28,9 +28,9 @@ public class LuauTypeKeyedFieldImpl extends ASTWrapperPsiElement implements Luau
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauType getType() {
-    return findNotNullChildByClass(LuauType.class);
+    return findChildByClass(LuauType.class);
   }
 
   @Override

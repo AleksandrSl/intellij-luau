@@ -7,19 +7,16 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauTypeParams extends PsiElement {
 
-  @Nullable
-  LuauGenericTypePack getGenericTypePack();
+  @NotNull
+  List<LuauGenericTypePack> getGenericTypePackList();
 
-  @Nullable
-  LuauType getType();
+  @NotNull
+  List<LuauType> getTypeList();
 
-  @Nullable
-  LuauTypePack getTypePack();
+  @NotNull
+  List<LuauTypePack> getTypePackList();
 
-  @Nullable
-  LuauTypeParams getTypeParams();
-
-  @Nullable
-  LuauVariadicTypePack getVariadicTypePack();
+  @NotNull
+  List<LuauVariadicTypePack> getVariadicTypePackList();
 
 }

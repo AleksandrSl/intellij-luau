@@ -28,9 +28,9 @@ public class LuauVariadicTypePackImpl extends ASTWrapperPsiElement implements Lu
   }
 
   @Override
-  @NotNull
+  @Nullable
   public LuauType getType() {
-    return findNotNullChildByClass(LuauType.class);
+    return findChildByClass(LuauType.class);
   }
 
 }

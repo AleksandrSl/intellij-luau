@@ -29,14 +29,14 @@ public class LuauTypeListImpl extends ASTWrapperPsiElement implements LuauTypeLi
 
   @Override
   @NotNull
-  public LuauType getType() {
-    return findNotNullChildByClass(LuauType.class);
+  public List<LuauType> getTypeList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauType.class);
   }
 
   @Override
   @Nullable
-  public LuauTypeList getTypeList() {
-    return findChildByClass(LuauTypeList.class);
+  public LuauVariadicTypePack getVariadicTypePack() {
+    return findChildByClass(LuauVariadicTypePack.class);
   }
 
 }

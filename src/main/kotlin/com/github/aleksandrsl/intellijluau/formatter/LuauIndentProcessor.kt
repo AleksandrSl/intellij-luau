@@ -62,7 +62,7 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
             return true
         }
 
-        if (parentType == LuauTypes.TYPE_TABLE || parentType == LuauTypes.TABLE_CONSTRUCTOR || parentType == LuauTypes.LIST_ARGS || parentType == LuauTypes.PAR_LIST) {
+        if (parentType == LuauTypes.TABLE_TYPE || parentType == LuauTypes.TABLE_CONSTRUCTOR || parentType == LuauTypes.LIST_ARGS || parentType == LuauTypes.PAR_LIST) {
             return true
         }
 
@@ -75,7 +75,7 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         if (blockIndentationParents.contains(elementType)) {
             return Indent.getNormalIndent()
         }
-        if (elementType == LuauTypes.TYPE_TABLE || elementType == LuauTypes.TABLE_CONSTRUCTOR || elementType == LuauTypes.PAR_LIST) {
+        if (elementType == LuauTypes.TABLE_TYPE || elementType == LuauTypes.TABLE_CONSTRUCTOR || elementType == LuauTypes.PAR_LIST) {
             return Indent.getNormalIndent()
         }
         if (elementType == LuauTypes.FUNC_ARGS) {

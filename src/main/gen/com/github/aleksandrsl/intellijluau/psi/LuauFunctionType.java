@@ -5,12 +5,15 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeTable extends PsiElement {
+public interface LuauFunctionType extends PsiElement {
 
   @Nullable
-  LuauType getType();
+  LuauBoundTypeList getBoundTypeList();
 
-  @NotNull
-  List<LuauTypeField> getTypeFieldList();
+  @Nullable
+  LuauReturnType getReturnType();
+
+  @Nullable
+  LuauTypeParametersList getTypeParametersList();
 
 }

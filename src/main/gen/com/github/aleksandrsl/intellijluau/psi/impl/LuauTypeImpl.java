@@ -29,20 +29,32 @@ public class LuauTypeImpl extends ASTWrapperPsiElement implements LuauType {
 
   @Override
   @Nullable
+  public LuauIntersectionType getIntersectionType() {
+    return findChildByClass(LuauIntersectionType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauIntersectionTypePart getIntersectionTypePart() {
+    return findChildByClass(LuauIntersectionTypePart.class);
+  }
+
+  @Override
+  @Nullable
   public LuauSimpleType getSimpleType() {
     return findChildByClass(LuauSimpleType.class);
   }
 
   @Override
   @Nullable
-  public LuauTypeIntersection getTypeIntersection() {
-    return findChildByClass(LuauTypeIntersection.class);
+  public LuauUnionType getUnionType() {
+    return findChildByClass(LuauUnionType.class);
   }
 
   @Override
   @Nullable
-  public LuauTypeUnion getTypeUnion() {
-    return findChildByClass(LuauTypeUnion.class);
+  public LuauUnionTypePart getUnionTypePart() {
+    return findChildByClass(LuauUnionTypePart.class);
   }
 
 }

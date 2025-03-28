@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauTypeFunctionImpl extends ASTWrapperPsiElement implements LuauTypeFunction {
+public class LuauIntersectionTypeImpl extends ASTWrapperPsiElement implements LuauIntersectionType {
 
-  public LuauTypeFunctionImpl(@NotNull ASTNode node) {
+  public LuauIntersectionTypeImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitTypeFunction(this);
+    visitor.visitIntersectionType(this);
   }
 
   @Override
@@ -29,20 +29,20 @@ public class LuauTypeFunctionImpl extends ASTWrapperPsiElement implements LuauTy
 
   @Override
   @Nullable
-  public LuauBoundTypeList getBoundTypeList() {
-    return findChildByClass(LuauBoundTypeList.class);
+  public LuauIntersectionType getIntersectionType() {
+    return findChildByClass(LuauIntersectionType.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauIntersectionTypePart> getIntersectionTypePartList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauIntersectionTypePart.class);
   }
 
   @Override
   @Nullable
-  public LuauReturnType getReturnType() {
-    return findChildByClass(LuauReturnType.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauTypeParametersList getTypeParametersList() {
-    return findChildByClass(LuauTypeParametersList.class);
+  public LuauSimpleType getSimpleType() {
+    return findChildByClass(LuauSimpleType.class);
   }
 
 }

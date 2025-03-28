@@ -10,7 +10,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
 import com.github.aleksandrsl.intellijluau.psi.*;
-import com.intellij.navigation.ItemPresentation;
 
 public class LuauLocalFuncDefStatementImpl extends LuauNamedElementImpl implements LuauLocalFuncDefStatement {
 
@@ -44,12 +43,6 @@ public class LuauLocalFuncDefStatementImpl extends LuauNamedElementImpl implemen
   @Nullable
   public PsiElement getId() {
     return findChildByType(ID);
-  }
-
-  @Override
-  @NotNull
-  public ItemPresentation getPresentation() {
-    return LuauPsiImplUtilKt.getPresentation(this);
   }
 
 }
