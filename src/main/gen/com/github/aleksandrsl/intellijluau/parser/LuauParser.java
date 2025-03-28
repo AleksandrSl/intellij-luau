@@ -80,12 +80,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "arg_recover_0")) return false;
     boolean r;
     r = exp_first(b, l + 1);
-    if (!r) r = consumeToken(b, RPAREN);
-    if (!r) r = consumeToken(b, END);
-    if (!r) r = consumeToken(b, RCURLY);
+    if (!r) r = consumeTokenFast(b, RPAREN);
+    if (!r) r = consumeTokenFast(b, END);
+    if (!r) r = consumeTokenFast(b, RCURLY);
     if (!r) r = statement_first(b, l + 1);
     if (!r) r = last_statement_first(b, l + 1);
-    if (!r) r = consumeToken(b, SEMI);
+    if (!r) r = consumeTokenFast(b, SEMI);
     return r;
   }
 
@@ -400,8 +400,18 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "bound_type_list_recover")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NOT_);
-    r = !consumeToken(b, RPAREN);
+    r = !bound_type_list_recover_0(b, l + 1);
     exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // (')')
+  private static boolean bound_type_list_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "bound_type_list_recover_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = consumeTokenFast(b, RPAREN);
+    exit_section_(b, m, null, r);
     return r;
   }
 
@@ -597,22 +607,22 @@ public class LuauParser implements PsiParser, LightPsiParser {
   static boolean exp_first(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "exp_first")) return false;
     boolean r;
-    r = consumeToken(b, LCURLY);
-    if (!r) r = consumeToken(b, LPAREN);
-    if (!r) r = consumeToken(b, TRUE);
-    if (!r) r = consumeToken(b, FALSE);
-    if (!r) r = consumeToken(b, ID);
-    if (!r) r = consumeToken(b, STRING);
-    if (!r) r = consumeToken(b, NUMBER);
-    if (!r) r = consumeToken(b, GETN);
-    if (!r) r = consumeToken(b, IF);
-    if (!r) r = consumeToken(b, MINUS);
-    if (!r) r = consumeToken(b, NOT);
-    if (!r) r = consumeToken(b, FUNCTION);
-    if (!r) r = consumeToken(b, NIL);
-    if (!r) r = consumeToken(b, ELLIPSIS);
-    if (!r) r = consumeToken(b, AT);
-    if (!r) r = consumeToken(b, TEMPLATE_STRING_SQUOTE);
+    r = consumeTokenFast(b, LCURLY);
+    if (!r) r = consumeTokenFast(b, LPAREN);
+    if (!r) r = consumeTokenFast(b, TRUE);
+    if (!r) r = consumeTokenFast(b, FALSE);
+    if (!r) r = consumeTokenFast(b, ID);
+    if (!r) r = consumeTokenFast(b, STRING);
+    if (!r) r = consumeTokenFast(b, NUMBER);
+    if (!r) r = consumeTokenFast(b, GETN);
+    if (!r) r = consumeTokenFast(b, IF);
+    if (!r) r = consumeTokenFast(b, MINUS);
+    if (!r) r = consumeTokenFast(b, NOT);
+    if (!r) r = consumeTokenFast(b, FUNCTION);
+    if (!r) r = consumeTokenFast(b, NIL);
+    if (!r) r = consumeTokenFast(b, ELLIPSIS);
+    if (!r) r = consumeTokenFast(b, AT);
+    if (!r) r = consumeTokenFast(b, TEMPLATE_STRING_SQUOTE);
     return r;
   }
 
@@ -677,11 +687,11 @@ public class LuauParser implements PsiParser, LightPsiParser {
   private static boolean field_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "field_recover_0")) return false;
     boolean r;
-    r = consumeToken(b, RCURLY);
-    if (!r) r = consumeToken(b, LBRACK);
+    r = consumeTokenFast(b, RCURLY);
+    if (!r) r = consumeTokenFast(b, LBRACK);
     if (!r) r = exp_first(b, l + 1);
     if (!r) r = statement_first(b, l + 1);
-    if (!r) r = consumeToken(b, END);
+    if (!r) r = consumeTokenFast(b, END);
     if (!r) r = last_statement_first(b, l + 1);
     return r;
   }
@@ -1341,8 +1351,8 @@ public class LuauParser implements PsiParser, LightPsiParser {
   static boolean last_statement_first(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "last_statement_first")) return false;
     boolean r;
-    r = consumeToken(b, RETURN);
-    if (!r) r = consumeToken(b, BREAK);
+    r = consumeTokenFast(b, RETURN);
+    if (!r) r = consumeTokenFast(b, BREAK);
     if (!r) r = continue_soft_keyword(b, l + 1);
     return r;
   }
@@ -2305,18 +2315,18 @@ public class LuauParser implements PsiParser, LightPsiParser {
   static boolean statement_first(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement_first")) return false;
     boolean r;
-    r = consumeToken(b, LOCAL);
-    if (!r) r = consumeToken(b, DO);
-    if (!r) r = consumeToken(b, WHILE);
-    if (!r) r = consumeToken(b, REPEAT);
-    if (!r) r = consumeToken(b, FUNCTION);
-    if (!r) r = consumeToken(b, IF);
-    if (!r) r = consumeToken(b, FOR);
+    r = consumeTokenFast(b, LOCAL);
+    if (!r) r = consumeTokenFast(b, DO);
+    if (!r) r = consumeTokenFast(b, WHILE);
+    if (!r) r = consumeTokenFast(b, REPEAT);
+    if (!r) r = consumeTokenFast(b, FUNCTION);
+    if (!r) r = consumeTokenFast(b, IF);
+    if (!r) r = consumeTokenFast(b, FOR);
     if (!r) r = export_soft_keyword(b, l + 1);
     if (!r) r = type_soft_keyword(b, l + 1);
-    if (!r) r = consumeToken(b, ID);
-    if (!r) r = consumeToken(b, LPAREN);
-    if (!r) r = consumeToken(b, AT);
+    if (!r) r = consumeTokenFast(b, ID);
+    if (!r) r = consumeTokenFast(b, LPAREN);
+    if (!r) r = consumeTokenFast(b, AT);
     return r;
   }
 
@@ -2338,12 +2348,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "statement_recover_0")) return false;
     boolean r;
     r = statement_first(b, l + 1);
-    if (!r) r = consumeToken(b, SEMI);
-    if (!r) r = consumeToken(b, END);
-    if (!r) r = consumeToken(b, UNTIL);
-    if (!r) r = consumeToken(b, ELSEIF);
-    if (!r) r = consumeToken(b, ELSE);
-    if (!r) r = consumeToken(b, RCURLY);
+    if (!r) r = consumeTokenFast(b, SEMI);
+    if (!r) r = consumeTokenFast(b, END);
+    if (!r) r = consumeTokenFast(b, UNTIL);
+    if (!r) r = consumeTokenFast(b, ELSEIF);
+    if (!r) r = consumeTokenFast(b, ELSE);
+    if (!r) r = consumeTokenFast(b, RCURLY);
     if (!r) r = last_statement_first(b, l + 1);
     return r;
   }

@@ -94,10 +94,9 @@
     STRING = "regexp:\"\S*\""
   ]
 
-  // TODO (AleksandrSl 08/03/2025): Consider adding the line below, they say it improves performance, but I didn't understand the cons.
-  consumeTokenMethod(".*_expr|expression")="consumeTokenFast"
-  // Or actually even this
-  // consumeTokenMethod("((?!.*_with_recover).*_recover)|(.*_first)|(.*Expr)") = "consumeTokenFast"
+  // Inspired by Rust. Recover statements with fast consume don't affect error messages anyway
+  // and expression with fast consume is a standard practice
+  consumeTokenMethod("((?!.*_with_recover).*_recover)|.*_first|.*_expr|expression")="consumeTokenFast"
   extends(".*expr")=expression
   // TODO (AleksandrSl 24/03/2025): Check soft keywords in Haxe token sets, maybe I don't need an interface?
   implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
