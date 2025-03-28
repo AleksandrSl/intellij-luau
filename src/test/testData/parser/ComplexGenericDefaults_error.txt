@@ -45,10 +45,10 @@ Luau file(0,131)
               PsiElement(})('}')(69,70)
           LuauOperatorImpl(OPERATOR)(70,71)
             PsiElement(>)('>')(70,71)
-          PsiErrorElement:'(', <closure expr>, <expression>, <literal expr>, <value expr>, ID, TEMPLATE_STRING_SQUOTE or '{' expected, got '('(71,71)
+          PsiErrorElement:<expression> or ID expected, got '('(71,71)
             <empty list>
     PsiElement(()('(')(71,72)
-    PsiErrorElement:'(', <closure expr>, <expression>, <literal expr>, <value expr>, ID, TEMPLATE_STRING_SQUOTE or '{' expected, got 'Element'(72,72)
+    PsiErrorElement:<expression> or ID expected, got 'Element'(72,72)
       <empty list>
     LuauExpressionStatementImpl(EXPRESSION_STATEMENT)(72,93)
       LuauFuncCallImpl(FUNC_CALL)(72,93)

@@ -95,7 +95,7 @@
   ]
 
   // TODO (AleksandrSl 08/03/2025): Consider adding the line below, they say it improves performance, but I didn't understand the cons.
-  //consumeTokenMethod(".*_expr|expression")="consumeTokenFast"
+  consumeTokenMethod(".*_expr|expression")="consumeTokenFast"
   // Or actually even this
   // consumeTokenMethod("((?!.*_with_recover).*_recover)|(.*_first)|(.*Expr)") = "consumeTokenFast"
   extends(".*expr")=expression
