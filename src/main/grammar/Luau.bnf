@@ -96,6 +96,8 @@
 
   // TODO (AleksandrSl 08/03/2025): Consider adding the line below, they say it improves performance, but I didn't understand the cons.
   //consumeTokenMethod(".*_expr|expression")="consumeTokenFast"
+  // Or actually even this
+  // consumeTokenMethod("((?!.*_with_recover).*_recover)|(.*_first)|(.*Expr)") = "consumeTokenFast"
   extends(".*expr")=expression
   // TODO (AleksandrSl 24/03/2025): Check soft keywords in Haxe token sets, maybe I don't need an interface?
   implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
@@ -152,11 +154,12 @@ private statement ::=
 //  probably because they do manual expressions parsing.
 // As far as I see, in the Haxe plugin it's totally fine to have all these here.
 private statement_recover ::= !(
-   statement_first | ';' | 'end' | 'until' | continue_soft_keyword | 'elseif' | 'else' | '}' | 'return' | 'break'
+   statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | '}' | last_statement_first
 )
 
 // It's funny that rust don't allow let as the top level statement, we do though, so local is here.
 private statement_first ::= 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | export_soft_keyword | type_soft_keyword | ID | '(' | '@'
+private last_statement_first ::= 'return' | 'break' | continue_soft_keyword
 
 // TODO (AleksandrSl 26/03/2025): What is the lazy parsing thing?
 //  private ShallowBlock ::= <<parseCodeBlockLazy>>
@@ -298,7 +301,7 @@ list_args ::= '(' arg_with_recover* ')' { extends = func_args; pin = 1 }
 // So the correct recover should stop at the start of the symbol which may indicate the beginning of
 // the new element of the same type, on an end of the parent expression
 private arg_with_recover ::= !')' expression (',' !')')? { pin = 1 recoverWhile = arg_recover }
-private arg_recover ::= !(exp_first | ')' | 'end' | '}' | statement_first | ';')
+private arg_recover ::= !(exp_first | ')' | 'end' | '}' | statement_first | last_statement_first | ';')
 
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
 // TODO (AleksandrSl 07/03/2025): Figure out priorities later
@@ -409,8 +412,7 @@ computed_key ::= '[' expression ']' { pin = 1 }
 keyed_field ::= computed_key '=' expression { pin = 1; }
 string_keyed_field ::= ID '=' expression { pin = 2; }
 indexed_field ::= expression
-// TODO (AleksandrSl 27/03/2025): I'm being prompted for Statement even inside the table, that's weird I need to check
-private field_recover ::= !(',' | ';' | '}' | '[')
+private field_recover ::= !(',' | ';' | '}' | '[' | ID | exp_first | statement_first | 'end' | last_statement_first)
 // Why the hell they allow two separators
 private field_sep ::= ',' | ';'
 
