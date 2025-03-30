@@ -8,13 +8,28 @@ import com.intellij.psi.PsiElement;
 public interface LuauType extends PsiElement {
 
   @Nullable
+  LuauFunctionType getFunctionType();
+
+  @Nullable
   LuauIntersectionType getIntersectionType();
 
   @Nullable
   LuauIntersectionTypePart getIntersectionTypePart();
 
   @Nullable
-  LuauSimpleType getSimpleType();
+  LuauParenthesisedType getParenthesisedType();
+
+  @Nullable
+  LuauSingletonType getSingletonType();
+
+  @Nullable
+  LuauTableType getTableType();
+
+  @Nullable
+  LuauTypeReference getTypeReference();
+
+  @Nullable
+  LuauTypeofType getTypeofType();
 
   @Nullable
   LuauUnionType getUnionType();
