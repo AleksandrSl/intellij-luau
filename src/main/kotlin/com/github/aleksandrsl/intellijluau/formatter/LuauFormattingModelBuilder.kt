@@ -5,6 +5,7 @@ import com.github.aleksandrsl.intellijluau.LuauTokenSets.ADDITIVE_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.ASSIGN_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.EQUALITY_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.BINARY_LOGICAL_OPERATORS
+import com.github.aleksandrsl.intellijluau.LuauTokenSets.GENERICS_HOLDERS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.MULTIPLICATIVE_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.RELATIONAL_OPERATORS
 import com.github.aleksandrsl.intellijluau.formatter.blocks.LuauFormatterBlock
@@ -51,6 +52,8 @@ private fun createSpaceBuilder(settings: CodeStyleSettings): SpacingBuilder {
         .around(MULTIPLICATIVE_OPERATORS).spaceIf(commonSettings.SPACE_AROUND_MULTIPLICATIVE_OPERATORS)
         .around(BINARY_LOGICAL_OPERATORS).spaceIf(commonSettings.SPACE_AROUND_LOGICAL_OPERATORS)
         .around(EQUALITY_OPERATORS).spaceIf(commonSettings.SPACE_AROUND_EQUALITY_OPERATORS)
-        .around(RELATIONAL_OPERATORS).spaceIf(commonSettings.SPACE_AROUND_RELATIONAL_OPERATORS)
+        .aroundInside(RELATIONAL_OPERATORS, COMPARISON_EXPR).spaceIf(commonSettings.SPACE_AROUND_RELATIONAL_OPERATORS)
+        .afterInside(LT, GENERICS_HOLDERS).none()
+        .beforeInside(GT, GENERICS_HOLDERS).none()
         .after(NOT).spaces(1)
 }
