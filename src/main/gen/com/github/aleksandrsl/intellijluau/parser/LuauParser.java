@@ -738,6 +738,51 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // !'}' field (field_sep | &'}')
+  static boolean field_with_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = field_with_recover_0(b, l + 1);
+    p = r; // pin = 1
+    r = r && report_error_(b, field(b, l + 1));
+    r = p && field_with_recover_2(b, l + 1) && r;
+    exit_section_(b, l, m, r, p, LuauParser::field_recover);
+    return r || p;
+  }
+
+  // !'}'
+  private static boolean field_with_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !consumeToken(b, RCURLY);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // field_sep | &'}'
+  private static boolean field_with_recover_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover_2")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = field_sep(b, l + 1);
+    if (!r) r = field_with_recover_2_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // &'}'
+  private static boolean field_with_recover_2_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "field_with_recover_2_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = consumeToken(b, RCURLY);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
   // '//'
   public static boolean floor_div_op(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "floor_div_op")) return false;
@@ -870,7 +915,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // type_parameters_list? <<isFunctionType>> '('  bound_type_list? ')' '->' return_type
+  // type_parameters_list? <<isFunctionType>> '(' bound_type_list? ')' '->' return_type
   public static boolean function_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "function_type")) return false;
     boolean r, p;
@@ -2480,7 +2525,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '{' <<table_field field>>* '}'
+  // '{' field_with_recover* '}'
   public static boolean table_constructor(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "table_constructor")) return false;
     if (!nextTokenIs(b, LCURLY)) return false;
@@ -2494,12 +2539,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // <<table_field field>>*
+  // field_with_recover*
   private static boolean table_constructor_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "table_constructor_1")) return false;
     while (true) {
       int c = current_position_(b);
-      if (!table_field(b, l + 1, LuauParser::field)) break;
+      if (!field_with_recover(b, l + 1)) break;
       if (!empty_element_parsed_guard_(b, "table_constructor_1", c)) break;
     }
     return true;
@@ -2514,51 +2559,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b);
     r = table_constructor(b, l + 1);
     exit_section_(b, m, TABLE_CONSTRUCTOR_EXPR, r);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // !'}' <<field>> (field_sep | &'}')
-  static boolean table_field(PsiBuilder b, int l, Parser _field) {
-    if (!recursion_guard_(b, l, "table_field")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_);
-    r = table_field_0(b, l + 1);
-    p = r; // pin = 1
-    r = r && report_error_(b, _field.parse(b, l));
-    r = p && table_field_2(b, l + 1) && r;
-    exit_section_(b, l, m, r, p, LuauParser::field_recover);
-    return r || p;
-  }
-
-  // !'}'
-  private static boolean table_field_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "table_field_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NOT_);
-    r = !consumeToken(b, RCURLY);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // field_sep | &'}'
-  private static boolean table_field_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "table_field_2")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = field_sep(b, l + 1);
-    if (!r) r = table_field_2_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // &'}'
-  private static boolean table_field_2_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "table_field_2_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _AND_);
-    r = consumeToken(b, RCURLY);
-    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
