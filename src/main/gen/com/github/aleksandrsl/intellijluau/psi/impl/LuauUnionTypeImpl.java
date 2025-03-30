@@ -29,8 +29,38 @@ public class LuauUnionTypeImpl extends ASTWrapperPsiElement implements LuauUnion
 
   @Override
   @Nullable
-  public LuauSimpleType getSimpleType() {
-    return findChildByClass(LuauSimpleType.class);
+  public LuauFunctionType getFunctionType() {
+    return findChildByClass(LuauFunctionType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauParenthesisedType getParenthesisedType() {
+    return findChildByClass(LuauParenthesisedType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauSingletonType getSingletonType() {
+    return findChildByClass(LuauSingletonType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauTableType getTableType() {
+    return findChildByClass(LuauTableType.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauTypeReference getTypeReference() {
+    return findChildByClass(LuauTypeReference.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauTypeofType getTypeofType() {
+    return findChildByClass(LuauTypeofType.class);
   }
 
   @Override

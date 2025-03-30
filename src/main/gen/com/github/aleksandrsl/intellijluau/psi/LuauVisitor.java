@@ -299,10 +299,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitSimpleType(@NotNull LuauSimpleType o) {
-    visitPsiElement(o);
-  }
-
   public void visitSingleArg(@NotNull LuauSingleArg o) {
     visitFuncArgs(o);
   }

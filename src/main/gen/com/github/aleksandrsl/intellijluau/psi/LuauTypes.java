@@ -81,7 +81,6 @@ public interface LuauTypes {
   IElementType ROOT_BLOCK = new LuauElementType("ROOT_BLOCK");
   IElementType SHEBANG_LINE = new LuauElementType("SHEBANG_LINE");
   IElementType SIMPLE_REFERENCE = new LuauElementType("SIMPLE_REFERENCE");
-  IElementType SIMPLE_TYPE = new LuauElementType("SIMPLE_TYPE");
   IElementType SINGLETON_TYPE = new LuauElementType("SINGLETON_TYPE");
   IElementType SINGLE_ARG = new LuauElementType("SINGLE_ARG");
   IElementType STRING_KEYED_FIELD = new LuauElementType("STRING_KEYED_FIELD");
@@ -401,9 +400,6 @@ public interface LuauTypes {
       }
       else if (type == SIMPLE_REFERENCE) {
         return new LuauSimpleReferenceImpl(node);
-      }
-      else if (type == SIMPLE_TYPE) {
-        return new LuauSimpleTypeImpl(node);
       }
       else if (type == SINGLETON_TYPE) {
         return new LuauSingletonTypeImpl(node);

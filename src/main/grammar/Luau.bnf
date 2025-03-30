@@ -99,6 +99,7 @@
   consumeTokenMethod("((?!.*_with_recover).*_recover)|.*_first|.*_expr|expression")="consumeTokenFast"
   extends(".*expr")=expression
   // TODO (AleksandrSl 24/03/2025): Check soft keywords in Haxe token sets, maybe I don't need an interface?
+  // In rust plugin the remap tokens based on the context with a manual parsing rule. I don't know what are the benefits to my approach though.
   implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
   // I guess element type is not necessary here, but it reduced the amount of types generated
   elementType(".*_op")=operator
@@ -113,7 +114,6 @@ shebang_line ::= SHEBANG SHEBANG_CONTENT
 private meta list ::= <<p>> (',' <<p>>)*
 // element_list ::= '(' element (',' (element | &')'))* ')' {pin(".*")=1} is this example from the docs better?
 private meta list_with_trailing_comma ::= <<p>> (',' <<p>>)* ','?
-private meta list_with_trailing_sep ::= <<p>> (<<sep>> <<p>>)* <<sep>>?
 
 // TODO (AleksandrSl 10/03/2025): I don't understand do I need a rule here at all or it can be empty
 //  Maybe I can just create a token set with all of them
@@ -152,7 +152,7 @@ private statement ::=
 //  probably because they do manual expressions parsing.
 // As far as I see, in the Haxe plugin it's totally fine to have all these here.
 private statement_recover ::= !(
-   statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | '}' | last_statement_first
+   statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | last_statement_first
 )
 
 // It's funny that rust don't allow let as the top level statement, we do though, so local is here.
@@ -234,7 +234,6 @@ method_def_statement ::= attributes? 'function' method_name func_body { pin = 3;
 
 // ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
 method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
-type_parameters_list ::= '<' generic_type_list '>'
 func_body ::= type_parameters_list? par_list (':' return_type)? block 'end' { pin = 2 }
 // binding_list is not used here on purpose to flatter the parameters into one list for better formatting and less PSI
 par_list ::= '(' (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)? ')'
@@ -411,51 +410,30 @@ private field_recover ::= !('}' | '[' | exp_first | statement_first | 'end' | la
 // Why the hell they allow two separators
 private field_sep ::= ',' | ';'
 
-// Types
-simple_type ::=
-    'nil'
+// ----------------------- Type Rules -----------------------
+// TODO (AleksandrSl 29/03/2025): Check priorities here. type T6 = A<(string, ...() -> (string, string) | nil)> should it be variadic of union or function with a union result?
+private simple_type ::= 'nil'
     | singleton_type
-    | typeof_soft_keyword '(' expression ')'
-    | ID ('.' ID)? ('<' type_params? '>')?
-    | type_function
-    | type_table
-    | '(' type ')'
+    | typeof_type
+    | type_reference
+    | function_type
+    | parenthesised_type
+    | table_type
 
+// Types cannot be nested, at best they can be exported from a module so the first ID is module and the second is Type.
+// I wonder what if you required a module but then put it into another module. You can't use the nested version in types?
+// This is not exactly reference, because it can be a new type as well :think:
+type_reference ::= ID ('.' ID)? ('<' type_params? '>')?
+// I need to reorder them, or add a common type to avoid reparsing, which will be weird cause they are unrelated
+parenthesised_type ::= '(' type ')'
+//left upper function_type_suffix ::= '->' return_type
+typeof_type ::= typeof_soft_keyword '(' expression ')'
 singleton_type ::= STRING | 'true' | 'false'
+generic_type_pack ::= ID '...'
+variadic_type_pack ::= '...' type { pin = 1 }
+type_pack ::= '(' type_list? ')'
+type_list ::= <<list type>> (',' variadic_type_pack)? | variadic_type_pack
 
-// [06/05/2024] Why ? is used in UnionSuffix only, is it not possible to use with &?
-// [04/03/2025] Because ? is a union and union and intersection cannot be mixed without parenthesis
-
-// I intentionally diverged from the grammar here and allowed simple_type as a separate option,
-// because type_union and type_intersection match empty input if does strictly as in grammar.
-// Plus it's strange to have a union node when there are no union in reality, just a type.
-type_union ::= (simple_type '?'?)? ('|' simple_type '?'?)+
-type_intersection ::= simple_type? ('&' simple_type)+
-// As always complex types go first otherwise simple_type is parsed and then complains that you wrote a bad thing.
-type ::= type_union | type_intersection | simple_type '?'?
-
-generic_type_pack_parameter ::= ID '...'
-generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack)
-
-// Having just ID before the ... breaks everything, because T... will match just ID and go another step and then later fail, but it won't backtrack and try ...
-generic_type_list ::= <<list generic_type_pack_parameter>> | ID (',' generic_type_list)?
-
-generic_type_list_with_defaults ::=
-  <<list generic_type_pack_parameter_with_default>>
- | ID '=' type (',' generic_type_list_with_defaults_only)?
- | generic_type_pack_parameters_with_default
- | ID (',' generic_type_list_with_defaults)?
-
-private generic_type_list_with_defaults_only ::=
-      <<list generic_type_pack_parameter_with_default>>
-     | ID '=' type (',' generic_type_list_with_defaults_only)?
-
-private generic_type_pack_parameters_with_default ::= generic_type_pack_parameter ((',' generic_type_pack_parameter_with_default)+ | (',' generic_type_pack_parameters_with_default)?)
-
-// TODO: Add pins and recovery here.
-type_list ::= type (',' type_list)? | '...' type
-bound_type_list ::= variadic_type_pack | generic_type_pack | (ID ':')? type (',' bound_type_list)? { recoverWhile = bound_type_list_recover }
-private bound_type_list_recover ::= !(')')
 /* The order of types here is fragile, and I'm not 100% sure the finally correct one.
  * If you put type first it boggles the generic type packs by parsing the Type first without ...
  * If you put type last it won't parse the function, because type_pack will go first and then -> is a garbage
@@ -463,18 +441,70 @@ private bound_type_list_recover ::= !(')')
  * type_pack with -> ahead. But I believe it's a bit worse for performance than just the order. Let's see how far we can go.
  *
  * Overall I think that relations and possible order of real usages are to hard to explain in grammar. So most of the errors go level above, as TypeError
+ *
+ * I believe there is an error in the grammar again. Or maybe not, looks like it's done as a TypeError in the LSP.
  */
-type_params ::= (variadic_type_pack | generic_type_pack | type | type_pack) (',' type_params)?
-type_pack ::= '(' type_list? ')'
-generic_type_pack ::= ID '...'
-variadic_type_pack ::= '...' type
+type_params ::= <<list type_params_item>>
+private type_params_item ::= variadic_type_pack | generic_type_pack | type | type_pack
+
+// [06/05/2024] Why ? is used in UnionSuffix only, is it not possible to use with &?
+// [04/03/2025] Because ? is a union and union and intersection cannot be mixed without parenthesis
+
+// Well, to avoid reparsing of simply type and to nest unions/intersections I had to write this.
+type ::=
+  // Leading & and | are handled by the last two rules. We can't have intersection after '?'
+  // so it's included into a separate optional union branch.
+  !('&' | '|') simple_type ('?' union_type* | union_type+ | intersection_type+)?
+  | union_type_part union_type*
+  | intersection_type_part intersection_type*
+
+// left makes the rule recursive plus leaves the leading | and & out of the rule.
+// Upper replaces the root most type, includes the leading token but doesn't nest anything 😭
+// left with not private part is a bit better, but creates more PSI nodes that I want.
+left union_type ::= union_type_part
+left intersection_type ::= intersection_type_part
+
+union_type_part ::= '|' simple_type '?'?
+intersection_type_part ::= '&' simple_type
+
+private type_first ::= ID | '(' | '|' | '&' | 'nil' | STRING | 'true' | 'false' | typeof_soft_keyword | '<'
+
+// Yes it looks like generic_type_pack, but maybe it's needed for something in the original grammar? Let's keep it
+generic_type_pack_parameter ::= ID '...'
+generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack) { pin = 3 }
+
+type_parameters_list ::= '<' generic_type_list '>' { pin = 1 }
+
+generic_type_list ::= (<<list (ID !'...')>> (',' | &'>'))? <<list generic_type_pack_parameter>>?
+
+// Once the defaults stared we can't have anything other than default, plus generic type packs go after the normal types
+generic_type_list_with_defaults ::=
+    (<<list (ID !('=' | '...'))>> (',' | &'>'))?
+    (<<list (ID '=' type)>> (',' | &'>') (<<list generic_type_pack_parameter_with_default>> (',' | &'>'))?
+    | (<<list (generic_type_pack_parameter !'=')>> (',' | &'>'))? (<<list generic_type_pack_parameter_with_default>> (',' | &'>'))?)
+
+// I could drop the first two branches, but then I need to make list optional and add a (',' | &'>') as in the generic_type_list_with_defaults. I don't think it's better so I left it as is.
+bound_type_list ::= variadic_type_pack | generic_type_pack | <<list ((ID ':')? type !'...')>> (',' (variadic_type_pack | generic_type_pack))? { recoverWhile = bound_type_list_recover }
+private bound_type_list_recover ::= !(')')
+// Don't change order, see type_params
 return_type ::= variadic_type_pack | generic_type_pack | type | type_pack
-type_computed_key ::= '[' type ']'
-type_keyed_field ::= type_computed_key ':' type
-type_string_keyed_field ::= ID ':' type
+
+type_computed_key ::= '[' type ']' { pin = 1 }
+type_keyed_field ::= type_computed_key ':' type { pin = 1}
+type_string_keyed_field ::= ID ':' type { pin = 1 }
 type_field ::= type_string_keyed_field | type_keyed_field
+
+private table_type_field_with_recover ::= !'}' type_field (field_sep | &'}') { recoverWhile = table_type_field_recover; pin = 1 }
 // First branch is array type, second branch is table and empty table
-type_table ::= '{' type '}' | '{' <<list_with_trailing_sep type_field field_sep>>? '}'
+// If I add just a type in the first branch, then recovery is not working since we parse the type and error without any recovery,
+// is there a better way than just & '}'? Maybe it's better to add recovery to the single item, but I don't know how
+table_type ::= '{' (type &'}' | table_type_field_with_recover*) '}' { pin = 1 }
+// I tried to use the same rule as for the table but it doesn't work because we have an expression there, but there is no type that can start from the same tokens expressions start.
+// So there are cases where our rule matches nothing since the next token doesn't go into recovery but doesn't go into any of the table type rules either.
+private table_type_field_recover ::= !('}' | ID | '[' | statement_first | 'end' | last_statement_first)
+
 // I can't pin '(' because there is '(' type ')' type as well
-type_function ::= type_parameters_list? '(' bound_type_list? ')' '->' return_type { pin = 5; }
+// Even better is the fact that I have ( type ) and ( type ) -> type which are parallel branches, so if we have them nested we will go all the way to the internal and then rollback and then again.
+// Rust has a similar problem but in their case content in the parenthesis is equivalent, see TupleOrParenType. In my case it's type and bound_type_list, which are not the same.
+function_type ::= type_parameters_list? <<isFunctionType>> '(' bound_type_list? ')' '->' return_type { pin = 3; }
 

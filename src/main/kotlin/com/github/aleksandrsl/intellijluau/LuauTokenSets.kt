@@ -40,4 +40,6 @@ object LuauTokenSets {
     val BINARY_LOGICAL_OPERATORS = TokenSet.create(AND, OR)
     val EQUALITY_OPERATORS = TokenSet.create(EQ, NE)
     val RELATIONAL_OPERATORS = TokenSet.create(GT, GE, LT, LE)
+
+    val FUNCTION_TYPE_RECOVERY = TokenSet.create(LOCAL, FUNCTION, END, RETURN, WHILE, IF, ELSE, ELSEIF, REPEAT, UNTIL, EXPORT_SOFT_KEYWORD, TYPE)
 }

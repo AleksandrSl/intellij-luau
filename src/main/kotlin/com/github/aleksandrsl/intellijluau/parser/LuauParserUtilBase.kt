@@ -1,9 +1,17 @@
 package com.github.aleksandrsl.intellijluau.parser
 
+import com.github.aleksandrsl.intellijluau.LuauTokenSets.FUNCTION_TYPE_RECOVERY
 import com.github.aleksandrsl.intellijluau.psi.LuauTypes
 import com.intellij.lang.PsiBuilder
 import com.intellij.lang.parser.GeneratedParserUtilBase
+import com.intellij.psi.tree.IElementType
 
+/**
+ * Utility class for parsing Luau-specific language constructs.
+ *
+ * This class extends the base functionality of the IntelliJ `GeneratedParserUtilBase`
+ * to provide custom parsing logic tailored to the Luau language.
+ */
 object LuauParserUtilBase : GeneratedParserUtilBase() {
 
     /**
@@ -44,6 +52,50 @@ object LuauParserUtilBase : GeneratedParserUtilBase() {
             builder.error("Expected index access, got function call")
         }
         return result
+    }
+
+
+
+    /**
+     * Determines if the current parsing context corresponds to a function type.
+     *
+     * It's definitely not an ideal way, but I didn't come up with a better way to make nested () work.
+     *
+     * @param builder A `PsiBuilder` instance used for parsing and token navigation.
+     * @param l The current level of recursion or parsing context depth.
+     * @return `false` if the current context is determined to be not a function;
+     *  `true` otherwise, to avoid reparsing the code that is incorrect anyway.
+     */
+    @JvmStatic
+    fun isFunctionType(builder: PsiBuilder, l: Int): Boolean {
+        var parenCount = 0
+        var offset = 0
+
+        if (builder.lookAhead(offset) !== LuauTypes.LPAREN) return false
+        // TODO (AleksandrSl 30/03/2025): Possible improvement.
+        //  If we return on any place other than return next === LuauTypes.ARROW
+        //  Just mark all the code until the symbol we ended up as wrong and continue parsing from that point.
+        while (true) {
+            val tokenType: IElementType = builder.lookAhead(offset++) ?: return false
+
+            when (tokenType) {
+                LuauTypes.LPAREN -> parenCount++
+                LuauTypes.RPAREN -> {
+                    parenCount--
+                    if (parenCount == 0) {
+                        val next: IElementType = builder.lookAhead(offset) ?: return false
+                        return next === LuauTypes.ARROW
+                    }
+                }
+                else -> {
+                    // If we've reached this point, we are out of the possible type tokens so we don't know
+                    // whether we see function or anything else.
+                    if (FUNCTION_TYPE_RECOVERY.contains(tokenType)) {
+                        return false
+                    }
+                }
+            }
+        }
     }
 
     private fun isFunctionCall(builder: PsiBuilder): Boolean {

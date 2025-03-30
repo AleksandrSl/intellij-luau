@@ -8,7 +8,22 @@ import com.intellij.psi.PsiElement;
 public interface LuauUnionType extends PsiElement {
 
   @Nullable
-  LuauSimpleType getSimpleType();
+  LuauFunctionType getFunctionType();
+
+  @Nullable
+  LuauParenthesisedType getParenthesisedType();
+
+  @Nullable
+  LuauSingletonType getSingletonType();
+
+  @Nullable
+  LuauTableType getTableType();
+
+  @Nullable
+  LuauTypeReference getTypeReference();
+
+  @Nullable
+  LuauTypeofType getTypeofType();
 
   @Nullable
   LuauUnionType getUnionType();
