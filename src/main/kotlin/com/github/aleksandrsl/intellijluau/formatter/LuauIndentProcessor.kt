@@ -78,7 +78,7 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         if (elementType == LuauTypes.TABLE_TYPE || elementType == LuauTypes.TABLE_CONSTRUCTOR || elementType == LuauTypes.PAR_LIST) {
             return Indent.getNormalIndent()
         }
-        if (elementType == LuauTypes.FUNC_ARGS) {
+        if (elementType == LuauTypes.FUNC_ARGS || elementType == LuauTypes.LIST_ARGS) {
             return Indent.getSmartIndent(Indent.Type.CONTINUATION)
         }
         if (elementType == LuauTypes.IFELSE_EXPR) {
