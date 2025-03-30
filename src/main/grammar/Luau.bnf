@@ -115,8 +115,7 @@ private meta list ::= <<p>> (',' <<p>>)*
 // element_list ::= '(' element (',' (element | &')'))* ')' {pin(".*")=1} is this example from the docs better?
 private meta list_with_trailing_comma ::= <<p>> (',' <<p>>)* ','?
 
-// TODO (AleksandrSl 10/03/2025): I don't understand do I need a rule here at all or it can be empty
-//  Maybe I can just create a token set with all of them
+// TODO (AleksandrSl 10/03/2025): Maybe I can just create a token set with all of them
 fake operator ::=
 
 // It's not mandatory to have the different rules for blocks, but the root one can be simpler
@@ -148,9 +147,6 @@ private statement ::=
      | expression_statement
 { name = "statement" }
 
-// TODO (AleksandrSl 20/06/2024): I don't know how lua plugin avoid having all the else stuff here,
-//  probably because they do manual expressions parsing.
-// As far as I see, in the Haxe plugin it's totally fine to have all these here.
 private statement_recover ::= !(
    statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | last_statement_first
 )
@@ -171,8 +167,6 @@ if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)
 classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end' { pin = 3 }
 // Rename for into numeric_for and generic_for as in lua docs
 foreach_statement ::= 'for' binding_list 'in' exp_list 'do' block 'end' { pin = 1 }
-// TODO: Lol, what error I was talking about
-// I guess the problem is here, at least part of it. Because the error is bin_op or , is expected. And bin_op is a part of expression
 assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= lvalue compound_op expression { pin = 2 }
 // Alternative here is to use `external my_external_rule ::= parseMyExternalRule false 10`
@@ -352,8 +346,14 @@ left as_expr ::= '::' type { pin = 1 }
 // It's impossible to call a function or index a value except for ID and parenthesised expression.
 // That's why the first 4 are not considered a value here. Naming sucks
 primary_group_expr ::= (table_constructor_expr | literal_expr | closure_expr | template_string_expr | index_or_call_expr | paren_expr | simple_reference) as_expr?
+// TODO (AleksandrSl 30/03/2025): Improve index access and paren_expr parsing. https://github.com/AleksandrSl/intellij-luau/issues/73
+//  Currently if you do ((((((((((((((((((())))))))))))))))))) you kill the parser.
+//  It recursively tries to do index_or_call_expr which has paren_expr inside and then just paren_expr and everyone of them tries expression inside which can also be index and paren and so on
+//  Couple ideas
+//   - a simple one: pin and add error recovery, so that empty parenthesis are consider a paren_expr if empty.
+//   - turn index access into something that is left recursively applied to an expression so it doesn't parse the left expression on it's own, but uses the same pratt parser.
+//     I believe Rust does it this way, see their DotExpr and CallExpr
 
-// public rules for each expression
 unary_min_expr ::= un_minus_op expression
 length_expr ::= un_length_op expression
 not_expr ::= un_not_op expression
