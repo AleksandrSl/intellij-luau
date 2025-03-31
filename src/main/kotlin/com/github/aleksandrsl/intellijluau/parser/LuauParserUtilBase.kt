@@ -98,52 +98,6 @@ object LuauParserUtilBase : GeneratedParserUtilBase() {
         }
     }
 
-
-    /**
-     * Parses a type expression in a specified context using the provided parsers for simple,
-     * union, and intersection types.
-     *
-     * If we detect an indicator of union type then we only parse union type parts and otherwise.
-     * In luau it's prohibited to mix them, unless you nest one part the parts into parentheses
-     *
-     * The method is not strictly required when I use upper for union_type.
-     * It was required when I had the left modifier to avoid extra markers.
-     * See https://github.com/JetBrains/Grammar-Kit/issues/396
-     *
-     * @param builder The `PsiBuilder` object used for parsing and token manipulation.
-     * @param l The current level of recursion used to guard against deep recursion.
-     * @param parseSimpleType A `Parser` responsible for parsing simple type expressions.
-     * @param parseUnionType A `Parser` responsible for parsing union type expressions.
-     * @param parseIntersectionType A `Parser` responsible for parsing intersection type expressions.
-     * @return `true` if the parsing was successful, otherwise `false`.
-     */
-    @JvmStatic
-    fun parseType(builder: PsiBuilder, l: Int, parseSimpleType: Parser, parseUnionType: Parser, parseIntersectionType: Parser): Boolean {
-        val m = enter_section_(builder)
-        var type = 0
-        var r = parseSimpleType.parse(builder, l + 1)
-        if (r && consumeTokenFast(builder, LuauTypes.QUESTION)) type = 1
-        r && when(builder.lookAhead(0)) {
-            LuauTypes.UNION -> {
-                type = 1
-                true
-            }
-            LuauTypes.INTERSECTION -> {
-                type = 2
-                true
-            }
-            else -> true
-        }
-        r = r && when (type) {
-            1 -> parseUnionType.parse(builder, l + 1)
-            2 -> parseIntersectionType.parse(builder, l + 1)
-            else -> true
-        }
-        exit_section_(builder, m, null, r)
-        return r
-    }
-
-
     private fun isFunctionCall(builder: PsiBuilder): Boolean {
         return builder.latestDoneMarker?.tokenType == LuauTypes.FUNC_CALL
     }
