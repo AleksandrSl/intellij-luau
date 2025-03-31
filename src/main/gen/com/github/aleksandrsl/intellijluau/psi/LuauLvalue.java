@@ -7,7 +7,4 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauLvalue extends PsiElement {
 
-  @Nullable
-  LuauSimpleReference getSimpleReference();
-
 }

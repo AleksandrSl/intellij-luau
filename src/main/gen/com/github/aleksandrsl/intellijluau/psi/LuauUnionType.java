@@ -25,10 +25,4 @@ public interface LuauUnionType extends PsiElement {
   @Nullable
   LuauTypeofType getTypeofType();
 
-  @Nullable
-  LuauUnionType getUnionType();
-
-  @NotNull
-  List<LuauUnionTypePart> getUnionTypePartList();
-
 }

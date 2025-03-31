@@ -1460,7 +1460,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // (simple_reference | paren_expr) (index_access | func_call)+
+  // (simple_reference | paren_expr) (index_access | func_call)*
   static boolean index_or_call_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "index_or_call_expr")) return false;
     if (!nextTokenIsFast(b, ID, LPAREN)) return false;
@@ -1481,19 +1481,15 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // (index_access | func_call)+
+  // (index_access | func_call)*
   private static boolean index_or_call_expr_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "index_or_call_expr_1")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = index_or_call_expr_1_0(b, l + 1);
-    while (r) {
+    while (true) {
       int c = current_position_(b);
       if (!index_or_call_expr_1_0(b, l + 1)) break;
       if (!empty_element_parsed_guard_(b, "index_or_call_expr_1", c)) break;
     }
-    exit_section_(b, m, null, r);
-    return r;
+    return true;
   }
 
   // index_access | func_call
@@ -1517,28 +1513,16 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // intersection_type_part
+  // '&' simple_type
   public static boolean intersection_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "intersection_type")) return false;
-    if (!nextTokenIs(b, INTERSECTION)) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _LEFT_, INTERSECTION_TYPE, null);
-    r = intersection_type_part(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // '&' simple_type
-  public static boolean intersection_type_part(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "intersection_type_part")) return false;
-    if (!nextTokenIs(b, INTERSECTION)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    boolean r, p;
+    Marker m = enter_section_(b, l, _UPPER_, INTERSECTION_TYPE, "<intersection type>");
     r = consumeToken(b, INTERSECTION);
+    p = r; // pin = 1
     r = r && simple_type(b, l + 1);
-    exit_section_(b, m, INTERSECTION_TYPE_PART, r);
-    return r;
+    exit_section_(b, l, m, r, p, LuauParser::type_recover);
+    return r || p;
   }
 
   /* ********************************************************** */
@@ -1854,13 +1838,12 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<parseIndexAccess index_or_call_expr>> | simple_reference
+  // <<parseLvalue index_or_call_expr>>
   public static boolean lvalue(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "lvalue")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, LVALUE, "<lvalue>");
-    r = parseIndexAccess(b, l + 1, LuauParser::index_or_call_expr);
-    if (!r) r = simple_reference(b, l + 1);
+    r = parseLvalue(b, l + 1, LuauParser::index_or_call_expr);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
@@ -2739,9 +2722,9 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !('&' | '|') simple_type ('?' union_type* | union_type+ | intersection_type+)?
-  //   | union_type_part union_type*
-  //   | intersection_type_part intersection_type*
+  // simple_type ('?' union_type* | union_type+ | intersection_type+)?
+  //   | union_type+
+  //   | intersection_type+
   public static boolean type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type")) return false;
     boolean r;
@@ -2753,150 +2736,116 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // !('&' | '|') simple_type ('?' union_type* | union_type+ | intersection_type+)?
+  // simple_type ('?' union_type* | union_type+ | intersection_type+)?
   private static boolean type_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = type_0_0(b, l + 1);
-    r = r && simple_type(b, l + 1);
-    r = r && type_0_2(b, l + 1);
+    r = simple_type(b, l + 1);
+    r = r && type_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // !('&' | '|')
-  private static boolean type_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NOT_);
-    r = !type_0_0_0(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // '&' | '|'
-  private static boolean type_0_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_0_0")) return false;
-    boolean r;
-    r = consumeToken(b, INTERSECTION);
-    if (!r) r = consumeToken(b, UNION);
-    return r;
-  }
-
   // ('?' union_type* | union_type+ | intersection_type+)?
-  private static boolean type_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_2")) return false;
-    type_0_2_0(b, l + 1);
+  private static boolean type_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_0_1")) return false;
+    type_0_1_0(b, l + 1);
     return true;
   }
 
   // '?' union_type* | union_type+ | intersection_type+
-  private static boolean type_0_2_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_2_0")) return false;
+  private static boolean type_0_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_0_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = type_0_2_0_0(b, l + 1);
-    if (!r) r = type_0_2_0_1(b, l + 1);
-    if (!r) r = type_0_2_0_2(b, l + 1);
+    r = type_0_1_0_0(b, l + 1);
+    if (!r) r = type_0_1_0_1(b, l + 1);
+    if (!r) r = type_0_1_0_2(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // '?' union_type*
-  private static boolean type_0_2_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_2_0_0")) return false;
+  private static boolean type_0_1_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_0_1_0_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, QUESTION);
-    r = r && type_0_2_0_0_1(b, l + 1);
+    r = r && type_0_1_0_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // union_type*
-  private static boolean type_0_2_0_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_2_0_0_1")) return false;
+  private static boolean type_0_1_0_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_0_1_0_0_1")) return false;
     while (true) {
       int c = current_position_(b);
       if (!union_type(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "type_0_2_0_0_1", c)) break;
+      if (!empty_element_parsed_guard_(b, "type_0_1_0_0_1", c)) break;
     }
     return true;
   }
 
   // union_type+
-  private static boolean type_0_2_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_2_0_1")) return false;
+  private static boolean type_0_1_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_0_1_0_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = union_type(b, l + 1);
     while (r) {
       int c = current_position_(b);
       if (!union_type(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "type_0_2_0_1", c)) break;
+      if (!empty_element_parsed_guard_(b, "type_0_1_0_1", c)) break;
     }
     exit_section_(b, m, null, r);
     return r;
   }
 
   // intersection_type+
-  private static boolean type_0_2_0_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_0_2_0_2")) return false;
+  private static boolean type_0_1_0_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_0_1_0_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = intersection_type(b, l + 1);
     while (r) {
       int c = current_position_(b);
       if (!intersection_type(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "type_0_2_0_2", c)) break;
+      if (!empty_element_parsed_guard_(b, "type_0_1_0_2", c)) break;
     }
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // union_type_part union_type*
+  // union_type+
   private static boolean type_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = union_type_part(b, l + 1);
-    r = r && type_1_1(b, l + 1);
+    r = union_type(b, l + 1);
+    while (r) {
+      int c = current_position_(b);
+      if (!union_type(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "type_1", c)) break;
+    }
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // union_type*
-  private static boolean type_1_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_1_1")) return false;
-    while (true) {
-      int c = current_position_(b);
-      if (!union_type(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "type_1_1", c)) break;
-    }
-    return true;
-  }
-
-  // intersection_type_part intersection_type*
+  // intersection_type+
   private static boolean type_2(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = intersection_type_part(b, l + 1);
-    r = r && type_2_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // intersection_type*
-  private static boolean type_2_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_2_1")) return false;
-    while (true) {
+    r = intersection_type(b, l + 1);
+    while (r) {
       int c = current_position_(b);
       if (!intersection_type(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "type_2_1", c)) break;
+      if (!empty_element_parsed_guard_(b, "type_2", c)) break;
     }
-    return true;
+    exit_section_(b, m, null, r);
+    return r;
   }
 
   /* ********************************************************** */
@@ -3144,6 +3093,35 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end')
+  static boolean type_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_recover")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !type_recover_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // ')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end'
+  private static boolean type_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_recover_0")) return false;
+    boolean r;
+    r = consumeTokenFast(b, RPAREN);
+    if (!r) r = consumeTokenFast(b, RCURLY);
+    if (!r) r = consumeTokenFast(b, COMMA);
+    if (!r) r = consumeTokenFast(b, SEMI);
+    if (!r) r = consumeTokenFast(b, GT);
+    if (!r) r = consumeTokenFast(b, RBRACK);
+    if (!r) r = consumeTokenFast(b, ASSIGN);
+    if (!r) r = type_first(b, l + 1);
+    if (!r) r = statement_first(b, l + 1);
+    if (!r) r = last_statement_first(b, l + 1);
+    if (!r) r = consumeTokenFast(b, END);
+    return r;
+  }
+
+  /* ********************************************************** */
   // ID ('.' ID)? ('<' type_params? '>')?
   public static boolean type_reference(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_reference")) return false;
@@ -3287,34 +3265,22 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // union_type_part
+  // '|' simple_type '?'?
   public static boolean union_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "union_type")) return false;
-    if (!nextTokenIs(b, UNION)) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _LEFT_, UNION_TYPE, null);
-    r = union_type_part(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // '|' simple_type '?'?
-  public static boolean union_type_part(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "union_type_part")) return false;
-    if (!nextTokenIs(b, UNION)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    boolean r, p;
+    Marker m = enter_section_(b, l, _UPPER_, UNION_TYPE, "<union type>");
     r = consumeToken(b, UNION);
-    r = r && simple_type(b, l + 1);
-    r = r && union_type_part_2(b, l + 1);
-    exit_section_(b, m, UNION_TYPE_PART, r);
-    return r;
+    p = r; // pin = 1
+    r = r && report_error_(b, simple_type(b, l + 1));
+    r = p && union_type_2(b, l + 1) && r;
+    exit_section_(b, l, m, r, p, LuauParser::type_recover);
+    return r || p;
   }
 
   // '?'?
-  private static boolean union_type_part_2(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "union_type_part_2")) return false;
+  private static boolean union_type_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "union_type_2")) return false;
     consumeToken(b, QUESTION);
     return true;
   }
@@ -3528,7 +3494,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r || p;
   }
 
-  // (table_constructor_expr | literal_expr | closure_expr | template_string_expr | index_or_call_expr | paren_expr | simple_reference) as_expr?
+  // (table_constructor_expr | literal_expr | closure_expr | template_string_expr | index_or_call_expr) as_expr?
   public static boolean primary_group_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "primary_group_expr")) return false;
     boolean r;
@@ -3539,7 +3505,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // table_constructor_expr | literal_expr | closure_expr | template_string_expr | index_or_call_expr | paren_expr | simple_reference
+  // table_constructor_expr | literal_expr | closure_expr | template_string_expr | index_or_call_expr
   private static boolean primary_group_expr_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "primary_group_expr_0")) return false;
     boolean r;
@@ -3548,8 +3514,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = closure_expr(b, l + 1);
     if (!r) r = template_string_expr(b, l + 1);
     if (!r) r = index_or_call_expr(b, l + 1);
-    if (!r) r = paren_expr(b, l + 1);
-    if (!r) r = simple_reference(b, l + 1);
     return r;
   }
 

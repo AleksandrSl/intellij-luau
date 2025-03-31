@@ -248,11 +248,11 @@ binding ::= ID (':' type)?  {
 binding_list ::= <<list binding>>
 
 var_list ::= <<list lvalue>>
-lvalue ::= <<parseIndexAccess index_or_call_expr>> | simple_reference
+lvalue ::= <<parseLvalue index_or_call_expr>>
 
 simple_reference ::= ID { methods=[getReferences] }
 
-private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)+
+private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)*
 // These are postfixes. not actual access and call, but since they are left and take over the index_or_call_expr above the names suit well
 left index_access ::= '[' expression ']' | '.' simple_reference { pin(".*") = 1 }
 // I can't pin method call because tables have : as well.
@@ -345,7 +345,7 @@ private add_group ::= plus_expr | minus_expr
 left as_expr ::= '::' type { pin = 1 }
 // It's impossible to call a function or index a value except for ID and parenthesised expression.
 // That's why the first 4 are not considered a value here. Naming sucks
-primary_group_expr ::= (table_constructor_expr | literal_expr | closure_expr | template_string_expr | index_or_call_expr | paren_expr | simple_reference) as_expr?
+primary_group_expr ::= (table_constructor_expr | literal_expr | closure_expr | template_string_expr | index_or_call_expr) as_expr?
 // TODO (AleksandrSl 30/03/2025): Improve index access and paren_expr parsing. https://github.com/AleksandrSl/intellij-luau/issues/73
 //  Currently if you do ((((((((((((((((((())))))))))))))))))) you kill the parser.
 //  It recursively tries to do index_or_call_expr which has paren_expr inside and then just paren_expr and everyone of them tries expression inside which can also be index and paren and so on
@@ -454,19 +454,26 @@ private type_params_item ::= variadic_type_pack | generic_type_pack | type | typ
 type ::=
   // Leading & and | are handled by the last two rules. We can't have intersection after '?'
   // so it's included into a separate optional union branch.
-  !('&' | '|') simple_type ('?' union_type* | union_type+ | intersection_type+)?
-  | union_type_part union_type*
-  | intersection_type_part intersection_type*
+  simple_type ('?' union_type* | union_type+ | intersection_type+)?
+  | union_type+
+  | intersection_type+
 
 // left makes the rule recursive plus leaves the leading | and & out of the rule.
 // Upper replaces the root most type, includes the leading token but doesn't nest anything 😭
 // left with not private part is a bit better, but creates more PSI nodes that I want.
-left union_type ::= union_type_part
-left intersection_type ::= intersection_type_part
+// After checking how types are done in TS I decided that if they don't need the nesting I don't need too.
+// So upper should work just fine, it also doesn't have weird marker problems as left does
+// See https://github.com/JetBrains/Grammar-Kit/issues/396
+upper union_type ::= '|' simple_type '?'? { recoverWhile = type_recover; pin = 1 }
+upper intersection_type ::= '&' simple_type { recoverWhile = type_recover; pin = 1 }
 
-union_type_part ::= '|' simple_type '?'?
-intersection_type_part ::= '&' simple_type
+// I'm a bit surprise I need so many values here, but types can be found in a lot of contexts indeed
+// Can consider bailing out on recover here, too much checks for little gain?
+// I also still don't understand why it tries to match the rule even if it is already successfully parsed?
+// Rust has recover mostly on the things wrapped into some parenthesis. They don't have any algebraic types in the language
+private type_recover ::= !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end')
 
+// '<' is for the function type start
 private type_first ::= ID | '(' | '|' | '&' | 'nil' | STRING | 'true' | 'false' | typeof_soft_keyword | '<'
 
 // Yes it looks like generic_type_pack, but maybe it's needed for something in the original grammar? Let's keep it

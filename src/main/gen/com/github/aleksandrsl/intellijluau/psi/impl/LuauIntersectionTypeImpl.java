@@ -35,18 +35,6 @@ public class LuauIntersectionTypeImpl extends ASTWrapperPsiElement implements Lu
 
   @Override
   @Nullable
-  public LuauIntersectionType getIntersectionType() {
-    return findChildByClass(LuauIntersectionType.class);
-  }
-
-  @Override
-  @NotNull
-  public List<LuauIntersectionTypePart> getIntersectionTypePartList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauIntersectionTypePart.class);
-  }
-
-  @Override
-  @Nullable
   public LuauParenthesisedType getParenthesisedType() {
     return findChildByClass(LuauParenthesisedType.class);
   }

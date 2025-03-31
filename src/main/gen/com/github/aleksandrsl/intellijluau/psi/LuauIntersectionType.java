@@ -11,12 +11,6 @@ public interface LuauIntersectionType extends PsiElement {
   LuauFunctionType getFunctionType();
 
   @Nullable
-  LuauIntersectionType getIntersectionType();
-
-  @NotNull
-  List<LuauIntersectionTypePart> getIntersectionTypePartList();
-
-  @Nullable
   LuauParenthesisedType getParenthesisedType();
 
   @Nullable

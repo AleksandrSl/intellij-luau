@@ -44,17 +44,15 @@ object LuauParserUtilBase : GeneratedParserUtilBase() {
     }
 
     @JvmStatic
-    fun parseIndexAccess(builder: PsiBuilder, l: Int, indexAccessOrFuncCallParser: Parser): Boolean {
+    fun parseLvalue(builder: PsiBuilder, l: Int, indexAccessOrFuncCallParser: Parser): Boolean {
         // Similar to the one above. If we parse the thing as the call/index access, then it's not a single variable (the other valid case for the parent rule).
         // So we just eat this expression by returning the result, and show error if the type is not correct.
         val result = indexAccessOrFuncCallParser.parse(builder, l)
-        if (result && !isIndexAccess(builder)) {
-            builder.error("Expected index access, got function call")
+        if (result && !(isIndexAccess(builder) || isSimpleReference(builder))) {
+            builder.error("Expected index access or reference, got function call")
         }
         return result
     }
-
-
 
     /**
      * Determines if the current parsing context corresponds to a function type.
@@ -71,6 +69,7 @@ object LuauParserUtilBase : GeneratedParserUtilBase() {
         var parenCount = 0
         var offset = 0
 
+        // TODO (AleksandrSl 31/03/2025): One more possible improvement is to parse empty parenthesis as a function start.
         if (builder.lookAhead(offset) !== LuauTypes.LPAREN) return false
         // TODO (AleksandrSl 30/03/2025): Possible improvement.
         //  If we return on any place other than return next === LuauTypes.ARROW
@@ -87,6 +86,7 @@ object LuauParserUtilBase : GeneratedParserUtilBase() {
                         return next === LuauTypes.ARROW
                     }
                 }
+
                 else -> {
                     // If we've reached this point, we are out of the possible type tokens so we don't know
                     // whether we see function or anything else.
@@ -104,6 +104,10 @@ object LuauParserUtilBase : GeneratedParserUtilBase() {
 
     private fun isIndexAccess(builder: PsiBuilder): Boolean {
         return builder.latestDoneMarker?.tokenType == LuauTypes.INDEX_ACCESS
+    }
+
+    private fun isSimpleReference(builder: PsiBuilder): Boolean {
+        return builder.latestDoneMarker?.tokenType == LuauTypes.SIMPLE_REFERENCE
     }
 }
 

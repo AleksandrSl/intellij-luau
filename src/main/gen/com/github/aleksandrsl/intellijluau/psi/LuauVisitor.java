@@ -171,10 +171,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitIntersectionTypePart(@NotNull LuauIntersectionTypePart o) {
-    visitPsiElement(o);
-  }
-
   public void visitKeyedField(@NotNull LuauKeyedField o) {
     visitPsiElement(o);
   }
@@ -388,10 +384,6 @@ public class LuauVisitor extends PsiElementVisitor {
   }
 
   public void visitUnionType(@NotNull LuauUnionType o) {
-    visitPsiElement(o);
-  }
-
-  public void visitUnionTypePart(@NotNull LuauUnionTypePart o) {
     visitPsiElement(o);
   }
 
