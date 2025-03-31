@@ -63,16 +63,4 @@ public class LuauUnionTypeImpl extends ASTWrapperPsiElement implements LuauUnion
     return findChildByClass(LuauTypeofType.class);
   }
 
-  @Override
-  @Nullable
-  public LuauUnionType getUnionType() {
-    return findChildByClass(LuauUnionType.class);
-  }
-
-  @Override
-  @NotNull
-  public List<LuauUnionTypePart> getUnionTypePartList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauUnionTypePart.class);
-  }
-
 }

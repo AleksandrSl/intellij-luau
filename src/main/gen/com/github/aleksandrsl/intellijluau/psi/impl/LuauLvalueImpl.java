@@ -27,10 +27,4 @@ public class LuauLvalueImpl extends ASTWrapperPsiElement implements LuauLvalue {
     else super.accept(visitor);
   }
 
-  @Override
-  @Nullable
-  public LuauSimpleReference getSimpleReference() {
-    return findChildByClass(LuauSimpleReference.class);
-  }
-
 }

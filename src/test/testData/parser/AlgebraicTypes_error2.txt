@@ -18,6 +18,8 @@ Luau file(0,136)
     PsiErrorElement:'|' expected, got '&'(128,129)
       PsiElement(&)('&')(128,129)
     PsiWhiteSpace(' ')(129,130)
-    PsiElement(ID)('string')(130,136)
-    PsiErrorElement:',', <compound op>, <func call>, <index access> or '=' expected(136,136)
-      <empty list>
+    LuauExpressionStatementImpl(EXPRESSION_STATEMENT)(130,136)
+      LuauSimpleReferenceImpl(SIMPLE_REFERENCE)(130,136)
+        PsiElement(ID)('string')(130,136)
+      PsiErrorElement:Expected function call, got index access(136,136)
+        <empty list>
