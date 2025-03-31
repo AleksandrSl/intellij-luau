@@ -14,6 +14,7 @@ import com.intellij.psi.tree.IElementType
  */
 object LuauParserUtilBase : GeneratedParserUtilBase() {
 
+    // TODO (AleksandrSl 01/04/2025): Reconsider error messages, it looks to me they are too strict now that I changed parsing.
     /**
      * Parses an expression statement using the given builder and parser.
      *
