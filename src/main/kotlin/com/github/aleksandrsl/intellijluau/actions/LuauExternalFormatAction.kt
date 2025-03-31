@@ -1,9 +1,9 @@
 package com.github.aleksandrsl.intellijluau.actions
 
+import com.github.aleksandrsl.intellijluau.LuauNotifications
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
-import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -40,8 +40,7 @@ class LuauExternalFormatAction : AnAction() {
         val project: Project = event.project ?: return
 
         val projectService = project.service<LuauCliService>()
-        val notificationGroupManager = NotificationGroupManager.getInstance()
-            .getNotificationGroup("Luau notifications")
+        val notificationGroupManager = LuauNotifications.pluginNotifications()
         projectService.coroutineScope.launch(Dispatchers.EDT) {
             // Why is not modal progress working?
             // Do I need different contexts here?

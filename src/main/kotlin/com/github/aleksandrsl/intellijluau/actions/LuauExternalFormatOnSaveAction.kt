@@ -11,6 +11,12 @@ import com.intellij.util.containers.ContainerUtil
 
 private val LOG = logger<LuauExternalFormatOnSaveAction>()
 
+// TODO (AleksandrSl 30/03/2025):
+//  Looks I need a DocumentUpdatingActionOnSave
+//  Note: If the Action on Save is going to update file contents, for example,
+//  to format a file on save, then extend DocumentUpdatingActionOnSave.
+//  Unlike ActionOnSave.processDocuments, which assumes modal progress,
+//  DocumentUpdatingActionOnSave.updateDocument runs with cancelable background progress.
 class LuauExternalFormatOnSaveAction : ActionsOnSaveFileDocumentManagerListener.ActionOnSave() {
     override fun isEnabledForProject(project: Project): Boolean {
         return ProjectSettingsState.getInstance(project).runStyLuaOnSave
