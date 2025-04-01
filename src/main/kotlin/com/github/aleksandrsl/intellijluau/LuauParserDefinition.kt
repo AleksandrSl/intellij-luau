@@ -43,6 +43,7 @@ class LuauParserDefinition : ParserDefinition {
         return LuauFile(viewProvider)
     }
 
+    // TODO (AleksandrSl 31/03/2025): Check if this one is corrent
     override fun spaceExistenceTypeBetweenTokens(left: ASTNode?, right: ASTNode?): ParserDefinition.SpaceRequirements {
         return ParserDefinition.SpaceRequirements.MAY
     }

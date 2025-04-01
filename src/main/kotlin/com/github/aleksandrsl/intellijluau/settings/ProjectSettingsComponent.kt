@@ -2,13 +2,16 @@ package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.cli.LspCli
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
+import com.github.aleksandrsl.intellijluau.cli.RobloxCli
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.toNioPathOrNull
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.CollectionListModel
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.ToolbarDecorator
@@ -25,7 +28,11 @@ import kotlin.io.path.exists
 
 private val LOG = logger<ProjectSettingsComponent>()
 
-class ProjectSettingsComponent(private val service: LuauCliService) {
+class ProjectSettingsComponent(
+    private val service: LuauCliService,
+    private val projectDir: VirtualFile?,
+    private val project: Project
+) {
 
     var customDefinitionsPaths: List<String>
         get() = this.customDefinitionsToolbar.paths.toList()
@@ -55,6 +62,24 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
         get() = this.styluaRunOnSaveComponent.isSelected
         set(newValue) {
             this.styluaRunOnSaveComponent.isSelected = newValue ?: false
+        }
+
+    var generateSourceMaps: Boolean?
+        get() = this.generateSourceMapsCheckbox.isSelected
+        set(newValue) {
+            this.generateSourceMapsCheckbox.isSelected = newValue ?: false
+        }
+
+    var rbxpPath: String?
+        get() = this.rbxpPathComponent.text
+        set(newText) {
+            this.rbxpPathComponent.text = newText ?: ""
+        }
+
+    var robloxCliPath: String?
+        get() = this.robloxCliPathComponent.text
+        set(newText) {
+            this.robloxCliPathComponent.text = newText ?: ""
         }
 
     private var lspVersion: String? = null
@@ -100,7 +125,37 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
             }
         })
     }
+
     private val lspVersionLabelComponent = JBLabel()
+    private val robloxCliPathComponent = TextFieldWithBrowseButton().apply {
+        addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
+        textField.document.addDocumentListener(object : DocumentAdapter() {
+            override fun textChanged(event: javax.swing.event.DocumentEvent) {
+                if (text.isEmpty()) {
+                    return
+                }
+                val maybePath = text.toNioPathOrNull()
+                if (maybePath == null || !maybePath.exists()) {
+                    return
+                }
+                service.coroutineScope.launch {
+                    setRobloxCliVersion(RobloxCli(maybePath).queryVersion()) // New robloxCli logic
+                }
+            }
+        })
+    }
+    private val robloxCliVersionLabelComponent = JBLabel()
+    private val rbxpPathComponentLabelComponent = JBLabel(".rbxp")
+    private val generateSourceMapsCheckbox = JBCheckBox("Generate source maps from .rbxp file")
+    private val rbxpPathComponent = TextFieldWithBrowseButton().apply {
+        // I took a brief looks at the whole hierarchy, and I don't see what useful thing happens if you provide a project.
+        // Maybe it helps with the locate project folder button.
+        // I override the initial file just to be sure we start from the project folder.
+        addBrowseFolderListener(object :
+            TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileDescriptor("rbxp"), project) {
+            override fun getInitialFile(): VirtualFile? = projectDir
+        })
+    }
     private val styluaVersionLabelComponent = JBLabel()
     private val styluaRunOnSaveComponent = JBCheckBox("Run StyLua on save")
     private lateinit var robloxSecurityLevelComponent: JComboBox<String>
@@ -142,7 +197,25 @@ class ProjectSettingsComponent(private val service: LuauCliService) {
                     cell(styluaRunOnSaveComponent)
                 }
             }
+            group("Roblox CLI") {
+                row("Path to Roblox CLI:") {
+                    cell(robloxCliPathComponent).align(AlignX.FILL).resizableColumn()
+                }.resizableRow()
+                row {
+                    cell(robloxCliVersionLabelComponent).align(AlignX.FILL).resizableColumn()
+                }
+                row {
+                    cell(generateSourceMapsCheckbox).resizableColumn()
+                    rbxpPathComponentLabelComponent.labelFor = rbxpPathComponent
+                    cell(rbxpPathComponentLabelComponent)
+                    cell(rbxpPathComponent).align(AlignX.FILL).resizableColumn()
+                }
+            }
         }
+    }
+
+    private fun setRobloxCliVersion(newVersion: String) {
+        robloxCliVersionLabelComponent.text = "Version: $newVersion"
     }
 
     private fun setStyluaVersion(newVersion: String) {
