@@ -41,6 +41,10 @@ internal class ProjectSettingsState(private val project: Project) :
 
     val shouldGenerateSourceMapsFromRbxp: Boolean
         get() = internalState.shouldGenerateSourceMapsFromRbxp
+    val shouldRunStyLuaOnSave: Boolean
+        get() = internalState.shouldRunStyLuaOnSave
+
+
 
     override fun getState(): State {
         return internalState
@@ -70,6 +74,8 @@ internal class ProjectSettingsState(private val project: Project) :
     ) {
         val shouldGenerateSourceMapsFromRbxp: Boolean
             get() = rbxpForSourcemapPath.isNotBlank() && generateSourceMapsFromRbxp && robloxCliPath.isNotBlank()
+        val shouldRunStyLuaOnSave: Boolean
+            get() = runStyLuaOnSave && styLuaPath.isNotBlank()
     }
 
     companion object {
