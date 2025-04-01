@@ -120,9 +120,9 @@ enum class RobloxSecurityLevel {
 
 val defaultRobloxSecurityLevel = RobloxSecurityLevel.None
 
-sealed class RunStyluaOption {
-    data object Disabled : RunStyluaOption()
-    data object RunOnSave : RunStyluaOption()
-    data object RunOnSaveAndDisableBuiltinFormatter : RunStyluaOption()
-    data object RunInsteadOfFormatter : RunStyluaOption()
+enum class RunStyluaOption {
+    Disabled,
+    RunOnSave,
+    RunOnSaveAndDisableBuiltinFormatter,
+    RunInsteadOfFormatter,
 }
