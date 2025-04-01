@@ -38,7 +38,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
             ProjectSettingsState.TOPIC,
             object : ProjectSettingsState.SettingsChangeListener {
                 override fun settingsChanged(e: ProjectSettingsState.SettingsChangedEvent) {
-                    LOG.warn("Settings changed: $e")
+                    LOG.warn("Settings changed, new: ${e.newState.shouldGenerateSourceMapsFromRbxp}, old: ${e.oldState.shouldGenerateSourceMapsFromRbxp}")
                     if (e.newState.shouldGenerateSourceMapsFromRbxp && !e.oldState.shouldGenerateSourceMapsFromRbxp) {
                         start()
                     } else {

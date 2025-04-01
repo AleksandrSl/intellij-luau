@@ -52,19 +52,22 @@ internal class ProjectSettingsState(private val project: Project) :
 
     fun update(block: State.() -> Unit) {
         val oldState = internalState
-        block(internalState)
-        notifySettingsChanged(SettingsChangedEvent(oldState, internalState))
+        val newState = internalState.copy()
+        block(newState)
+        internalState = newState
+        notifySettingsChanged(SettingsChangedEvent(oldState, newState))
     }
 
-    internal class State {
-        var lspPath: String = ""
-        var styLuaPath: String = ""
-        var robloxCliPath: String = ""
-        var runStyLuaOnSave: Boolean = false
-        var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel
-        var customDefinitionsPaths: List<String> = listOf()
-        var generateSourceMapsFromRbxp: Boolean = true
+    internal data class State(
+        var lspPath: String = "",
+        var styLuaPath: String = "",
+        var robloxCliPath: String = "",
+        var runStyLuaOnSave: Boolean = false,
+        var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
+        var customDefinitionsPaths: List<String> = listOf(),
+        var generateSourceMapsFromRbxp: Boolean = true,
         var rbxpForSourcemapPath: String = ""
+    ) {
         val shouldGenerateSourceMapsFromRbxp: Boolean
             get() = rbxpForSourcemapPath.isNotBlank() && generateSourceMapsFromRbxp && robloxCliPath.isNotBlank()
     }
