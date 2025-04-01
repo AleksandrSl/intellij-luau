@@ -6,6 +6,7 @@ import com.github.aleksandrsl.intellijluau.restartLspServerAsync
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.project.guessProjectDir
 import javax.swing.JComponent
 
 class ProjectSettingsConfigurable(val project: Project) : Configurable {
@@ -17,23 +18,22 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         get() = _component
 
     override fun createComponent(): JComponent {
-        return ProjectSettingsComponent(project.service<LuauCliService>()).apply {
+        return ProjectSettingsComponent(project.service<LuauCliService>(), project.guessProjectDir(), project).apply {
             lspPath = settings.lspPath
             styLuaPath = settings.styLuaPath
             runStyLuaOnSave = settings.runStyLuaOnSave
             robloxSecurityLevel = settings.robloxSecurityLevel.name
             customDefinitionsPaths = settings.customDefinitionsPaths
+            robloxCliPath = settings.robloxCliPath
+            generateSourceMaps = settings.generateSourceMapsFromRbxp
+            rbxpPath = settings.rbxpForSourcemapPath
         }.also {
             _component = it
         }.panel
     }
 
     override fun isModified(): Boolean {
-        return settings.lspPath != _component?.lspPath
-                || settings.styLuaPath != _component?.styLuaPath
-                || settings.runStyLuaOnSave != _component?.runStyLuaOnSave
-                || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel
-                || settings.customDefinitionsPaths != _component?.customDefinitionsPaths
+        return settings.lspPath != _component?.lspPath || settings.styLuaPath != _component?.styLuaPath || settings.runStyLuaOnSave != _component?.runStyLuaOnSave || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel || settings.customDefinitionsPaths != _component?.customDefinitionsPaths || settings.generateSourceMapsFromRbxp != _component?.generateSourceMaps || settings.rbxpForSourcemapPath != _component?.rbxpPath || settings.robloxCliPath != _component?.robloxCliPath
     }
 
     override fun getPreferredFocusedComponent(): JComponent? = _component?.preferredFocusedComponent
@@ -41,12 +41,17 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     override fun apply() {
         restartLsp()
 
-        settings.lspPath = _component?.lspPath ?: ""
-        settings.robloxSecurityLevel =
-            _component?.robloxSecurityLevel?.let { RobloxSecurityLevel.valueOf(it) } ?: defaultRobloxSecurityLevel
-        settings.customDefinitionsPaths = _component?.customDefinitionsPaths ?: listOf()
-        settings.styLuaPath = _component?.styLuaPath ?: ""
-        settings.runStyLuaOnSave = _component?.runStyLuaOnSave ?: false
+        settings.update {
+            lspPath = _component?.lspPath ?: ""
+            robloxSecurityLevel =
+                _component?.robloxSecurityLevel?.let { RobloxSecurityLevel.valueOf(it) } ?: defaultRobloxSecurityLevel
+            customDefinitionsPaths = _component?.customDefinitionsPaths ?: listOf()
+            styLuaPath = _component?.styLuaPath ?: ""
+            runStyLuaOnSave = _component?.runStyLuaOnSave ?: false
+            robloxCliPath = _component?.robloxCliPath ?: ""
+            generateSourceMapsFromRbxp = _component?.generateSourceMaps ?: true
+            rbxpForSourcemapPath = _component?.rbxpPath ?: ""
+        }
     }
 
     override fun reset() {
@@ -56,6 +61,9 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             runStyLuaOnSave = settings.runStyLuaOnSave
             robloxSecurityLevel = settings.robloxSecurityLevel.name
             customDefinitionsPaths = settings.customDefinitionsPaths
+            robloxCliPath = settings.robloxCliPath
+            generateSourceMaps = settings.generateSourceMapsFromRbxp
+            rbxpPath = settings.rbxpForSourcemapPath
         }
     }
 
@@ -68,10 +76,11 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     }
 
     private fun restartLsp() {
-        if (settings.lspPath != _component?.lspPath
-            || settings.robloxSecurityLevel != _component?.robloxSecurityLevel?.let { RobloxSecurityLevel.valueOf(it) }
-            || settings.customDefinitionsPaths != _component?.customDefinitionsPaths
-        ) {
+        if (settings.lspPath != _component?.lspPath || settings.robloxSecurityLevel != _component?.robloxSecurityLevel?.let {
+                RobloxSecurityLevel.valueOf(
+                    it
+                )
+            } || settings.customDefinitionsPaths != _component?.customDefinitionsPaths) {
             restartLspServerAsync(project)
         }
     }
