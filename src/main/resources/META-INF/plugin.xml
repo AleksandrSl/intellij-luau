@@ -83,6 +83,7 @@
         <actionOnSave id="LuauExternalFormatOnSaveAction"
                       implementation="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatOnSaveAction"
                       order="after FormatOnSaveAction"/>
+        <formattingService implementation="com.github.aleksandrsl.intellijluau.formatter.StyluaFormatterService" />
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"

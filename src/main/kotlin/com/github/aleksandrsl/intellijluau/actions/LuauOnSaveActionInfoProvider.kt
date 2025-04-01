@@ -4,6 +4,7 @@ import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable.Companion.CONFIGURABLE_ID
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.settings.RunStyluaOption
 import com.intellij.ide.actionsOnSave.ActionOnSaveBackedByOwnConfigurable
 import com.intellij.ide.actionsOnSave.ActionOnSaveContext
 import com.intellij.ide.actionsOnSave.ActionOnSaveInfo
@@ -33,13 +34,17 @@ private class LuauExternalFormatOnSaveActionInfo(actionOnSaveContext: ActionOnSa
 
     override fun getActionOnSaveName() = LuauBundle.message("luau.run.on.save.checkbox.on.actions.on.save.page")
 
-    override fun isActionOnSaveEnabledAccordingToStoredState(): Boolean = ProjectSettingsState.getInstance(project).runStyLuaOnSave
+    override fun isActionOnSaveEnabledAccordingToStoredState(): Boolean =
+        ProjectSettingsState.getInstance(project).runStyluaOnSave
 
     override fun isActionOnSaveEnabledAccordingToUiState(configurable: ProjectSettingsConfigurable): Boolean =
-        configurable.component?.runStyLuaOnSave ?: false
+        // TODO (AleksandrSl 01/04/2025): Fix the implementation leak, i don't want this logic anywhere except for the state
+        configurable.component?.runStyLua?.let { it is RunStyluaOption.RunOnSave || it is RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter }
+            ?: false
 
     override fun setActionOnSaveEnabled(configurable: ProjectSettingsConfigurable, enabled: Boolean) {
-        configurable.component?.runStyLuaOnSave = enabled
+        // Tricky one, it may override a different state since they are mutually exclusive
+        configurable.component?.runStyLua = if (enabled) RunStyluaOption.RunOnSave else RunStyluaOption.Disabled
     }
 
     // Quite useless since I don't have a special configuration page for stylua
