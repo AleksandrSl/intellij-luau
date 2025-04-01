@@ -21,7 +21,8 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         return ProjectSettingsComponent(project.service<LuauCliService>(), project.guessProjectDir(), project).apply {
             lspPath = settings.lspPath
             styLuaPath = settings.styLuaPath
-            runStyLuaOnSave = settings.runStyLuaOnSave
+//            I have a feeling that this is not applied
+            runStyLua = settings.runStyLua
             robloxSecurityLevel = settings.robloxSecurityLevel.name
             customDefinitionsPaths = settings.customDefinitionsPaths
             robloxCliPath = settings.robloxCliPath
@@ -33,21 +34,21 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     }
 
     override fun isModified(): Boolean {
-        return settings.lspPath != _component?.lspPath || settings.styLuaPath != _component?.styLuaPath || settings.runStyLuaOnSave != _component?.runStyLuaOnSave || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel || settings.customDefinitionsPaths != _component?.customDefinitionsPaths || settings.generateSourceMapsFromRbxp != _component?.generateSourceMaps || settings.rbxpForSourcemapPath != _component?.rbxpPath || settings.robloxCliPath != _component?.robloxCliPath
+        return settings.lspPath != _component?.lspPath || _component?.panel?.isModified()?: false || settings.runStyLua != _component?.runStyLua || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel || settings.customDefinitionsPaths != _component?.customDefinitionsPaths || settings.generateSourceMapsFromRbxp != _component?.generateSourceMaps || settings.rbxpForSourcemapPath != _component?.rbxpPath || settings.robloxCliPath != _component?.robloxCliPath
     }
 
     override fun getPreferredFocusedComponent(): JComponent? = _component?.preferredFocusedComponent
 
     override fun apply() {
         restartLsp()
-
+        _component?.panel?.apply()
         settings.update {
             lspPath = _component?.lspPath ?: ""
             robloxSecurityLevel =
                 _component?.robloxSecurityLevel?.let { RobloxSecurityLevel.valueOf(it) } ?: defaultRobloxSecurityLevel
             customDefinitionsPaths = _component?.customDefinitionsPaths ?: listOf()
             styLuaPath = _component?.styLuaPath ?: ""
-            runStyLuaOnSave = _component?.runStyLuaOnSave ?: false
+            runStyLua = _component?.runStyLua ?: RunStyluaOption.Disabled
             robloxCliPath = _component?.robloxCliPath ?: ""
             generateSourceMapsFromRbxp = _component?.generateSourceMaps ?: true
             rbxpForSourcemapPath = _component?.rbxpPath ?: ""
@@ -55,10 +56,11 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     }
 
     override fun reset() {
+        _component?.panel?.reset()
         _component?.run {
             lspPath = settings.lspPath
             styLuaPath = settings.styLuaPath
-            runStyLuaOnSave = settings.runStyLuaOnSave
+            runStyLua = settings.runStyLua
             robloxSecurityLevel = settings.robloxSecurityLevel.name
             customDefinitionsPaths = settings.customDefinitionsPaths
             robloxCliPath = settings.robloxCliPath

@@ -24,26 +24,36 @@ internal class ProjectSettingsState(private val project: Project) :
     val robloxCliPath: String
         get() = internalState.robloxCliPath
 
-    val runStyLuaOnSave: Boolean
-        get() = internalState.runStyLuaOnSave
+    val runStyluaOnSave
+        get() = runStyLua == RunStyluaOption.RunOnSave || runStyLua == RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
 
-    val robloxSecurityLevel: RobloxSecurityLevel
+    val disableBuiltinFormatter
+        get() = runStyLua == RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
+
+    val runStyLuaInsteadOfFormatter
+        get() = runStyLua == RunStyluaOption.RunInsteadOfFormatter
+
+    val runStyLua
+        get() = if (internalState.styLuaPath.isNotBlank()) {
+            internalState.runStyLua
+        } else {
+            RunStyluaOption.Disabled
+        }
+
+    val robloxSecurityLevel
         get() = internalState.robloxSecurityLevel
 
-    val customDefinitionsPaths: List<String>
+    val customDefinitionsPaths
         get() = internalState.customDefinitionsPaths
 
-    val generateSourceMapsFromRbxp: Boolean
+    val generateSourceMapsFromRbxp
         get() = internalState.generateSourceMapsFromRbxp
 
-    val rbxpForSourcemapPath: String
+    val rbxpForSourcemapPath
         get() = internalState.rbxpForSourcemapPath
 
-    val shouldGenerateSourceMapsFromRbxp: Boolean
+    val shouldGenerateSourceMapsFromRbxp
         get() = internalState.shouldGenerateSourceMapsFromRbxp
-    val shouldRunStyLuaOnSave: Boolean
-        get() = internalState.shouldRunStyLuaOnSave
-
 
 
     override fun getState(): State {
@@ -66,7 +76,7 @@ internal class ProjectSettingsState(private val project: Project) :
         var lspPath: String = "",
         var styLuaPath: String = "",
         var robloxCliPath: String = "",
-        var runStyLuaOnSave: Boolean = false,
+        var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
         var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
         var customDefinitionsPaths: List<String> = listOf(),
         var generateSourceMapsFromRbxp: Boolean = true,
@@ -74,8 +84,7 @@ internal class ProjectSettingsState(private val project: Project) :
     ) {
         val shouldGenerateSourceMapsFromRbxp: Boolean
             get() = rbxpForSourcemapPath.isNotBlank() && generateSourceMapsFromRbxp && robloxCliPath.isNotBlank()
-        val shouldRunStyLuaOnSave: Boolean
-            get() = runStyLuaOnSave && styLuaPath.isNotBlank()
+
     }
 
     companion object {
@@ -110,3 +119,10 @@ enum class RobloxSecurityLevel {
 }
 
 val defaultRobloxSecurityLevel = RobloxSecurityLevel.None
+
+sealed class RunStyluaOption {
+    data object Disabled : RunStyluaOption()
+    data object RunOnSave : RunStyluaOption()
+    data object RunOnSaveAndDisableBuiltinFormatter : RunStyluaOption()
+    data object RunInsteadOfFormatter : RunStyluaOption()
+}

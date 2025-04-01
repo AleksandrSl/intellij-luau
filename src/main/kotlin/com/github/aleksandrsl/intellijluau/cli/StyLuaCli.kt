@@ -2,6 +2,7 @@ package com.github.aleksandrsl.intellijluau.cli
 
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
+import com.intellij.execution.process.OSProcessHandler
 import com.intellij.openapi.application.readAction
 import com.intellij.openapi.application.writeAction
 import com.intellij.openapi.command.executeCommand
@@ -66,6 +67,22 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         } catch (e: Exception) {
             return FormatResult.StyluaError(e.message ?: "Unknown error")
         }
+    }
+
+    fun createOsProcessHandler(project: Project, file: VirtualFile): OSProcessHandler {
+        val charset = Charsets.UTF_8;
+        val commandLine = GeneralCommandLine().apply {
+            withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+            // Seems that it's null by default
+            withWorkDirectory(project.basePath)
+            withCharset(charset)
+            withExePath(styLuaExecutablePath.pathString)
+            addParameter("--stdin-filepath")
+            addParameter(file.path)
+            addParameter("-")
+        }
+
+        return OSProcessHandler(commandLine)
     }
 
     // Move this outside of the cli, because it's not cli related?

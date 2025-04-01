@@ -19,7 +19,7 @@ private val LOG = logger<LuauExternalFormatOnSaveAction>()
 
 class LuauExternalFormatOnSaveAction : ActionsOnSaveFileDocumentManagerListener.DocumentUpdatingActionOnSave() {
     override fun isEnabledForProject(project: Project): Boolean {
-        return ProjectSettingsState.getInstance(project).shouldRunStyLuaOnSave
+        return ProjectSettingsState.getInstance(project).runStyluaOnSave
     }
 
     override val presentableName: String

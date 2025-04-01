@@ -8,6 +8,7 @@ import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.toNioPathOrNull
@@ -19,11 +20,11 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
 import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.bind
 import com.intellij.ui.dsl.builder.panel
 import kotlinx.coroutines.launch
 import javax.swing.JComboBox
 import javax.swing.JComponent
-import javax.swing.JPanel
 import kotlin.io.path.exists
 
 private val LOG = logger<ProjectSettingsComponent>()
@@ -58,11 +59,7 @@ class ProjectSettingsComponent(
             this.styLuaPathComponent.text = newText ?: ""
         }
 
-    var runStyLuaOnSave: Boolean?
-        get() = this.styluaRunOnSaveComponent.isSelected
-        set(newValue) {
-            this.styluaRunOnSaveComponent.isSelected = newValue ?: false
-        }
+    var runStyLua: RunStyluaOption = RunStyluaOption.Disabled
 
     var generateSourceMaps: Boolean?
         get() = this.generateSourceMapsCheckbox.isSelected
@@ -84,7 +81,8 @@ class ProjectSettingsComponent(
 
     private var lspVersion: String? = null
     private var styLuaVersion: String? = null
-    val panel: JPanel
+    val panel: DialogPanel
+
 
     private val lspPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
@@ -157,7 +155,6 @@ class ProjectSettingsComponent(
         })
     }
     private val styluaVersionLabelComponent = JBLabel()
-    private val styluaRunOnSaveComponent = JBCheckBox("Run StyLua on save")
     private lateinit var robloxSecurityLevelComponent: JComboBox<String>
     private val customDefinitionsToolbar = CustomDefinitionsToolbar()
 
@@ -193,9 +190,20 @@ class ProjectSettingsComponent(
                 row {
                     cell(styluaVersionLabelComponent).align(AlignX.FILL).resizableColumn()
                 }
-                row {
-                    cell(styluaRunOnSaveComponent)
-                }
+                buttonsGroup("Run:") {
+                    row {
+                        radioButton("Disabled", RunStyluaOption.Disabled)
+                    }
+                    row {
+                        radioButton("On save", RunStyluaOption.RunOnSave)
+                    }
+                    row {
+                        radioButton("On save and disable builtin formatter", RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter)
+                    }
+                    row {
+                        radioButton("Instead of builtin formatter", RunStyluaOption.RunInsteadOfFormatter)
+                    }
+                }.bind(::runStyLua)
             }
             group("Roblox CLI") {
                 row("Path to Roblox CLI:") {
@@ -231,7 +239,6 @@ class ProjectSettingsComponent(
 
     val preferredFocusedComponent: JComponent = this.lspPathComponent
 }
-
 
 class CustomDefinitionsToolbar {
 
