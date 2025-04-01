@@ -39,7 +39,7 @@ private class LuauExternalFormatOnSaveActionInfo(actionOnSaveContext: ActionOnSa
 
     override fun isActionOnSaveEnabledAccordingToUiState(configurable: ProjectSettingsConfigurable): Boolean =
         // TODO (AleksandrSl 01/04/2025): Fix the implementation leak, i don't want this logic anywhere except for the state
-        configurable.component?.runStyLua?.let { it is RunStyluaOption.RunOnSave || it is RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter }
+        configurable.component?.runStyLua?.let { it == RunStyluaOption.RunOnSave || it == RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter }
             ?: false
 
     override fun setActionOnSaveEnabled(configurable: ProjectSettingsConfigurable, enabled: Boolean) {
