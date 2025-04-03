@@ -7,10 +7,12 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.logger
+import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectFileIndex
+import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Disposer
 import com.intellij.openapi.vfs.AsyncFileListener
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.*
 import com.intellij.util.messages.MessageBusConnection
@@ -30,10 +32,12 @@ class FileWatcherService(private val project: Project, private val coroutineScop
     private var messageBusConnection: MessageBusConnection? = null
     private var fileListenerDisposable: Disposable? = null
     private lateinit var processQueue: Channel<Unit>
+    private val projectDir: VirtualFile?
 
     init {
         LOG.warn("Initializing file watcher for project ${project.name}")
-        messageBusConnection = project.messageBus.connect()
+        projectDir = project.guessProjectDir()
+        messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
             ProjectSettingsState.TOPIC,
             object : ProjectSettingsState.SettingsChangeListener {
@@ -49,31 +53,34 @@ class FileWatcherService(private val project: Project, private val coroutineScop
     }
 
     fun start() {
+        if (projectDir == null) {
+            LuauNotifications.pluginNotifications().createNotification(
+                "Cannot guess the project root. You're unlucky",
+                NotificationType.ERROR
+            )
+                .notify(project)
+            return
+        }
         if (isActive) return
         processQueue = Channel(Channel.CONFLATED)
         fileListenerDisposable =
             Disposer.newDisposable(LuauPluginDisposable.getInstance(project), "FileListenerDisposable")
         // Regenerate sourcemap on the first start
-        queueSourcempaRegeneration()
+        queueSourcemapRegeneration()
 
         LOG.warn("Starting file watcher for project ${project.name}")
 
         VirtualFileManager.getInstance().addAsyncFileListener(
             object : AsyncFileListener {
                 override fun prepareChange(events: List<VFileEvent>): AsyncFileListener.ChangeApplier? {
-                    val index = ProjectFileIndex.getInstance(project)
                     val luaFileEvents =
                         events
-                            // Async file listener doesn't know about CreateFile events, so the only way I see is to check for the previous length.
-                            // I don't care much if I run it too much, but it's just not effective and we have a lot of modifications.
-                            // Maybe BulkListener should be used for these tasks, but they say this one is better since it's async,
-                            // but I believe you perform work in the background anyway.
-                            // There is a FIleWatcher extension point, but it's undocummented, makes plugin non-dynamic and I don't see it used much
-                            .filter { it is VFileMoveEvent || it is VFileCopyEvent || it is VFileCreateEvent || it is VFileDeleteEvent || it is VFileContentChangeEvent && it.oldLength == 0L }
+                            .filter { it is VFileMoveEvent || it is VFileCopyEvent || it is VFileCreateEvent || it is VFileDeleteEvent || (it is VFilePropertyChangeEvent && it.propertyName == VirtualFile.PROP_NAME) }
                             .filter {
-                                it.file?.also { file ->
-                                    LOG.warn("File ${file.name} event: ${file.fileType} and ${index.isInContent(file)}")
-                                }?.let { file -> file.fileType == LuauFileType && index.isInContent(file) } ?: false
+                                // Should be fine to feed the whole path into getFileTypeByFileName,
+                                // it searches for the last extension inside
+                                FileTypeRegistry.getInstance()
+                                    .getFileTypeByFileName(it.path) == LuauFileType && it.path.startsWith(projectDir!!.path)
                             }
 
                     if (luaFileEvents.isEmpty()) return null
@@ -81,7 +88,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
                     return object : AsyncFileListener.ChangeApplier {
                         override fun afterVfsChange() {
                             LOG.warn("Processing file events: ${luaFileEvents.joinToString(",")}")
-                            queueSourcempaRegeneration()
+                            queueSourcemapRegeneration()
                         }
                     }
                 }
@@ -118,7 +125,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
         isActive = false
     }
 
-    private fun queueSourcempaRegeneration() {
+    private fun queueSourcemapRegeneration() {
         processQueue.trySend(Unit)
     }
 
