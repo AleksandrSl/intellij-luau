@@ -10,7 +10,6 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
 import com.github.aleksandrsl.intellijluau.psi.*;
-import com.intellij.navigation.ItemPresentation;
 
 public class LuauBindingImpl extends LuauNamedElementImpl implements LuauBinding {
 
@@ -38,12 +37,6 @@ public class LuauBindingImpl extends LuauNamedElementImpl implements LuauBinding
   @NotNull
   public PsiElement getId() {
     return findNotNullChildByType(ID);
-  }
-
-  @Override
-  @NotNull
-  public ItemPresentation getPresentation() {
-    return LuauPsiImplUtilKt.getPresentation(this);
   }
 
 }

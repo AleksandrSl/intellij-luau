@@ -195,10 +195,6 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
-  public void visitLiteralList(@NotNull LuauLiteralList o) {
-    visitPsiElement(o);
-  }
-
   public void visitLiteralTable(@NotNull LuauLiteralTable o) {
     visitPsiElement(o);
   }

@@ -28,21 +28,9 @@ public class LuauParametersImpl extends ASTWrapperPsiElement implements LuauPara
   }
 
   @Override
-  @Nullable
-  public LuauLiteralList getLiteralList() {
-    return findChildByClass(LuauLiteralList.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauLiteralTable getLiteralTable() {
-    return findChildByClass(LuauLiteralTable.class);
-  }
-
-  @Override
-  @Nullable
-  public PsiElement getString() {
-    return findChildByType(STRING);
+  @NotNull
+  public List<LuauLiteralTable> getLiteralTableList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauLiteralTable.class);
   }
 
 }
