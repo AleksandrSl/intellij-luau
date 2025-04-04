@@ -58,6 +58,8 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
 
         val BAD_CHARACTER: TextAttributesKey =
             createTextAttributesKey("LUAU_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER)
+        val ATTRIBUTE: TextAttributesKey =
+            createTextAttributesKey("LUAU_ATTRIBUTE", DefaultLanguageHighlighterColors.METADATA)
         private val BAD_CHAR_KEYS = arrayOf(BAD_CHARACTER)
         private val OPERATOR_KEYS = arrayOf(OPERATOR)
         private val KEYWORD_KEYS = arrayOf(KEYWORD)

@@ -1,7 +1,6 @@
 package com.github.aleksandrsl.intellijluau.highlight
 
 import com.github.aleksandrsl.intellijluau.LuauIcons
-import com.github.aleksandrsl.intellijluau.psi.LuauFile
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
@@ -64,7 +63,8 @@ class LuauColorSettingsPage : ColorSettingsPage {
             AttributesDescriptor("String", LuauSyntaxHighlighter.STRING),
             AttributesDescriptor("Comment", LuauSyntaxHighlighter.COMMENT),
             AttributesDescriptor("Operator", LuauSyntaxHighlighter.OPERATOR),
-            AttributesDescriptor("Bad value", LuauSyntaxHighlighter.BAD_CHARACTER)
+            AttributesDescriptor("Bad value", LuauSyntaxHighlighter.BAD_CHARACTER),
+            AttributesDescriptor("Attribute", LuauSyntaxHighlighter.ATTRIBUTE)
         )
     }
 }

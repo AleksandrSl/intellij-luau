@@ -105,6 +105,11 @@
   elementType(".*_op")=operator
   extends(".*_op")=operator
 }
+/**
+ * Important bits of info:
+ *  - https://github.com/JetBrains/Grammar-Kit/issues/271 error recovery is done even if there is no error.
+ */
+
 // Why do I use postfix and not suffix. It's prevalent in many grammars, not other reasons.
 
 luau_file ::= shebang_line? root_block
@@ -187,17 +192,32 @@ typeof_soft_keyword ::= 'typeof'
 /* Attributes */
 // See https://github.com/luau-lang/rfcs/blob/master/docs/syntax-attribute-functions-deprecated.md for the example of parametrized attributes
 // They are a bit in the future, but no one will die if I support the syntax now
-literal_table ::= '{' literal_field_list? '}'
+literal_table ::= '{' literal_field_list? '}' { pin = 1 }
 private literal_field_list ::= <<list_with_trailing_comma literal_field>>
 literal_field ::= (ID '=')? literal
 
-private literal ::= NUMBER | STRING | 'nil' | 'true' | 'false' | literal_table
-literal_list ::= <<list literal>>
+private literal ::= NUMBER | STRING | 'nil' | 'true' | 'false' | literal_table { name = "literal" }
 
-parameters ::= '(' literal_list? ')' | literal_table | STRING
-parametrized_attribute ::= ID parameters?
-attribute ::= '@' ID | '@' '[' <<list parametrized_attribute>> ']'
+// I tried a lot of variants of error recovery here, and I don't like neither of them,
+// but the current one at least recovers what I want giving the less stupid error.
+// Though it's stupid anyway, but I don't want to spend time here now.
+// The balance is between the least complex recovery rule, so it recovers a good deal of incorrect code and doesn't just stop at the next token
+// and the least amount errors at the same, it can just rollback the whole least and find error in a weird place,
+// because it started parsing from the ID in a table for example.
+// NB: If you pin on the ',' it will show no error, though there should be one
+// NB2: If you pin on the !')' | &')' then the whole last item goes into waste even if it's correct. Same if you pin on pin = 2
+private parenthesised_parameter_item ::= literal (',' !')' | &')') { pin = 1 }
+private parenthesised_parameter_with_recovery ::= parenthesised_parameter_item* { recoverWhile = parenthesised_parameter_recovery }
+private parenthesised_parameter_recovery ::= !( ')' | ']' | statement_first)
+private parenthesised_parameters ::= '(' parenthesised_parameter_with_recovery ')' { pin = 1 }
+
+parameters ::= parenthesised_parameters | literal_table | STRING
+parametrized_attribute ::= ID parameters? (',' !']' | &']') { pin = 1; recoverWhile = parametrized_attribute_recover }
+private parametrized_attribute_recover ::= !(']' | statement_first)
+attribute ::= '@' (ID | '[' parametrized_attribute* ']') { pin = 1; recoverWhile = attribute_recover }
 attributes ::= attribute+
+private attribute_recover ::= !(statement_first | exp_first )
+
 /* Attributes End */
 
 local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }

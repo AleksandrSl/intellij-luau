@@ -7,13 +7,7 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauParameters extends PsiElement {
 
-  @Nullable
-  LuauLiteralList getLiteralList();
-
-  @Nullable
-  LuauLiteralTable getLiteralTable();
-
-  @Nullable
-  PsiElement getString();
+  @NotNull
+  List<LuauLiteralTable> getLiteralTableList();
 
 }

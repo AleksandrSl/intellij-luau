@@ -55,7 +55,6 @@ public interface LuauTypes {
   IElementType LIST_ARGS = new LuauElementType("LIST_ARGS");
   IElementType LITERAL_EXPR = new LuauElementType("LITERAL_EXPR");
   IElementType LITERAL_FIELD = new LuauElementType("LITERAL_FIELD");
-  IElementType LITERAL_LIST = new LuauElementType("LITERAL_LIST");
   IElementType LITERAL_TABLE = new LuauElementType("LITERAL_TABLE");
   IElementType LOCAL_DEF_STATEMENT = new LuauElementType("LOCAL_DEF_STATEMENT");
   IElementType LOCAL_FUNC_DEF_STATEMENT = new LuauElementType("LOCAL_FUNC_DEF_STATEMENT");
@@ -320,9 +319,6 @@ public interface LuauTypes {
       }
       else if (type == LITERAL_FIELD) {
         return new LuauLiteralFieldImpl(node);
-      }
-      else if (type == LITERAL_LIST) {
-        return new LuauLiteralListImpl(node);
       }
       else if (type == LITERAL_TABLE) {
         return new LuauLiteralTableImpl(node);
