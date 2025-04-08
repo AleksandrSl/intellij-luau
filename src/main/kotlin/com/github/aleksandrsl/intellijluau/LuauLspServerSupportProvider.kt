@@ -21,7 +21,9 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
     override fun fileOpened(
         project: Project, file: VirtualFile, serverStarter: LspServerSupportProvider.LspServerStarter
     ) {
-        if (file.fileType == LuauFileType) {
+        // fileType may be slow, but it's used in other lsp implementations, so should be fine.
+        // It's ok to check the settings here, ts does that and prisma plugin PrismaLspServerActivationRule
+        if (file.fileType == LuauFileType && ProjectSettingsState.getInstance(project).isLspConfiguredAndEnabled) {
             serverStarter.ensureServerStarted(LuauLspServerDescriptor(project))
         }
     }

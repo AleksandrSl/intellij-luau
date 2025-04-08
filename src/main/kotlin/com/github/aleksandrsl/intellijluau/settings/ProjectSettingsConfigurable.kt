@@ -23,6 +23,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             styLuaPath = settings.styLuaPath
 //            I have a feeling that this is not applied
             runStyLua = settings.runStyLua
+            isLspEnabled = settings.isLspEnabled
             robloxSecurityLevel = settings.robloxSecurityLevel.name
             customDefinitionsPaths = settings.customDefinitionsPaths
             robloxCliPath = settings.robloxCliPath
@@ -34,13 +35,20 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     }
 
     override fun isModified(): Boolean {
-        return settings.lspPath != _component?.lspPath || _component?.panel?.isModified()?: false || settings.runStyLua != _component?.runStyLua || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel || settings.customDefinitionsPaths != _component?.customDefinitionsPaths || settings.generateSourceMapsFromRbxp != _component?.generateSourceMaps || settings.rbxpForSourcemapPath != _component?.rbxpPath || settings.robloxCliPath != _component?.robloxCliPath
+        return settings.lspPath != _component?.lspPath
+                || _component?.panel?.isModified() ?: false
+                || settings.runStyLua != _component?.runStyLua
+                || settings.robloxSecurityLevel.name != _component?.robloxSecurityLevel
+                || settings.customDefinitionsPaths != _component?.customDefinitionsPaths
+                || settings.generateSourceMapsFromRbxp != _component?.generateSourceMaps
+                || settings.rbxpForSourcemapPath != _component?.rbxpPath
+                || settings.robloxCliPath != _component?.robloxCliPath
+                || settings.isLspEnabled != _component?.isLspEnabled
     }
 
     override fun getPreferredFocusedComponent(): JComponent? = _component?.preferredFocusedComponent
 
     override fun apply() {
-        restartLsp()
         _component?.panel?.apply()
         settings.update {
             lspPath = _component?.lspPath ?: ""
@@ -49,16 +57,20 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             customDefinitionsPaths = _component?.customDefinitionsPaths ?: listOf()
             styLuaPath = _component?.styLuaPath ?: ""
             runStyLua = _component?.runStyLua ?: RunStyluaOption.Disabled
+            isLspEnabled = _component?.isLspEnabled ?: true
             robloxCliPath = _component?.robloxCliPath ?: ""
-            generateSourceMapsFromRbxp = _component?.generateSourceMaps ?: true
+            generateSourceMapsFromRbxp = _component?.generateSourceMaps ?: false
             rbxpForSourcemapPath = _component?.rbxpPath ?: ""
         }
+        // Is it possible to setup a message bus listener in lspProvider and move this?
+        restartLsp()
     }
 
     override fun reset() {
         _component?.panel?.reset()
         _component?.run {
             lspPath = settings.lspPath
+            isLspEnabled = settings.isLspEnabled
             styLuaPath = settings.styLuaPath
             runStyLua = settings.runStyLua
             robloxSecurityLevel = settings.robloxSecurityLevel.name
@@ -78,11 +90,15 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     }
 
     private fun restartLsp() {
-        if (settings.lspPath != _component?.lspPath || settings.robloxSecurityLevel != _component?.robloxSecurityLevel?.let {
+        if (settings.lspPath != _component?.lspPath
+            || settings.robloxSecurityLevel != _component?.robloxSecurityLevel?.let {
                 RobloxSecurityLevel.valueOf(
                     it
                 )
-            } || settings.customDefinitionsPaths != _component?.customDefinitionsPaths) {
+            }
+            || settings.customDefinitionsPaths != _component?.customDefinitionsPaths
+            || settings.isLspEnabled != _component?.isLspEnabled
+        ) {
             restartLspServerAsync(project)
         }
     }
