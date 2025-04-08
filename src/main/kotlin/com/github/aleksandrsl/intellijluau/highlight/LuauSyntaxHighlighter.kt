@@ -60,6 +60,13 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
             createTextAttributesKey("LUAU_BAD_CHARACTER", HighlighterColors.BAD_CHARACTER)
         val ATTRIBUTE: TextAttributesKey =
             createTextAttributesKey("LUAU_ATTRIBUTE", DefaultLanguageHighlighterColors.METADATA)
+        val TYPE: TextAttributesKey =
+            createTextAttributesKey("LUAU_TYPE", DefaultLanguageHighlighterColors.PARAMETER)
+        // TODO (AleksandrSl 06/04/2025): Can add primitives later, but now it's just extra work
+        val TYPE_PARAMETER: TextAttributesKey =
+            createTextAttributesKey("LUAU_TYPE_PARAMETER", TYPE)
+        val STDLIB: TextAttributesKey =
+            createTextAttributesKey("LUAU_STDLIB", DefaultLanguageHighlighterColors.IDENTIFIER)
         private val BAD_CHAR_KEYS = arrayOf(BAD_CHARACTER)
         private val OPERATOR_KEYS = arrayOf(OPERATOR)
         private val KEYWORD_KEYS = arrayOf(KEYWORD)
