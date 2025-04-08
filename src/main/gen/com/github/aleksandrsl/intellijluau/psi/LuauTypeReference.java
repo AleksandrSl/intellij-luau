@@ -8,6 +8,12 @@ import com.intellij.psi.PsiElement;
 public interface LuauTypeReference extends PsiElement {
 
   @Nullable
+  LuauSimpleReference getSimpleReference();
+
+  @NotNull
+  LuauSimpleTypeReference getSimpleTypeReference();
+
+  @Nullable
   LuauTypeParams getTypeParams();
 
 }

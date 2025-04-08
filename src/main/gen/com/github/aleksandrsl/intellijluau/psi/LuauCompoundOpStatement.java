@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauCompoundOpStatement extends PsiElement {
+public interface LuauCompoundOpStatement extends LuauStatement {
 
   @Nullable
   LuauExpression getExpression();

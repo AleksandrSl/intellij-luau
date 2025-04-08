@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauClassicForStatement extends PsiElement {
+public interface LuauClassicForStatement extends LuauStatement {
 
   @NotNull
   LuauBinding getBinding();

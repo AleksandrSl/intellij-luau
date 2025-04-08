@@ -29,6 +29,18 @@ public class LuauTypeReferenceImpl extends ASTWrapperPsiElement implements LuauT
 
   @Override
   @Nullable
+  public LuauSimpleReference getSimpleReference() {
+    return findChildByClass(LuauSimpleReference.class);
+  }
+
+  @Override
+  @NotNull
+  public LuauSimpleTypeReference getSimpleTypeReference() {
+    return findNotNullChildByClass(LuauSimpleTypeReference.class);
+  }
+
+  @Override
+  @Nullable
   public LuauTypeParams getTypeParams() {
     return findChildByClass(LuauTypeParams.class);
   }

@@ -29,6 +29,12 @@ public class LuauGenericTypeListWithDefaultsImpl extends ASTWrapperPsiElement im
 
   @Override
   @NotNull
+  public List<LuauGenericTypeDeclaration> getGenericTypeDeclarationList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauGenericTypeDeclaration.class);
+  }
+
+  @Override
+  @NotNull
   public List<LuauGenericTypePackParameter> getGenericTypePackParameterList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauGenericTypePackParameter.class);
   }
@@ -41,8 +47,8 @@ public class LuauGenericTypeListWithDefaultsImpl extends ASTWrapperPsiElement im
 
   @Override
   @NotNull
-  public List<LuauType> getTypeList() {
-    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauType.class);
+  public List<LuauGenericTypeWithDefaultDeclaration> getGenericTypeWithDefaultDeclarationList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauGenericTypeWithDefaultDeclaration.class);
   }
 
 }

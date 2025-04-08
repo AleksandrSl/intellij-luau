@@ -84,6 +84,12 @@
                       implementation="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatOnSaveAction"
                       order="after FormatOnSaveAction"/>
         <formattingService implementation="com.github.aleksandrsl.intellijluau.formatter.StyluaFormatterService" />
+        <additionalTextAttributes
+                scheme="Default"
+                file="colorSchemes/luauDefault.xml"/>
+        <additionalTextAttributes
+                scheme="Darcula"
+                file="colorSchemes/luauDarcula.xml"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"

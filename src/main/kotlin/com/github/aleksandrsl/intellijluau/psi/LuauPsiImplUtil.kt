@@ -7,10 +7,30 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
 import com.intellij.psi.PsiReferenceService
 import com.intellij.psi.impl.source.resolve.reference.ReferenceProvidersRegistry
+import com.intellij.psi.util.PsiTreeUtil
+
+fun getReference(element: LuauSimpleTypeReference): PsiReference {
+    return LuauInternalTypeReference(element)
+}
 
 fun getReferences(element: PsiElement): Array<PsiReference> {
     return ReferenceProvidersRegistry.getReferencesFromProviders(element, PsiReferenceService.Hints.NO_HINTS)
 }
+
+fun getDeclaredGenerics(element: LuauTypeDeclarationStatement): Collection<LuauNamedElement> = PsiTreeUtil.findChildrenOfType(
+    element.genericTypeListWithDefaults,
+    LuauNamedElement::class.java
+)
+
+fun getDeclaredGenerics(element: LuauFuncBody): Collection<LuauNamedElement> = PsiTreeUtil.findChildrenOfType(
+    element.funcTypeParams,
+    LuauNamedElement::class.java
+)
+
+fun getDeclaredGenerics(element: LuauFunctionType): Collection<LuauNamedElement> = PsiTreeUtil.findChildrenOfType(
+    element.funcTypeParams,
+    LuauNamedElement::class.java
+)
 
 fun getPresentation(element: LuauFuncDefStatement): ItemPresentation {
     return PresentationData().apply {

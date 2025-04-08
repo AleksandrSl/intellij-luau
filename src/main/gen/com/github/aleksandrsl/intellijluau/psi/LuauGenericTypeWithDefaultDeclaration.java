@@ -5,12 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauLocalDefStatement extends LuauStatement {
+public interface LuauGenericTypeWithDefaultDeclaration extends LuauNamedElement {
 
-  @Nullable
-  LuauBindingList getBindingList();
+  @NotNull
+  LuauType getType();
 
-  @Nullable
-  LuauExpList getExpList();
+  @NotNull
+  PsiElement getId();
 
 }
