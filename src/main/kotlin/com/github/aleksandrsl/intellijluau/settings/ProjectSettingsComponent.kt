@@ -60,6 +60,7 @@ class ProjectSettingsComponent(
         }
 
     var runStyLua: RunStyluaOption = RunStyluaOption.Disabled
+    var isLspEnabled: Boolean = true
 
     var generateSourceMaps: Boolean?
         get() = this.generateSourceMapsCheckbox.isSelected
@@ -182,6 +183,14 @@ class ProjectSettingsComponent(
                         cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL)
                     }
                 }
+                buttonsGroup {
+                    row {
+                        radioButton("Enabled", true)
+                    }
+                    row {
+                        radioButton("Disabled", false)
+                    }
+                }.bind(::isLspEnabled)
             }
             group("StyLua") {
                 row("Path to StyLua:") {

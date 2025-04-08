@@ -55,6 +55,12 @@ internal class ProjectSettingsState(private val project: Project) :
     val shouldGenerateSourceMapsFromRbxp
         get() = internalState.shouldGenerateSourceMapsFromRbxp
 
+    val isLspEnabled
+        get() = internalState.isLspEnabled
+
+    val isLspConfiguredAndEnabled
+        get() = internalState.isLspConfiguredAndEnabled
+
 
     override fun getState(): State {
         return internalState
@@ -79,12 +85,14 @@ internal class ProjectSettingsState(private val project: Project) :
         var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
         var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
         var customDefinitionsPaths: List<String> = listOf(),
-        var generateSourceMapsFromRbxp: Boolean = true,
-        var rbxpForSourcemapPath: String = ""
+        var generateSourceMapsFromRbxp: Boolean = false,
+        var rbxpForSourcemapPath: String = "",
+        var isLspEnabled: Boolean = true
     ) {
         val shouldGenerateSourceMapsFromRbxp: Boolean
             get() = rbxpForSourcemapPath.isNotBlank() && generateSourceMapsFromRbxp && robloxCliPath.isNotBlank()
-
+        val isLspConfiguredAndEnabled: Boolean
+            get() = lspPath.isNotBlank() && isLspEnabled
     }
 
     companion object {
