@@ -39,11 +39,14 @@ public interface LuauTypes {
   IElementType FUNC_BODY = new LuauElementType("FUNC_BODY");
   IElementType FUNC_CALL = new LuauElementType("FUNC_CALL");
   IElementType FUNC_DEF_STATEMENT = new LuauElementType("FUNC_DEF_STATEMENT");
+  IElementType FUNC_TYPE_PARAMS = new LuauElementType("FUNC_TYPE_PARAMS");
+  IElementType GENERIC_TYPE_DECLARATION = new LuauElementType("GENERIC_TYPE_DECLARATION");
   IElementType GENERIC_TYPE_LIST = new LuauElementType("GENERIC_TYPE_LIST");
   IElementType GENERIC_TYPE_LIST_WITH_DEFAULTS = new LuauElementType("GENERIC_TYPE_LIST_WITH_DEFAULTS");
   IElementType GENERIC_TYPE_PACK = new LuauElementType("GENERIC_TYPE_PACK");
   IElementType GENERIC_TYPE_PACK_PARAMETER = new LuauElementType("GENERIC_TYPE_PACK_PARAMETER");
   IElementType GENERIC_TYPE_PACK_PARAMETER_WITH_DEFAULT = new LuauElementType("GENERIC_TYPE_PACK_PARAMETER_WITH_DEFAULT");
+  IElementType GENERIC_TYPE_WITH_DEFAULT_DECLARATION = new LuauElementType("GENERIC_TYPE_WITH_DEFAULT_DECLARATION");
   IElementType IFELSE_EXPR = new LuauElementType("IFELSE_EXPR");
   IElementType IF_STATEMENT = new LuauElementType("IF_STATEMENT");
   IElementType INDEXED_FIELD = new LuauElementType("INDEXED_FIELD");
@@ -79,6 +82,7 @@ public interface LuauTypes {
   IElementType ROOT_BLOCK = new LuauElementType("ROOT_BLOCK");
   IElementType SHEBANG_LINE = new LuauElementType("SHEBANG_LINE");
   IElementType SIMPLE_REFERENCE = new LuauElementType("SIMPLE_REFERENCE");
+  IElementType SIMPLE_TYPE_REFERENCE = new LuauElementType("SIMPLE_TYPE_REFERENCE");
   IElementType SINGLETON_TYPE = new LuauElementType("SINGLETON_TYPE");
   IElementType SINGLE_ARG = new LuauElementType("SINGLE_ARG");
   IElementType STRING_KEYED_FIELD = new LuauElementType("STRING_KEYED_FIELD");
@@ -95,7 +99,6 @@ public interface LuauTypes {
   IElementType TYPE_KEYED_FIELD = new LuauElementType("TYPE_KEYED_FIELD");
   IElementType TYPE_LIST = new LuauElementType("TYPE_LIST");
   IElementType TYPE_PACK = new LuauElementType("TYPE_PACK");
-  IElementType TYPE_PARAMETERS_LIST = new LuauElementType("TYPE_PARAMETERS_LIST");
   IElementType TYPE_PARAMS = new LuauElementType("TYPE_PARAMS");
   IElementType TYPE_REFERENCE = new LuauElementType("TYPE_REFERENCE");
   IElementType TYPE_SOFT_KEYWORD = new LuauElementType("TYPE_SOFT_KEYWORD");
@@ -272,6 +275,12 @@ public interface LuauTypes {
       else if (type == FUNC_DEF_STATEMENT) {
         return new LuauFuncDefStatementImpl(node);
       }
+      else if (type == FUNC_TYPE_PARAMS) {
+        return new LuauFuncTypeParamsImpl(node);
+      }
+      else if (type == GENERIC_TYPE_DECLARATION) {
+        return new LuauGenericTypeDeclarationImpl(node);
+      }
       else if (type == GENERIC_TYPE_LIST) {
         return new LuauGenericTypeListImpl(node);
       }
@@ -286,6 +295,9 @@ public interface LuauTypes {
       }
       else if (type == GENERIC_TYPE_PACK_PARAMETER_WITH_DEFAULT) {
         return new LuauGenericTypePackParameterWithDefaultImpl(node);
+      }
+      else if (type == GENERIC_TYPE_WITH_DEFAULT_DECLARATION) {
+        return new LuauGenericTypeWithDefaultDeclarationImpl(node);
       }
       else if (type == IFELSE_EXPR) {
         return new LuauIfelseExprImpl(node);
@@ -392,6 +404,9 @@ public interface LuauTypes {
       else if (type == SIMPLE_REFERENCE) {
         return new LuauSimpleReferenceImpl(node);
       }
+      else if (type == SIMPLE_TYPE_REFERENCE) {
+        return new LuauSimpleTypeReferenceImpl(node);
+      }
       else if (type == SINGLETON_TYPE) {
         return new LuauSingletonTypeImpl(node);
       }
@@ -439,9 +454,6 @@ public interface LuauTypes {
       }
       else if (type == TYPE_PACK) {
         return new LuauTypePackImpl(node);
-      }
-      else if (type == TYPE_PARAMETERS_LIST) {
-        return new LuauTypeParametersListImpl(node);
       }
       else if (type == TYPE_PARAMS) {
         return new LuauTypeParamsImpl(node);

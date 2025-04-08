@@ -1,0 +1,13 @@
+<?xml version='1.0'?>
+<list>
+    <option name="LUAU_TYPE">
+        <value>
+            <option name="FOREGROUND" value="507874"/>
+        </value>
+    </option>
+    <option name="LUAU_STDLIB">
+        <value>
+            <option name="FOREGROUND" value="CC542E"/>
+        </value>
+    </option>
+</list>

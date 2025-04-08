@@ -98,6 +98,10 @@
   // and expression with fast consume is a standard practice
   consumeTokenMethod("((?!.*_with_recover).*_recover)|.*_first|.*_expr|expression")="consumeTokenFast"
   extends(".*expr")=expression
+  // I added this because I wanted to stop resolving generics when I hit the statement,
+  // but then realized that they can be function scoped so I can't simply do that
+  // Let this exist for a while maybe I find another application.
+  implements(".*_statement")="com.github.aleksandrsl.intellijluau.psi.LuauStatement"
   // TODO (AleksandrSl 24/03/2025): Check soft keywords in Haxe token sets, maybe I don't need an interface?
   // In rust plugin the remap tokens based on the context with a manual parsing rule. I don't know what are the benefits to my approach though.
   implements(".*soft_keyword") = "com.github.aleksandrsl.intellijluau.psi.LuauSoftKeyword"
@@ -182,8 +186,28 @@ private return_statement ::= 'return' exp_list? { pin = 1 }
 // Since many things can be nested inside the cycle. Though functions for example cannot have continue
 // even if they are inside the while. I don't think it's worth trying to check this on parser level.
 last_statement ::= return_statement | 'break' | continue_soft_keyword
-// TODO (AleksandrSl 20/06/2024): How does pin work with the optional elements?
-type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type { pin = 2 }
+// How does pin work with the optional elements? It just pins true, since parse function for ? always returns true
+// TODO (AleksandrSl 04/04/2025): Contribute inspection to not pin optional attributes? But maybe people do this on purpose?
+// TODO (AleksandrSl 04/04/2025): This one is the NamedElement as well. They do a clever thing in dart, every identifier is wrapped into a component rule.
+//  So the can easily query the id the same way
+//  I wonder what the id for the method should be. Is it just method? or the parent matters as well.
+//  As far as I understand here
+//  referenceExpression ::= << nonStrictID >>
+//  {mixin="com.jetbrains.lang.dart.psi.impl.DartReferenceImpl" implements="com.jetbrains.lang.dart.psi.DartReference"}
+//  Every reference in the reference.
+
+
+// TODO (AleksandrSl 05/04/2025): Dart implements `this` rule. I can do the same for self
+//  thisExpression ::= 'this'
+//  {mixin="com.jetbrains.lang.dart.psi.impl.DartReferenceImpl" implements="com.jetbrains.lang.dart.psi.DartReference"}
+
+
+type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type {
+  pin = 2;
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements=["com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" "com.github.aleksandrsl.intellijluau.psi.LuauGenericDeclaration"]
+  methods=[getDeclaredGenerics]
+}
 export_soft_keyword ::= 'export'
 continue_soft_keyword ::= 'continue'
 type_soft_keyword ::= 'type'
@@ -220,6 +244,8 @@ private attribute_recover ::= !(statement_first | exp_first )
 
 /* Attributes End */
 
+// TODO (AleksandrSl 05/04/2025): Do I need to somehow propagate "locality" to the binding that create the variable?
+//  In lua the do declare this as a scope and declaration, but named element is onlt the ID itself
 local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }
 func_def_statement ::= attributes? 'function' ID func_body {
   pin = 2
@@ -243,18 +269,30 @@ local_func_def_statement ::= attributes? 'local' 'function' ID func_body {
   pin = 3
   methods=[getPresentation]
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
 }
-method_def_statement ::= attributes? 'function' method_name func_body { pin = 3; methods=[getPresentation] }
+
+method_def_statement ::= attributes? 'function' method_name func_body {
+  pin = 3;
+  methods=[getPresentation];
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+}
 
 // ('.' ID)* (':' ID | '.' ID) won't work since parser is greedy.
-method_name ::= ID (('.' ID)* ':' ID | ('.' ID)+)
-func_body ::= type_parameters_list? par_list (':' return_type)? block 'end' { pin = 2 }
+method_name ::= simple_reference ('.' simple_reference &('.' | ':'))* (':' ID | '.' ID)
+func_body ::= func_type_params? par_list (':' return_type)? block 'end' {
+  pin = 2;
+  implements=["com.github.aleksandrsl.intellijluau.psi.LuauGenericDeclaration"]
+  methods=[getDeclaredGenerics]
+}
 // binding_list is not used here on purpose to flatter the parameters into one list for better formatting and less PSI
 par_list ::= '(' (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)? ')'
 private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
 
 exp_list ::= <<list expression>> { name = "expression list" }
 
+// TODO (AleksandrSl 04/04/2025): Here we reference a type, so we should use the type with references mixin
 // Needed for assignments with local. You shouldn't be able to use `local a.b.c = 10`
 binding ::= ID (':' type)?  {
   // No idea why they use mixins or methods instead of extend, probably because they need more than one implementation
@@ -270,9 +308,12 @@ binding_list ::= <<list binding>>
 var_list ::= <<list lvalue>>
 lvalue ::= <<parseLvalue index_or_call_expr>>
 
+// TODO (AleksandrSl 05/04/2025): WHy do I chose references plural?
+// Interesting that in dart, at least, the reference itself implements psi reference. I don't know what is the benefit, less objects?
 simple_reference ::= ID { methods=[getReferences] }
 
 private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)*
+// TODO (AleksandrSl 05/04/2025): Array access can be a reference as well? I have a feeling that I saw it somewhere in another plugin
 // These are postfixes. not actual access and call, but since they are left and take over the index_or_call_expr above the names suit well
 left index_access ::= '[' expression ']' | '.' simple_reference { pin(".*") = 1 }
 // I can't pin method call because tables have : as well.
@@ -424,23 +465,30 @@ private field_sep ::= ',' | ';'
 
 // ----------------------- Type Rules -----------------------
 // TODO (AleksandrSl 29/03/2025): Check priorities here. type T6 = A<(string, ...() -> (string, string) | nil)> should it be variadic of union or function with a union result?
-private simple_type ::= 'nil'
-    | singleton_type
+private simple_type ::=
+    singleton_type
     | typeof_type
     | type_reference
     | function_type
     | parenthesised_type
     | table_type
 
+// TODO (AleksandrSl 06/04/2025): I started to question my references setup in general. Have to doublecheck it.
+//  Why did I went with ReferenceProvidersRegistry and can the ScopeProcessor help me.
+// To allow different resolutions. Is there a better way?
+simple_type_reference ::= ID { methods=[getReference] }
+
 // Types cannot be nested, at best they can be exported from a module so the first ID is module and the second is Type.
 // I wonder what if you required a module but then put it into another module. You can't use the nested version in types?
 // This is not exactly reference, because it can be a new type as well :think:
-type_reference ::= ID ('.' ID)? ('<' type_params? '>')?
+type_reference ::= (simple_type_reference !('.') | simple_reference '.' simple_type_reference) ('<' type_params? '>')?
 // I need to reorder them, or add a common type to avoid reparsing, which will be weird cause they are unrelated
 parenthesised_type ::= '(' type ')'
 //left upper function_type_suffix ::= '->' return_type
 typeof_type ::= typeof_soft_keyword '(' expression ')'
-singleton_type ::= STRING | 'true' | 'false'
+// I'm surprised that in TS they somehow made all the any/unknown keywords on the lexer level (at least they don't look like PSI tokens)
+// nil is not included into singleton in the upstream grammar but it's handy for me
+singleton_type ::= STRING | 'true' | 'false' | 'nil'
 generic_type_pack ::= ID '...'
 variadic_type_pack ::= '...' type { pin = 1 }
 type_pack ::= '(' type_list? ')'
@@ -489,19 +537,23 @@ private type_recover ::= !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first 
 private type_first ::= ID | '(' | '|' | '&' | 'nil' | STRING | 'true' | 'false' | typeof_soft_keyword | '<'
 
 // Yes it looks like generic_type_pack, but maybe it's needed for something in the original grammar? Let's keep it
-generic_type_pack_parameter ::= ID '...'
-generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack) { pin = 3 }
+generic_type_pack_parameter ::= ID '...' { extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
+generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack) { pin = 3; extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
 
-type_parameters_list ::= '<' generic_type_list '>' { pin = 1 }
+func_type_params ::= '<' generic_type_list '>' { pin = 1 }
 
-generic_type_list ::= (<<list (ID !'...')>> (',' | &'>'))? <<list generic_type_pack_parameter>>?
+generic_type_list ::= (<<list (generic_type_declaration !'...')>> (',' | &'>'))? <<list generic_type_pack_parameter>>?
+
+generic_type_declaration ::= ID { extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
+generic_type_with_default_declaration ::= ID '=' type { extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
 
 // Once the defaults stared we can't have anything other than default, plus generic type packs go after the normal types
 generic_type_list_with_defaults ::=
-    (<<list (ID !('=' | '...'))>> (',' | &'>'))?
-    (<<list (ID '=' type)>> (',' | &'>') (<<list generic_type_pack_parameter_with_default>> (',' | &'>'))?
+    (<<list (generic_type_declaration !('=' | '...'))>> (',' | &'>'))?
+    (<<list generic_type_with_default_declaration>> (',' | &'>') (<<list generic_type_pack_parameter_with_default>> (',' | &'>'))?
     | (<<list (generic_type_pack_parameter !'=')>> (',' | &'>'))? (<<list generic_type_pack_parameter_with_default>> (',' | &'>'))?)
 
+// This ID also looks like a name identifier creation, but it's not used anywhere, maybe only for the documentation, but I guess I can use a different interface for this
 // I could drop the first two branches, but then I need to make list optional and add a (',' | &'>') as in the generic_type_list_with_defaults. I don't think it's better so I left it as is.
 bound_type_list ::= variadic_type_pack | generic_type_pack | <<list ((ID ':')? type !'...')>> (',' (variadic_type_pack | generic_type_pack))? { recoverWhile = bound_type_list_recover }
 private bound_type_list_recover ::= !(')')
@@ -525,5 +577,9 @@ private table_type_field_recover ::= !('}' | ID | '[' | statement_first | 'end' 
 // I can't pin '(' because there is '(' type ')' type as well
 // Even better is the fact that I have ( type ) and ( type ) -> type which are parallel branches, so if we have them nested we will go all the way to the internal and then rollback and then again.
 // Rust has a similar problem but in their case content in the parenthesis is equivalent, see TupleOrParenType. In my case it's type and bound_type_list, which are not the same.
-function_type ::= type_parameters_list? <<isFunctionType>> '(' bound_type_list? ')' '->' return_type { pin = 3; }
+function_type ::= func_type_params? <<isFunctionType>> '(' bound_type_list? ')' '->' return_type {
+  pin = 3;
+  implements=["com.github.aleksandrsl.intellijluau.psi.LuauGenericDeclaration"]
+  methods=[getDeclaredGenerics]
+}
 

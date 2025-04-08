@@ -10,6 +10,7 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
+import java.util.Collection;
 
 public class LuauFuncBodyImpl extends ASTWrapperPsiElement implements LuauFuncBody {
 
@@ -34,6 +35,12 @@ public class LuauFuncBodyImpl extends ASTWrapperPsiElement implements LuauFuncBo
   }
 
   @Override
+  @Nullable
+  public LuauFuncTypeParams getFuncTypeParams() {
+    return findChildByClass(LuauFuncTypeParams.class);
+  }
+
+  @Override
   @NotNull
   public LuauParList getParList() {
     return findNotNullChildByClass(LuauParList.class);
@@ -46,9 +53,9 @@ public class LuauFuncBodyImpl extends ASTWrapperPsiElement implements LuauFuncBo
   }
 
   @Override
-  @Nullable
-  public LuauTypeParametersList getTypeParametersList() {
-    return findChildByClass(LuauTypeParametersList.class);
+  @NotNull
+  public Collection<LuauNamedElement> getDeclaredGenerics() {
+    return LuauPsiImplUtilKt.getDeclaredGenerics(this);
   }
 
 }

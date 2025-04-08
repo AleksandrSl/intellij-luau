@@ -4,8 +4,9 @@ package com.github.aleksandrsl.intellijluau.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import java.util.Collection;
 
-public interface LuauTypeDeclarationStatement extends PsiElement {
+public interface LuauTypeDeclarationStatement extends LuauNamedElement, LuauGenericDeclaration, LuauStatement {
 
   @Nullable
   LuauExportSoftKeyword getExportSoftKeyword();
@@ -21,5 +22,8 @@ public interface LuauTypeDeclarationStatement extends PsiElement {
 
   @Nullable
   PsiElement getId();
+
+  @NotNull
+  Collection<LuauNamedElement> getDeclaredGenerics();
 
 }

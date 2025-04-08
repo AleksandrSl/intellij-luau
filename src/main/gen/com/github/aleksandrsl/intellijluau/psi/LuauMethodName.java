@@ -7,4 +7,10 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauMethodName extends PsiElement {
 
+  @NotNull
+  List<LuauSimpleReference> getSimpleReferenceList();
+
+  @NotNull
+  PsiElement getId();
+
 }

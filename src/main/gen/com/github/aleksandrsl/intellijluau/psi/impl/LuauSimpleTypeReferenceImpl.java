@@ -10,16 +10,16 @@ import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
-import java.util.Collection;
+import com.intellij.psi.PsiReference;
 
-public class LuauFunctionTypeImpl extends ASTWrapperPsiElement implements LuauFunctionType {
+public class LuauSimpleTypeReferenceImpl extends ASTWrapperPsiElement implements LuauSimpleTypeReference {
 
-  public LuauFunctionTypeImpl(@NotNull ASTNode node) {
+  public LuauSimpleTypeReferenceImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitFunctionType(this);
+    visitor.visitSimpleTypeReference(this);
   }
 
   @Override
@@ -29,27 +29,15 @@ public class LuauFunctionTypeImpl extends ASTWrapperPsiElement implements LuauFu
   }
 
   @Override
-  @Nullable
-  public LuauBoundTypeList getBoundTypeList() {
-    return findChildByClass(LuauBoundTypeList.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauFuncTypeParams getFuncTypeParams() {
-    return findChildByClass(LuauFuncTypeParams.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauReturnType getReturnType() {
-    return findChildByClass(LuauReturnType.class);
+  @NotNull
+  public PsiElement getId() {
+    return findNotNullChildByType(ID);
   }
 
   @Override
   @NotNull
-  public Collection<LuauNamedElement> getDeclaredGenerics() {
-    return LuauPsiImplUtilKt.getDeclaredGenerics(this);
+  public PsiReference getReference() {
+    return LuauPsiImplUtilKt.getReference(this);
   }
 
 }

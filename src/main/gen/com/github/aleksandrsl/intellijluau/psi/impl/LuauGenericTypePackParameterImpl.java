@@ -8,10 +8,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
+import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauGenericTypePackParameterImpl extends ASTWrapperPsiElement implements LuauGenericTypePackParameter {
+public class LuauGenericTypePackParameterImpl extends LuauNamedElementImpl implements LuauGenericTypePackParameter {
 
   public LuauGenericTypePackParameterImpl(@NotNull ASTNode node) {
     super(node);

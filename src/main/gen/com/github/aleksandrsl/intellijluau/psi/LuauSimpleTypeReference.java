@@ -4,13 +4,14 @@ package com.github.aleksandrsl.intellijluau.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReference;
 
-public interface LuauLocalDefStatement extends LuauStatement {
+public interface LuauSimpleTypeReference extends PsiElement {
 
-  @Nullable
-  LuauBindingList getBindingList();
+  @NotNull
+  PsiElement getId();
 
-  @Nullable
-  LuauExpList getExpList();
+  @NotNull
+  PsiReference getReference();
 
 }

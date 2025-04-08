@@ -4,11 +4,15 @@ package com.github.aleksandrsl.intellijluau.psi;
 import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
+import java.util.Collection;
 
-public interface LuauFuncBody extends PsiElement {
+public interface LuauFuncBody extends LuauGenericDeclaration {
 
   @Nullable
   LuauBlock getBlock();
+
+  @Nullable
+  LuauFuncTypeParams getFuncTypeParams();
 
   @NotNull
   LuauParList getParList();
@@ -16,7 +20,7 @@ public interface LuauFuncBody extends PsiElement {
   @Nullable
   LuauReturnType getReturnType();
 
-  @Nullable
-  LuauTypeParametersList getTypeParametersList();
+  @NotNull
+  Collection<LuauNamedElement> getDeclaredGenerics();
 
 }
