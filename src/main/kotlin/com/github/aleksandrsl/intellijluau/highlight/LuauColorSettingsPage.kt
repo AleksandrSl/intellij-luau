@@ -1,5 +1,6 @@
 package com.github.aleksandrsl.intellijluau.highlight
 
+import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauIcons
 import com.intellij.openapi.editor.colors.TextAttributesKey
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
@@ -23,8 +24,11 @@ class LuauColorSettingsPage : ColorSettingsPage {
     override fun getHighlighter(): SyntaxHighlighter = LuauSyntaxHighlighter()
 
     override fun getDemoText(): String = """
+    <KEYWORD>type</KEYWORD> A = number
+    
+    <ATTRIBUTE>@[deprecated</ATTRIBUTE> { parameter = "test" }<ATTRIBUTE>]</ATTRIBUTE>
     local function printClicked()
-        print("Clicked")
+        <STDLIB>print</STDLIB>("Clicked")
     end
     
     local ButtonStory = {
@@ -39,7 +43,7 @@ class LuauColorSettingsPage : ColorSettingsPage {
                         Style = "Round",
                         Text = "Cancel",
                         StyleModifier = if props.controls.isDisabled then StyleModifier.Disabled else nil,
-                        Size = UDim2.fromOffset(120, 32),
+                        Size = <STDLIB>UDim2.fromOffset</STDLIB>(120, 32),
                         LayoutOrder = 2,
                         OnClick = printClicked,
                     }, {
@@ -48,23 +52,59 @@ class LuauColorSettingsPage : ColorSettingsPage {
                     }),
                 })
             end
-        },
-        a: 123
+        }
     }    
     """.trimIndent()
 
-    override fun getAdditionalHighlightingTagToDescriptorMap(): MutableMap<String, TextAttributesKey>? = null
+    override fun getAdditionalHighlightingTagToDescriptorMap(): MutableMap<String, TextAttributesKey> =
+        TAG_TO_DESCRIPTOR_MAP
 
     companion object {
+        private val TAG_TO_DESCRIPTOR_MAP = mutableMapOf(
+            "ATTRIBUTE" to LuauSyntaxHighlighter.ATTRIBUTE,
+            "KEYWORD" to LuauSyntaxHighlighter.KEYWORD,
+            "STDLIB" to LuauSyntaxHighlighter.STDLIB,
+        )
+
         private val DESCRIPTORS = arrayOf(
-            AttributesDescriptor("Identifier", LuauSyntaxHighlighter.IDENTIFIER),
-            AttributesDescriptor("Keyword", LuauSyntaxHighlighter.KEYWORD),
-            AttributesDescriptor("Number", LuauSyntaxHighlighter.NUMBER),
-            AttributesDescriptor("String", LuauSyntaxHighlighter.STRING),
-            AttributesDescriptor("Comment", LuauSyntaxHighlighter.COMMENT),
-            AttributesDescriptor("Operator", LuauSyntaxHighlighter.OPERATOR),
-            AttributesDescriptor("Bad value", LuauSyntaxHighlighter.BAD_CHARACTER),
-            AttributesDescriptor("Attribute", LuauSyntaxHighlighter.ATTRIBUTE)
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.identifier"),
+                LuauSyntaxHighlighter.IDENTIFIER
+            ),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.keyword"),
+                LuauSyntaxHighlighter.KEYWORD
+            ),
+            AttributesDescriptor(LuauBundle.messagePointer("luau.settings.color.number"), LuauSyntaxHighlighter.NUMBER),
+            AttributesDescriptor(LuauBundle.messagePointer("luau.settings.color.string"), LuauSyntaxHighlighter.STRING),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.comment"),
+                LuauSyntaxHighlighter.COMMENT
+            ),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.operator"),
+                LuauSyntaxHighlighter.OPERATOR
+            ),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.bad"),
+                LuauSyntaxHighlighter.BAD_CHARACTER
+            ),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.stdlib"),
+                LuauSyntaxHighlighter.STDLIB
+            ),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.attribute"),
+                LuauSyntaxHighlighter.ATTRIBUTE
+            ),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.types.type"),
+                LuauSyntaxHighlighter.TYPE
+            ),
+            AttributesDescriptor(
+                LuauBundle.messagePointer("luau.settings.color.types.type.parameter"),
+                LuauSyntaxHighlighter.TYPE_PARAMETER
+            )
         )
     }
 }
