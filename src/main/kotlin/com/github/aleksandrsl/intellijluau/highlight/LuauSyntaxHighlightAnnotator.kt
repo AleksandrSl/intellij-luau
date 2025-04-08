@@ -39,7 +39,7 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
              */
             is LuauTypeDeclarationStatement -> typeDeclaration(element)
             is LuauSingletonType -> type(element)
-            is LuauSimpleTypeReference -> type(element)
+            is LuauSimpleTypeReference -> typeReference(element)
             is LuauFuncTypeParams -> functionTypeParams(element)
             is LuauGenericTypeListWithDefaults -> genericsTypeList(element)
         }
@@ -160,6 +160,12 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
         element.genericTypePackParameterList.forEach { typeParameter(it.id) }
         element.genericTypeWithDefaultDeclarationList.forEach { typeParameter(it.id) }
         element.genericTypePackParameterWithDefaultList.forEach { typeParameter(it.id) }
+    }
+
+    private fun AnnotationHolder.typeReference(element: LuauSimpleTypeReference) {
+        element.reference.resolve()?.takeIf {
+            it is LuauGenericTypeDeclaration
+        }?.let { typeParameter(element) } ?: type(element)
     }
 
     private fun AnnotationHolder.type(element: PsiElement) {
