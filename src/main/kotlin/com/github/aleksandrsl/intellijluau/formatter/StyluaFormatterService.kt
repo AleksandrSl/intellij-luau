@@ -20,9 +20,12 @@ import java.util.*
 class StyluaFormatterService : AsyncDocumentFormattingService() {
     override fun getFeatures(): Set<FormattingService.Feature> = FEATURES
 
-    override fun canFormat(file: PsiFile): Boolean =
-        file is LuauFile && ProjectSettingsState.getInstance(file.project)
-            .let { it.runStyLuaInsteadOfFormatter || it.disableBuiltinFormatter } && getFormattingReason() == FormattingReason.ReformatCode
+    override fun canFormat(file: PsiFile): Boolean {
+        val formattingReason = getFormattingReason()
+        return (file is LuauFile && ProjectSettingsState.getInstance(file.project)
+            .let { it.runStyLuaInsteadOfFormatter || it.disableBuiltinFormatter }
+                && (formattingReason == FormattingReason.ReformatCode || formattingReason == FormattingReason.ReformatCodeBeforeCommit))
+    }
 
     override fun createFormattingTask(request: AsyncFormattingRequest): FormattingTask? {
         val context = request.context
@@ -75,7 +78,6 @@ class StyluaFormatterService : AsyncDocumentFormattingService() {
     companion object {
         private val FEATURES: Set<FormattingService.Feature> = EnumSet.noneOf(FormattingService.Feature::class.java)
 
-        // From Rust, do I need this?
         private enum class FormattingReason {
             ReformatCode,
             ReformatCodeBeforeCommit,
