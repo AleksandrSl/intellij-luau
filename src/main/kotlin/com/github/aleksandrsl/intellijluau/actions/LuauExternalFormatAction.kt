@@ -41,7 +41,7 @@ class LuauExternalFormatAction : AnAction() {
         val projectService = project.service<LuauCliService>()
         val notificationGroupManager = LuauNotifications.pluginNotifications()
         projectService.coroutineScope.launch(Dispatchers.EDT) {
-            // Why is not modal progress working?
+            // Why isn't modal progress working?
             // Do I need different contexts here?
             withBackgroundProgress(project, "Stylua format current document") {
                 when (val result = StyLuaCli(getToolPath(project).toPath()).formatDocument(project)) {
