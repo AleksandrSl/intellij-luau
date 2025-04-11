@@ -5,13 +5,11 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
-import com.intellij.util.messages.Topic
 import com.intellij.util.xmlb.XmlSerializerUtil
-import kotlin.reflect.KProperty1
 
 @Service(Service.Level.PROJECT)
 @State(name = "LuauPluginSettings", storages = [Storage("luauPlugin.xml")])
-class ProjectSettingsState(private val project: Project) :
+class ProjectSettingsState :
     PersistentStateComponent<ProjectSettingsState.State> {
     private var internalState: State = State()
 
@@ -46,17 +44,11 @@ class ProjectSettingsState(private val project: Project) :
     val customDefinitionsPaths
         get() = internalState.customDefinitionsPaths
 
-    val generateSourceMapsFromRbxp
-        get() = internalState.generateSourceMapsFromRbxp
-
     val rbxpForSourcemapPath
         get() = internalState.rbxpForSourcemapPath
 
     val shouldGenerateSourceMapsFromRbxp
         get() = internalState.shouldGenerateSourceMapsFromRbxp
-
-    val isLspEnabled
-        get() = internalState.isLspEnabled
 
     val isLspConfiguredAndEnabled
         get() = internalState.isLspConfiguredAndEnabled
@@ -68,14 +60,6 @@ class ProjectSettingsState(private val project: Project) :
 
     override fun loadState(state: State) {
         XmlSerializerUtil.copyBean(state, internalState)
-    }
-
-    fun update(block: State.() -> Unit) {
-        val oldState = internalState
-        val newState = internalState.copy()
-        block(newState)
-        internalState = newState
-        notifySettingsChanged(SettingsChangedEvent(oldState, newState))
     }
 
     data class State(
@@ -97,24 +81,6 @@ class ProjectSettingsState(private val project: Project) :
 
     companion object {
         fun getInstance(project: Project): ProjectSettingsState = project.getService(ProjectSettingsState::class.java)
-        val TOPIC = Topic.create(
-            "Luau settings changes",
-            SettingsChangeListener::class.java,
-            Topic.BroadcastDirection.TO_PARENT
-        )
-    }
-
-    interface SettingsChangeListener {
-        fun settingsChanged(e: SettingsChangedEvent)
-    }
-
-    private fun notifySettingsChanged(event: SettingsChangedEvent) {
-        project.messageBus.syncPublisher(TOPIC).settingsChanged(event)
-    }
-
-    class SettingsChangedEvent(val oldState: State, val newState: State) {
-        /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
-        fun isChanged(prop: KProperty1<State, *>): Boolean = prop.get(oldState) != prop.get(newState)
     }
 }
 
