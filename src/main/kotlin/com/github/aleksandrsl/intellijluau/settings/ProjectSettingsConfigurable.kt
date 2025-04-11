@@ -3,11 +3,14 @@ package com.github.aleksandrsl.intellijluau.settings
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.restartLspServerAsync
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState.State
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
+import com.intellij.util.messages.Topic
 import javax.swing.JComponent
+import kotlin.reflect.KProperty1
 
 class ProjectSettingsConfigurable(val project: Project) : Configurable {
 
@@ -15,7 +18,12 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     private val settings = ProjectSettingsState.getInstance(project)
 
     override fun createComponent(): JComponent {
-        return ProjectSettingsComponent(project.service<LuauCliService>(), project.guessProjectDir(), project, settings.state).also {
+        return ProjectSettingsComponent(
+            project.service<LuauCliService>(),
+            project.guessProjectDir(),
+            project,
+            settings.state
+        ).also {
             _component = it
         }.panel
     }
@@ -27,9 +35,14 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     override fun getPreferredFocusedComponent(): JComponent? = _component?.preferredFocusedComponent
 
     override fun apply() {
+        val oldState = settings.state.copy()
         _component?.panel?.apply()
-        // Is it possible to setup a message bus listener in lspProvider and move this?
-        restartLsp()
+        val event = SettingsChangedEvent(
+            oldState,
+            settings.state
+        )
+        notifySettingsChanged(event)
+        restartLsp(event)
     }
 
     override fun reset() {
@@ -44,21 +57,35 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         _component = null
     }
 
-    private fun restartLsp() {
-//        if (settings.lspPath != _component?.lspPath
-//            || settings.robloxSecurityLevel != _component?.robloxSecurityLevel?.let {
-//                RobloxSecurityLevel.valueOf(
-//                    it
-//                )
-//            }
-//            || settings.customDefinitionsPaths != _component?.customDefinitionsPaths
-//            || settings.isLspEnabled != _component?.isLspEnabled
-//        ) {
-//            restartLspServerAsync(project)
-//        }
+    private fun restartLsp(settingsChangedEvent: SettingsChangedEvent) {
+        if (settingsChangedEvent.isChanged(State::lspPath)
+            || settingsChangedEvent.isChanged(State::robloxSecurityLevel)
+            || settingsChangedEvent.isChanged(State::customDefinitionsPaths)
+            || settingsChangedEvent.isChanged(State::isLspEnabled)
+        ) {
+            restartLspServerAsync(project)
+        }
+    }
+
+    interface SettingsChangeListener {
+        fun settingsChanged(e: SettingsChangedEvent)
+    }
+
+    private fun notifySettingsChanged(event: SettingsChangedEvent) {
+        project.messageBus.syncPublisher(TOPIC).settingsChanged(event)
+    }
+
+    class SettingsChangedEvent(val oldState: State, val newState: State) {
+        /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
+        fun isChanged(prop: KProperty1<State, *>): Boolean = prop.get(oldState) != prop.get(newState)
     }
 
     companion object {
         const val CONFIGURABLE_ID = "settings.luau"
+        val TOPIC = Topic.create(
+            "Luau settings changes",
+            SettingsChangeListener::class.java,
+            Topic.BroadcastDirection.TO_PARENT
+        )
     }
 }

@@ -1,6 +1,7 @@
 package com.github.aleksandrsl.intellijluau
 
 import com.github.aleksandrsl.intellijluau.cli.RobloxCli
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -39,9 +40,9 @@ class FileWatcherService(private val project: Project, private val coroutineScop
         projectDir = project.guessProjectDir()
         messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
-            ProjectSettingsState.TOPIC,
-            object : ProjectSettingsState.SettingsChangeListener {
-                override fun settingsChanged(e: ProjectSettingsState.SettingsChangedEvent) {
+            ProjectSettingsConfigurable.TOPIC,
+            object : ProjectSettingsConfigurable.SettingsChangeListener {
+                override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
                     LOG.warn("Settings changed, new: ${e.newState.shouldGenerateSourceMapsFromRbxp}, old: ${e.oldState.shouldGenerateSourceMapsFromRbxp}")
                     if (e.newState.shouldGenerateSourceMapsFromRbxp && !e.oldState.shouldGenerateSourceMapsFromRbxp) {
                         start()

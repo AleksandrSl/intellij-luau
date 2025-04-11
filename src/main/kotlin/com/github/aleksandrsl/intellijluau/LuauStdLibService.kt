@@ -2,6 +2,7 @@ package com.github.aleksandrsl.intellijluau
 
 import com.github.aleksandrsl.intellijluau.declarations.LuauDeclaration
 import com.github.aleksandrsl.intellijluau.declarations.LuauDeclarationsParser
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.openapi.Disposable
@@ -28,9 +29,9 @@ class LuauStdLibService(val project: Project, private val coroutineScope: Corout
     init {
         messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
-            ProjectSettingsState.TOPIC,
-            object : ProjectSettingsState.SettingsChangeListener {
-                override fun settingsChanged(e: ProjectSettingsState.SettingsChangedEvent) {
+            ProjectSettingsConfigurable.TOPIC,
+            object : ProjectSettingsConfigurable.SettingsChangeListener {
+                override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
                     if (e.newState.robloxSecurityLevel != e.oldState.robloxSecurityLevel) {
                         loadStdLibDeclarations()
                     }
@@ -63,9 +64,11 @@ class LuauStdLibService(val project: Project, private val coroutineScope: Corout
         })
     }
 
-    // TODO (AleksandrSl 08/04/2025): I ned a different process for Enum,
+    // TODO (AleksandrSl 08/04/2025): I need a different process for Enum,
     //  they are not being resolved by the first name, because it's Enum
-    fun resolveReference(name: String): LuauDeclaration? = stdlibDeclarations[name]
+    fun resolveReference(name: String): LuauDeclaration? {
+        return stdlibDeclarations[name]
+    }
 
     companion object {
         fun getInstance(project: Project): LuauStdLibService =
