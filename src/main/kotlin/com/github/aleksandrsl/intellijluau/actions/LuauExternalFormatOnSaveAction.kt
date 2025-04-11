@@ -26,8 +26,11 @@ class LuauExternalFormatOnSaveAction : ActionsOnSaveFileDocumentManagerListener.
         get() = "Stylua"
 
     override suspend fun updateDocument(project: Project, document: Document) {
+        // Prettier does this in read action, but getFile doesn't require it.
         val manager = FileDocumentManager.getInstance()
         val file = manager.getFile(document)
+        // Prettier also check that config is saved. Maybe I have to do it as well?
+        // I spend around 20 minutes reading code of other on save implementations but I didn't understand what post format processor has to do with it.
         // TODO (AleksandrSl 29/06/2024): Deal with this later when I'll do runOnReformat
 //            if (file != null && prettierConfiguration.isRunOnReformat()) {
 //                val onSaveOptions = FormatOnSaveOptions.getInstance(project)
@@ -39,7 +42,16 @@ class LuauExternalFormatOnSaveAction : ActionsOnSaveFileDocumentManagerListener.
         if (file?.fileType != LuauFileType) return
         LOG.debug("Processing $file on save")
         val tool = File(ProjectSettingsState.getInstance(project).styLuaPath)
+        if (!tool.exists()) return
         val result = StyLuaCli(tool.toPath()).formatFile(project, file)
+
+        // TODO (AleksandrSl 11/04/2025): From prettier
+        //       val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return@writeCommandAction
+        //      if (!editor.isDisposed && editor.virtualFile == file && formattingDiff.cursorOffset >= 0) {
+        //        editor.caretModel.moveToOffset(formattingDiff.cursorOffset)
+        //      }
+        //   Do they return cursor to the same place it was before? Should I do that or it works fine automatiacally. Have to check
+        //   In my case there is also a weird jumping of the cursor, though if I use reformat with stylua with StyluaFormatterService I don't have this problem.
         if (result is StyLuaCli.FormatResult.StyluaError) {
             LuauNotifications
                 .pluginNotifications()

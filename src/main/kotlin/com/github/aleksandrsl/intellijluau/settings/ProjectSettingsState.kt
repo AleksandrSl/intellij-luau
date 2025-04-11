@@ -11,7 +11,7 @@ import kotlin.reflect.KProperty1
 
 @Service(Service.Level.PROJECT)
 @State(name = "LuauPluginSettings", storages = [Storage("luauPlugin.xml")])
-internal class ProjectSettingsState(private val project: Project) :
+class ProjectSettingsState(private val project: Project) :
     PersistentStateComponent<ProjectSettingsState.State> {
     private var internalState: State = State()
 
@@ -78,7 +78,7 @@ internal class ProjectSettingsState(private val project: Project) :
         notifySettingsChanged(SettingsChangedEvent(oldState, newState))
     }
 
-    internal data class State(
+    data class State(
         var lspPath: String = "",
         var styLuaPath: String = "",
         var robloxCliPath: String = "",
