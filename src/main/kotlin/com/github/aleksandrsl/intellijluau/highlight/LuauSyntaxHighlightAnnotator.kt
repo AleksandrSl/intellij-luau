@@ -6,6 +6,7 @@ import com.github.aleksandrsl.intellijluau.psi.*
 import com.intellij.lang.annotation.AnnotationHolder
 import com.intellij.lang.annotation.Annotator
 import com.intellij.lang.annotation.HighlightSeverity
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
@@ -27,7 +28,7 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
         when (element) {
             is LuauSoftKeyword -> softKeyword(element)
             is LuauAttribute -> attribute(element)
-            is LuauIndexAccess -> reference(element)
+            is LuauIndexAccess -> indexAccessReference(element)
             is LuauFuncCall -> funcCallReference(element)
 
             /* Types
@@ -50,15 +51,22 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
             // It will be processed as the index access later
             return
         }
-        element.simpleReferenceList.firstOrNull()?.let { reference ->
-            val stdLibService = LuauStdLibService.getInstance(element.project)
-            val declaration = stdLibService.resolveReference(reference.text)
-            stdLibReference(element, declaration)
+        element.simpleReferenceList.firstOrNull()?.let { firstReference ->
+            val stdLibService = element.project.service<LuauStdLibService>()
+            // TODO (AleksandrSl 13/04/2025): There can be two references,
+            //  support this when I'm properly able to resolve nested access
+            val declarations = stdLibService.resolveReference(listOf(firstReference))
+            // I shouldn't highlight the whole function but only the references.
+            // We can have two references in method calls.
+            // While I haven't implemented a full reference check, let's just color both if the first is fine.
+            element.simpleReferenceList.forEach { reference ->
+                stdLibReference(reference, declarations?.firstOrNull())
+            }
         }
     }
 
-    private fun AnnotationHolder.reference(element: LuauIndexAccess) {
-        val stdLibService = LuauStdLibService.getInstance(element.project)
+    private fun AnnotationHolder.indexAccessReference(element: LuauIndexAccess) {
+        val stdLibService = element.project.service<LuauStdLibService>()
         // Let's start simple.
         // Highlight the topmost index access, and ignore the nested ones.
         // TODO (AleksandrSl 08/04/2025): I have a feeling that nested index accesses are fucked and recursively colored
@@ -71,32 +79,31 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
             }
 
             is LuauFuncCall -> {
-                val declaration = h(stdLibService, element)
-                stdLibReference(element, declaration)
+                val declarations = resolveIndexAccess(stdLibService, element)
+                declarations.orEmpty().forEach { (reference, declaration) ->
+                    stdLibReference(reference, declaration)
+                }
             }
             // Topmost IndexAccess
             is LuauPrimaryGroupExpr -> {
-                val declaration = h(stdLibService, element)
-                stdLibReference(element, declaration)
+                val declarations = resolveIndexAccess(stdLibService, element)
+                declarations.orEmpty().forEach { (reference, declaration) ->
+                    stdLibReference(reference, declaration)
+                }
             }
         }
     }
 
     private fun AnnotationHolder.stdLibReference(
-        element: PsiElement,
-        declaration: LuauDeclaration?
+        element: PsiElement, declaration: LuauDeclaration?
     ) {
         when (declaration) {
             is LuauDeclaration.Class -> {
-                if (declaration.isInstance) {
-                    return
-                }
                 newSilentAnnotation(HighlightSeverity.INFORMATION).range(element)
                     .textAttributes(LuauSyntaxHighlighter.STDLIB).create()
             }
 
             is LuauDeclaration.EnumClass, is LuauDeclaration.Function, is LuauDeclaration.GlobalObject -> {
-                // TODO (AleksandrSl 08/04/2025): Correctly check the rest of the elements
                 newSilentAnnotation(HighlightSeverity.INFORMATION).range(element)
                     .textAttributes(LuauSyntaxHighlighter.STDLIB).create()
             }
@@ -105,27 +112,34 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
                 // TODO (AleksandrSl 08/04/2025): I don't know how I am supposed to use types 🤔
             }
 
+            is LuauDeclaration.GlobalObject -> {
+                // TODO (AleksandrSl 08/04/2025): I don't know how I am supposed to use types 🤔
+            }
+
+            is LuauDeclaration.Function -> {
+                // TODO (AleksandrSl 08/04/2025): I don't know how I am supposed to use types 🤔
+            }
+
             null -> {}
         }
     }
 
-    private fun h(stdLibService: LuauStdLibService, element: LuauIndexAccess): LuauDeclaration? {
+    private fun resolveIndexAccess(
+        stdLibService: LuauStdLibService,
+        element: LuauIndexAccess,
+        chain: List<LuauSimpleReference> = listOf()
+    ): List<Pair<LuauSimpleReference, LuauDeclaration?>>? {
         return if (element.funcCall != null) {
             // Then we are in the a.b().c construction. We will annotate the first a.b part separately.
             null
         } else if (element.indexAccess != null) {
             // a.b.c simpleReferenceList is c here, but we need to start resolving from a.
-            h(stdLibService, element.indexAccess!!)
+            resolveIndexAccess(stdLibService, element.indexAccess!!, chain + element.simpleReferenceList)
         } else if (element.simpleReferenceList.size == 2) {
             // a.b
-            val first = element.simpleReferenceList.firstOrNull() ?: return null
-
-            var reference = first.text
-            if (first.text == "Enum") {
-                reference = element.simpleReferenceList[1]?.text ?: return null
-            }
-
-            stdLibService.resolveReference(reference)
+            val fullReferenceChain = element.simpleReferenceList + chain.reversed()
+            val declarations = stdLibService.resolveReference(fullReferenceChain)
+            fullReferenceChain.map { it to declarations?.first() }
         } else {
             null
         }

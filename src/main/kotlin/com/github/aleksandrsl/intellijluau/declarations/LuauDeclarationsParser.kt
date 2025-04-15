@@ -10,6 +10,7 @@ sealed class LuauDeclaration {
 
     data class GlobalObject(
         val name: String,
+        val type: String? = null,
         val properties: Map<String, Any>
     ) : LuauDeclaration()
 
@@ -86,6 +87,22 @@ sealed class LuauDeclaration {
 
 val enumClassRegex = Regex("declare\\sclass\\sEnum(\\w+)_INTERNAL\\s+extends\\s+(\\w+)")
 val enumClassItemRegex = Regex("declare\\sclass\\sEnum(\\w+)\\s+extends\\s+(\\w+)\\s+end")
+val globalDeclarationRegex = Regex("declare\\s+(\\w+):\\s*\\{")
+val aliasGlobalDeclarationRegex = Regex("declare\\s+(\\w+):\\s*(\\w+)\\s*")
+val classDeclarationRegex = Regex("declare class (\\w+)(?:\\s+extends\\s+(\\w+))?")
+val typeAliasRegex = Regex("type\\s+(\\w+)\\s*=\\s*(.+)")
+val functionRegex = Regex("declare function (\\w+)\\(([^)]*)\\)(?::\\s*(.+))?")
+val propertyRegex = Regex("(\\w+):\\s*(.+?),?$")
+val methodRegex = Regex("function\\s+(\\w+)\\(([^)]*)\\)(?::\\s*(.+))?")
+
+
+data class LuauDeclarations(
+    val typeAliases: Map<String, LuauDeclaration.TypeAlias>,
+    val globalObjects: Map<String, LuauDeclaration.GlobalObject>,
+    val functions: Map<String, LuauDeclaration.Function>,
+    val classes: Map<String, LuauDeclaration.Class>,
+    val enums: Map<String, LuauDeclaration.EnumClass>
+)
 
 /**
  * Parser for Luau declaration files (.d.luau)
@@ -96,7 +113,7 @@ class LuauDeclarationsParser {
      * @param filePath Path to the Luau declaration file
      * @return Map of declaration name to declaration object
      */
-    fun parse(filePath: String): Map<String, LuauDeclaration> {
+    fun parse(filePath: String): LuauDeclarations {
         val file = File(filePath)
         if (!file.exists()) {
             throw IllegalArgumentException("File does not exist: $filePath")
@@ -111,8 +128,12 @@ class LuauDeclarationsParser {
      * @param content Content of the Luau declaration file
      * @return Map of declaration name to declaration object
      */
-    fun parseContent(content: String): Map<String, LuauDeclaration> {
-        val declarations = mutableMapOf<String, LuauDeclaration>()
+    fun parseContent(content: String): LuauDeclarations {
+        val typeAliases = mutableMapOf<String, LuauDeclaration.TypeAlias>()
+        val globalObjects = mutableMapOf<String, LuauDeclaration.GlobalObject>()
+        val functions = mutableMapOf<String, LuauDeclaration.Function>()
+        val classes = mutableMapOf<String, LuauDeclaration.Class>()
+        val enums = mutableMapOf<String, LuauDeclaration.EnumClass>()
 
         // Remove comments
         val contentWithoutComments = removeComments(content)
@@ -134,7 +155,7 @@ class LuauDeclarationsParser {
                 // Type alias
                 line.startsWith("type ") -> {
                     val typeDeclaration = parseTypeAlias(line)
-                    typeDeclaration?.let { declarations[it.name] = it }
+                    typeDeclaration?.let { typeAliases[it.name] = it }
                     i++
                 }
 
@@ -142,7 +163,7 @@ class LuauDeclarationsParser {
                 // Enum class declaration
                 line.matches(enumClassRegex) -> {
                     val (enumClassDeclaration, linesConsumed) = parseEnumClass(lines.subList(i, lines.size))
-                    enumClassDeclaration?.let { declarations[it.name] = it }
+                    enumClassDeclaration?.let { enums[it.name] = it }
                     i += linesConsumed
                 }
 
@@ -154,22 +175,22 @@ class LuauDeclarationsParser {
                 // Function declaration
                 line.startsWith("declare function ") -> {
                     val functionDeclaration = parseFunction(line)
-                    functionDeclaration?.let { declarations[it.name] = it }
+                    functionDeclaration?.let { functions[it.name] = it }
                     i++
                 }
 
                 // Class declaration
                 line.startsWith("declare class ") -> {
                     val (classDeclaration, linesConsumed) = parseClass(lines.subList(i, lines.size))
-                    classDeclaration?.let { declarations[it.name] = it }
+                    classDeclaration?.let { classes[it.name] = it }
                     i += linesConsumed
                 }
 
                 // The less specific should go last. why AI don't know this
                 // Global object declaration
-                line.startsWith("declare ") && line.contains(": {") -> {
+                line.startsWith("declare ") -> {
                     val (objectDeclaration, linesConsumed) = parseGlobalObject(lines.subList(i, lines.size))
-                    objectDeclaration?.let { declarations[it.name] = it }
+                    objectDeclaration?.let { globalObjects[it.name] = it }
                     i += linesConsumed
                 }
 
@@ -177,7 +198,31 @@ class LuauDeclarationsParser {
             }
         }
 
-        return declarations
+        // Resolve inheritance to mark classes inheriting from Instance
+        // I don't know why, I had a reason before, that these classes cannot be instantiated,
+        // but now I think that all classes are not instantiable
+        classes.values.forEach { declaration ->
+            declaration.extends?.let {
+                // Probably we can inherit not only classes?
+                var currentParent = classes[it]
+                while (currentParent != null) {
+                    if (currentParent.isInstance) {
+                        classes[declaration.name] = declaration.copy(isInstance = true)
+                        break
+                    }
+                    currentParent =
+                        currentParent.extends?.let { extends -> classes[extends] }
+                }
+            }
+        }
+
+        return LuauDeclarations(
+            typeAliases = typeAliases,
+            globalObjects = globalObjects,
+            functions = functions,
+            classes = classes,
+            enums = enums
+        )
     }
 
     /**
@@ -185,10 +230,10 @@ class LuauDeclarationsParser {
      */
     private fun removeComments(content: String): String {
         // Remove single-line comments
-        val withoutSingleLineComments = content.lines().map { line ->
+        val withoutSingleLineComments = content.lines().joinToString("\n") { line ->
             val commentIndex = line.indexOf("--")
             if (commentIndex >= 0) line.substring(0, commentIndex) else line
-        }.joinToString("\n")
+        }
 
         // TODO: Handle multi-line comments if needed
 
@@ -200,8 +245,7 @@ class LuauDeclarationsParser {
      * Example: type Content = string
      */
     private fun parseTypeAlias(line: String): LuauDeclaration.TypeAlias? {
-        val regex = Regex("type\\s+(\\w+)\\s*=\\s*(.+)")
-        val matchResult = regex.find(line) ?: return null
+        val matchResult = typeAliasRegex.find(line) ?: return null
 
         val (name, type) = matchResult.destructured
         return LuauDeclaration.TypeAlias(name, type.trim())
@@ -209,12 +253,18 @@ class LuauDeclarationsParser {
 
     /**
      * Parse a global object declaration
-     * Example: declare debug: { ... }
+     * Example: declare debug: { ... } or declare game: DataModel
+     * The thing after the `:` is the type.
+     * Until now, there are now multiline intersections helpfully.
      */
     private fun parseGlobalObject(lines: List<String>): Pair<LuauDeclaration.GlobalObject?, Int> {
         val firstLine = lines[0].trim()
-        val regex = Regex("declare\\s+(\\w+):\\s*\\{")
-        val matchResult = regex.find(firstLine) ?: return Pair(null, 1)
+        val aliasMatch = aliasGlobalDeclarationRegex.find(firstLine)
+        if (aliasMatch != null) {
+            return Pair(LuauDeclaration.GlobalObject(aliasMatch.groupValues[1], aliasMatch.groupValues[2], mapOf()), 1)
+        }
+
+        val matchResult = globalDeclarationRegex.find(firstLine) ?: return Pair(null, 1)
 
         val name = matchResult.groupValues[1]
         val properties = mutableMapOf<String, Any>()
@@ -231,7 +281,6 @@ class LuauDeclarationsParser {
 
             // Parse property if this is a property line
             if (line.contains(":") && !line.startsWith("{") && !line.startsWith("}")) {
-                val propertyRegex = Regex("(\\w+):\\s*(.+?),?$")
                 val propertyMatch = propertyRegex.find(line)
 
                 if (propertyMatch != null) {
@@ -269,7 +318,7 @@ class LuauDeclarationsParser {
             }
         }
 
-        return Pair(LuauDeclaration.GlobalObject(name, properties), i)
+        return Pair(LuauDeclaration.GlobalObject(name, properties = properties), i)
     }
 
     /**
@@ -289,7 +338,6 @@ class LuauDeclarationsParser {
 
             // Parse property if this is a property line
             if (line.contains(":") && !line.startsWith("{") && !line.startsWith("}")) {
-                val propertyRegex = Regex("(\\w+):\\s*(.+?),?$")
                 val propertyMatch = propertyRegex.find(line)
 
                 if (propertyMatch != null) {
@@ -335,8 +383,7 @@ class LuauDeclarationsParser {
      * Example: declare function collectgarbage(mode: "count"): number
      */
     private fun parseFunction(line: String): LuauDeclaration.Function? {
-        val regex = Regex("declare function (\\w+)\\(([^)]*)\\)(?::\\s*(.+))?")
-        val matchResult = regex.find(line) ?: return null
+        val matchResult = functionRegex.find(line) ?: return null
 
         val (name, paramsStr, returnType) = matchResult.destructured
 
@@ -371,8 +418,7 @@ class LuauDeclarationsParser {
      */
     private fun parseClass(lines: List<String>): Pair<LuauDeclaration.Class?, Int> {
         val firstLine = lines[0].trim()
-        val regex = Regex("declare class (\\w+)(?:\\s+extends\\s+(\\w+))?")
-        val matchResult = regex.find(firstLine) ?: return Pair(null, 1)
+        val matchResult = classDeclarationRegex.find(firstLine) ?: return Pair(null, 1)
 
         val (name, extends) = matchResult.destructured
         val properties = mutableMapOf<String, String>()
@@ -400,7 +446,6 @@ class LuauDeclarationsParser {
 
                 // Method
                 line.startsWith("function") -> {
-                    val methodRegex = Regex("function\\s+(\\w+)\\(([^)]*)\\)(?::\\s*(.+))?")
                     val methodMatch = methodRegex.find(line)
 
                     if (methodMatch != null) {
@@ -443,7 +488,7 @@ class LuauDeclarationsParser {
                 methods,
                 // These are not accessible as references in code. You can't write local a = Plugin.
                 // Plugin doesn't exist. Probably they are to receive as a service, or only as type.
-                isInstance = extends == "Instance"
+                isInstance = extends == "Instance" || name == "Instance"
             ),
             i
         )

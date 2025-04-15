@@ -1,7 +1,7 @@
 package com.github.aleksandrsl.intellijluau.declarations
 
-import com.intellij.testFramework.assertInstanceOf
 import com.intellij.testFramework.utils.module.assertEqualsUnordered
+import com.jetbrains.rd.util.firstOrNull
 import junit.framework.TestCase
 
 class LuauDeclarationsParserTest : TestCase() {
@@ -12,15 +12,20 @@ class LuauDeclarationsParserTest : TestCase() {
             ?.let { parser.parse(it.path) }
 
         assertNotNull(declarations)
-        assertTrue(declarations!!.isNotEmpty())
+        assertTrue(declarations!!.enums.isNotEmpty())
+        assertTrue(declarations.classes.isNotEmpty())
+        assertTrue(declarations.functions.isNotEmpty())
+        assertTrue(declarations.typeAliases.isNotEmpty())
+        assertTrue(declarations.globalObjects.isNotEmpty())
     }
 
     fun `test parser processes type alias declaration`() {
         val declarations = parser.parseContent("""type ProtectedString = string""")
 
-        val typeAliasDeclaration = declarations.values.firstOrNull { it is LuauDeclaration.TypeAlias }
+        val typeAliasDeclaration = declarations.typeAliases.firstOrNull()
         assertNotNull(typeAliasDeclaration)
-        assertTrue(typeAliasDeclaration is LuauDeclaration.TypeAlias)
+        assertEquals("ProtectedString", typeAliasDeclaration?.key)
+        assertEquals("string", typeAliasDeclaration?.value?.type)
     }
 
     fun `test parser processes global object declaration`() {
@@ -38,18 +43,45 @@ class LuauDeclarationsParserTest : TestCase() {
 }""".trimIndent()
         )
 
-        val globalObjectDeclaration = declarations.values.firstOrNull { it is LuauDeclaration.GlobalObject }
+        val globalObjectDeclaration = declarations.globalObjects.firstOrNull()
         assertNotNull(globalObjectDeclaration)
-        assertTrue(globalObjectDeclaration is LuauDeclaration.GlobalObject)
+        assertEquals("utf8", globalObjectDeclaration?.key)
+        assertEqualsUnordered(
+            setOf(
+                "char",
+                "charpattern",
+                "codepoint",
+                "codes",
+                "graphemes",
+                "len",
+                "nfcnormalize",
+                "nfdnormalize",
+                "offset"
+            ), globalObjectDeclaration!!.value.properties.keys
+        )
+    }
+
+    fun `test parser processes short global object declaration`() {
+        val declarations = parser.parseContent(
+            """declare game: DataModel
+                declare plugin: Plugin
+            """.trimIndent()
+        )
+
+        val game = declarations.globalObjects["game"]
+        val plugin = declarations.globalObjects["plugin"]
+        assertNotNull(game)
+        assertNotNull(plugin)
+        assertEquals("DataModel", game?.type)
+        assertEquals("Plugin", plugin?.type)
     }
 
     fun `test parser processes function declaration`() {
         val declarations = parser.parseContent("""declare function collectgarbage(mode: "count"): number""")
 
-        // Then
-        val functionDeclaration = declarations.values.firstOrNull { it is LuauDeclaration.Function }
+        val functionDeclaration = declarations.functions.firstOrNull()
         assertNotNull(functionDeclaration)
-        assertTrue(functionDeclaration is LuauDeclaration.Function)
+        assertEquals("collectgarbage", functionDeclaration?.key)
     }
 
     fun `test parser processes class declaration`() {
@@ -67,21 +99,19 @@ end""".trimIndent()
         )
 
         // Then
-        val classDeclaration = declarations.values.firstOrNull { it is LuauDeclaration.Class }
+        val classDeclaration = declarations.classes.firstOrNull()
         assertNotNull(classDeclaration)
-        assertTrue(classDeclaration is LuauDeclaration.Class)
-        assertInstanceOf<LuauDeclaration.Class>(classDeclaration)
-        assertEquals((classDeclaration as LuauDeclaration.Class).name, "OverlapParams")
+        assertEquals("OverlapParams", classDeclaration?.key)
+        assertEquals("OverlapParams", classDeclaration?.value?.name)
         assertEqualsUnordered(
-            listOf(
+            classDeclaration?.value?.properties?.keys!!, setOf(
                 "BruteForceAllSlow",
                 "CollisionGroup",
                 "FilterDescendantsInstances",
                 "FilterType",
                 "MaxParts",
                 "RespectCanCollide"
-            ),
-            classDeclaration.properties.keys
+            )
         )
     }
 
@@ -95,45 +125,12 @@ declare class EnumTextXAlignment_INTERNAL extends Enum
 end""".trimIndent()
         )
 
-        val enumClassDeclaration = declarations.values.firstOrNull { it is LuauDeclaration.EnumClass }
+        val enumClassDeclaration = declarations.enums.firstOrNull()
         assertNotNull(enumClassDeclaration)
-        assertTrue(enumClassDeclaration is LuauDeclaration.EnumClass)
-        assertEquals((enumClassDeclaration as LuauDeclaration.EnumClass).name, "TextXAlignment")
-        assertEquals("Enum", enumClassDeclaration.extends)
-        assertEqualsUnordered(listOf("Center", "Left", "Right"), enumClassDeclaration.values)
+        assertEquals("TextXAlignment", enumClassDeclaration?.value?.name)
+        assertEquals("Enum", enumClassDeclaration?.value?.extends)
+        assertEqualsUnordered(listOf("Center", "Left", "Right"), enumClassDeclaration?.value?.values!!)
     }
-
-    fun `test parser correctly identifies declaration types`() {
-        val declarations = javaClass.classLoader.getResource("declarations/globalTypes.RobloxScriptSecurity.d.luau")
-            ?.let { parser.parse(it.path) }
-
-
-        assertNotNull(declarations)
-        val stats = declarations!!.values.groupBy { declaration ->
-            when (declaration) {
-                is LuauDeclaration.TypeAlias -> "typeAlias"
-                is LuauDeclaration.GlobalObject -> "globalObject"
-                is LuauDeclaration.Function -> "function"
-                is LuauDeclaration.Class -> "class"
-                is LuauDeclaration.EnumClass -> "enumClass"
-                else -> "unknown"
-            }
-        }
-
-        assertTrue(stats.isNotEmpty())
-    }
-
-
-    fun `test parser handles debug global object correctly`() {
-        val declarations = javaClass.classLoader.getResource("declarations/globalTypes.RobloxScriptSecurity.d.luau")
-            ?.let { parser.parse(it.path) }
-
-        assertNotNull(declarations)
-        val debugDeclaration = declarations!!["debug"]
-        assertNotNull(debugDeclaration)
-        assertTrue(debugDeclaration is LuauDeclaration.GlobalObject)
-    }
-
 
     fun `test parser performance is within acceptable range`() {
         val testFilePath = javaClass.classLoader.getResource("declarations/globalTypes.RobloxScriptSecurity.d.luau")
@@ -144,6 +141,27 @@ end""".trimIndent()
         val duration = System.currentTimeMillis() - startTime
 
         assertTrue(duration < 500)
-        assertTrue(declarations.isNotEmpty())
+        assertNotNull(declarations)
+        assertTrue(declarations.enums.isNotEmpty())
+    }
+
+    fun `test parser handles ancestor Instance correctly`() {
+        val declarations = parser.parseContent(
+            """
+declare class ServiceProvider extends Instance
+	Close: RBXScriptSignal<>
+end
+
+declare class DataModel extends ServiceProvider
+	CreatorId: number
+end
+
+declare class GenericSettings extends ServiceProvider
+end
+        """.trimIndent()
+        )
+
+        assertTrue(declarations.classes["GenericSettings"]!!.isInstance)
+        assertTrue(declarations.classes["DataModel"]!!.isInstance)
     }
 }

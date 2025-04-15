@@ -41,7 +41,8 @@ class LuauInternalTypeReference(element: LuauSimpleTypeReference) : PsiReference
             // > Instead of Kotlin `Sequence`'s, a callback (`RsResolveProcessor`) is used, because
             //   it gives **much** nicer stacktraces (we used to have `Sequence` here some time ago).
             // But maybe the stacktraces are better now?
-            return typeReference.parentsOfType<LuauGenericDeclaration>().firstNotNullOfOrNull { it.declaredGenerics.find { generic -> generic.name == text} }
+            return typeReference.parentsOfType<LuauGenericDeclaration>()
+                .firstNotNullOfOrNull { it.declaredGenerics.find { generic -> generic.name == text } }
         }
     }
 
