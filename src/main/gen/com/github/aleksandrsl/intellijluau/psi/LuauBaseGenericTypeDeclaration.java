@@ -5,9 +5,12 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauGenericTypeListWithDefaults extends PsiElement {
+public interface LuauBaseGenericTypeDeclaration extends LuauNamedElement {
+
+  @Nullable
+  LuauType getType();
 
   @NotNull
-  List<LuauBaseGenericTypeDeclaration> getBaseGenericTypeDeclarationList();
+  PsiElement getId();
 
 }
