@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauGenericTypeDeclarationImpl extends LuauNamedElementImpl implements LuauGenericTypeDeclaration {
+public class LuauGenericTypeDeclarationImpl extends LuauBaseGenericTypeDeclarationImpl implements LuauGenericTypeDeclaration {
 
   public LuauGenericTypeDeclarationImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull LuauVisitor visitor) {
     visitor.visitGenericTypeDeclaration(this);
   }
@@ -25,12 +25,6 @@ public class LuauGenericTypeDeclarationImpl extends LuauNamedElementImpl impleme
   public void accept(@NotNull PsiElementVisitor visitor) {
     if (visitor instanceof LuauVisitor) accept((LuauVisitor)visitor);
     else super.accept(visitor);
-  }
-
-  @Override
-  @NotNull
-  public PsiElement getId() {
-    return findNotNullChildByType(ID);
   }
 
 }

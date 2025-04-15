@@ -8,15 +8,15 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauGenericTypePackParameterWithDefaultImpl extends LuauNamedElementImpl implements LuauGenericTypePackParameterWithDefault {
+public class LuauGenericTypePackParameterWithDefaultImpl extends LuauBaseGenericTypeDeclarationImpl implements LuauGenericTypePackParameterWithDefault {
 
   public LuauGenericTypePackParameterWithDefaultImpl(@NotNull ASTNode node) {
     super(node);
   }
 
+  @Override
   public void accept(@NotNull LuauVisitor visitor) {
     visitor.visitGenericTypePackParameterWithDefault(this);
   }
@@ -43,12 +43,6 @@ public class LuauGenericTypePackParameterWithDefaultImpl extends LuauNamedElemen
   @Nullable
   public LuauVariadicTypePack getVariadicTypePack() {
     return findChildByClass(LuauVariadicTypePack.class);
-  }
-
-  @Override
-  @NotNull
-  public PsiElement getId() {
-    return findNotNullChildByType(ID);
   }
 
 }

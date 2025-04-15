@@ -537,15 +537,20 @@ private type_recover ::= !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first 
 private type_first ::= ID | '(' | '|' | '&' | 'nil' | STRING | 'true' | 'false' | typeof_soft_keyword | '<'
 
 // Yes it looks like generic_type_pack, but maybe it's needed for something in the original grammar? Let's keep it
-generic_type_pack_parameter ::= ID '...' { extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
-generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack) { pin = 3; extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
+generic_type_pack_parameter ::= ID '...' { extends=base_generic_type_declaration }
+generic_type_pack_parameter_with_default ::= ID '...' '=' (type_pack | variadic_type_pack | generic_type_pack) { pin = 3; extends=base_generic_type_declaration }
 
 func_type_params ::= '<' generic_type_list '>' { pin = 1 }
 
 generic_type_list ::= (<<list (generic_type_declaration !'...')>> (',' | &'>'))? <<list generic_type_pack_parameter>>?
 
-generic_type_declaration ::= ID { extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
-generic_type_with_default_declaration ::= ID '=' type { extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement" }
+fake base_generic_type_declaration ::= ID ('=' type)? {
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"; implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+  name=generic_type_declaration
+}
+
+generic_type_declaration ::= ID { extends=base_generic_type_declaration }
+generic_type_with_default_declaration ::= ID '=' type { extends=base_generic_type_declaration }
 
 // Once the defaults stared we can't have anything other than default, plus generic type packs go after the normal types
 generic_type_list_with_defaults ::=

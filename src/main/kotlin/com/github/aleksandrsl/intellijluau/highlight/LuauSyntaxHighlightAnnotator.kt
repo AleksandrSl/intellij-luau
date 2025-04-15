@@ -163,22 +163,18 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
 
     private fun AnnotationHolder.functionTypeParams(element: LuauFuncTypeParams) {
         element.genericTypeList?.run {
-            genericTypeDeclarationList.forEach { typeParameter(it.id) }
             // In vscode they don't highlight the ... even though they are part of the type itself
-            genericTypePackParameterList.forEach { typeParameter(it.id) }
+            baseGenericTypeDeclarationList.forEach { typeParameter(it.id) }
         }
     }
 
     private fun AnnotationHolder.genericsTypeList(element: LuauGenericTypeListWithDefaults) {
-        element.genericTypeDeclarationList.forEach { typeParameter(it.id) }
-        element.genericTypePackParameterList.forEach { typeParameter(it.id) }
-        element.genericTypeWithDefaultDeclarationList.forEach { typeParameter(it.id) }
-        element.genericTypePackParameterWithDefaultList.forEach { typeParameter(it.id) }
+        element.baseGenericTypeDeclarationList.forEach { typeParameter(it.id) }
     }
 
     private fun AnnotationHolder.typeReference(element: LuauSimpleTypeReference) {
         element.reference.resolve()?.takeIf {
-            it is LuauGenericTypeDeclaration
+            it is LuauBaseGenericTypeDeclaration
         }?.let { typeParameter(element) } ?: type(element)
     }
 
