@@ -90,6 +90,10 @@
         <additionalTextAttributes
                 scheme="Darcula"
                 file="colorSchemes/luauDarcula.xml"/>
+        <projectService serviceImplementation="com.github.aleksandrsl.intellijluau.LuauStdLibServiceImpl"
+                        testServiceImplementation="com.github.aleksandrsl.intellijluau.LuauStdLibServiceTestImpl"
+                        serviceInterface="com.github.aleksandrsl.intellijluau.LuauStdLibService"
+        />
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
