@@ -25,3 +25,7 @@ end
 @[deprecated ('test', { 9, 10 })]
 local function f(t)
 end
+
+@[deprecated {use = "bar()"}, native]
+local function f(t)
+end
