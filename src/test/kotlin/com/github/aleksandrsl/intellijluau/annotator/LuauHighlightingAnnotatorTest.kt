@@ -25,4 +25,9 @@ class LuauHighlightingAnnotatorTest : BasePlatformTestCase() {
         myFixture.configureByFile("stdlib.luau")
         myFixture.checkHighlighting(false, true, true, false)
     }
+
+    fun `test attributes`() {
+        myFixture.configureByFile("attributes.luau")
+        myFixture.checkHighlighting(false, true, true, false)
+    }
 }
