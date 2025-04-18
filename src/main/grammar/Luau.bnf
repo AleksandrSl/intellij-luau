@@ -142,8 +142,8 @@ private statement_with_recover ::= !('end' | 'return' | continue_soft_keyword | 
 block ::= (statement_with_recover ';'?)* (last_statement ';'?)?
 
 private statement ::=
-    // TODO (AleksandrSl 07/03/2025): There will be a type function support shortly.
-     type_declaration_statement
+     type_function_declaration_statement
+     | type_declaration_statement
      | do_statement
      | while_statement
      | repeat_statement
@@ -201,7 +201,11 @@ last_statement ::= return_statement | 'break' | continue_soft_keyword
 //  thisExpression ::= 'this'
 //  {mixin="com.jetbrains.lang.dart.psi.impl.DartReferenceImpl" implements="com.jetbrains.lang.dart.psi.DartReference"}
 
-
+type_function_declaration_statement ::= export_soft_keyword? type_soft_keyword 'function' ID func_body {
+  pin = 3
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements=["com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"]
+}
 type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' generic_type_list_with_defaults '>')? '=' type {
   pin = 2;
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
@@ -569,7 +573,7 @@ read_soft_keyword ::= 'read'
 write_soft_keyword ::= 'write'
 
 type_computed_key ::= '[' type ']' { pin = 1 }
-type_keyed_field ::= type_computed_key ':' type { pin = 1}
+type_keyed_field ::= type_computed_key ':' type { pin = 1 }
 type_string_keyed_field ::= ID ':' type { pin = 1 }
 // lookahead is required to correctly parse `type D = {read: () -> string}`
 type_field ::= ((read_soft_keyword | write_soft_keyword) !':')? (type_string_keyed_field | type_keyed_field)

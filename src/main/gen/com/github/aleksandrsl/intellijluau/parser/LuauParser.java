@@ -2597,7 +2597,8 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // type_declaration_statement
+  // type_function_declaration_statement
+  //      | type_declaration_statement
   //      | do_statement
   //      | while_statement
   //      | repeat_statement
@@ -2612,7 +2613,8 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!recursion_guard_(b, l, "statement")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, null, "<statement>");
-    r = type_declaration_statement(b, l + 1);
+    r = type_function_declaration_statement(b, l + 1);
+    if (!r) r = type_declaration_statement(b, l + 1);
     if (!r) r = do_statement(b, l + 1);
     if (!r) r = while_statement(b, l + 1);
     if (!r) r = repeat_statement(b, l + 1);
@@ -3201,6 +3203,28 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = typeof_soft_keyword(b, l + 1);
     if (!r) r = consumeTokenFast(b, LT);
     return r;
+  }
+
+  /* ********************************************************** */
+  // export_soft_keyword? type_soft_keyword 'function' ID func_body
+  public static boolean type_function_declaration_statement(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_function_declaration_statement")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, TYPE_FUNCTION_DECLARATION_STATEMENT, "<type function declaration statement>");
+    r = type_function_declaration_statement_0(b, l + 1);
+    r = r && type_soft_keyword(b, l + 1);
+    r = r && consumeTokens(b, 1, FUNCTION, ID);
+    p = r; // pin = 3
+    r = r && func_body(b, l + 1);
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  // export_soft_keyword?
+  private static boolean type_function_declaration_statement_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_function_declaration_statement_0")) return false;
+    export_soft_keyword(b, l + 1);
+    return true;
   }
 
   /* ********************************************************** */

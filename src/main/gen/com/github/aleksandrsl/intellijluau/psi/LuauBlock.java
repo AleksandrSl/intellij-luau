@@ -50,6 +50,9 @@ public interface LuauBlock extends PsiElement {
   List<LuauTypeDeclarationStatement> getTypeDeclarationStatementList();
 
   @NotNull
+  List<LuauTypeFunctionDeclarationStatement> getTypeFunctionDeclarationStatementList();
+
+  @NotNull
   List<LuauWhileStatement> getWhileStatementList();
 
 }
