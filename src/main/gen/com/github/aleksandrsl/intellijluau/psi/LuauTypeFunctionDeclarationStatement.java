@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeFunctionDeclarationStatement extends LuauStatement {
+public interface LuauTypeFunctionDeclarationStatement extends LuauNamedElement, LuauStatement {
 
   @Nullable
   LuauExportSoftKeyword getExportSoftKeyword();

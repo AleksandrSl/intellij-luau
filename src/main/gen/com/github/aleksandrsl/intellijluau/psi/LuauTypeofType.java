@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeofType extends PsiElement {
+public interface LuauTypeofType extends LuauElement {
 
   @NotNull
   LuauExpression getExpression();

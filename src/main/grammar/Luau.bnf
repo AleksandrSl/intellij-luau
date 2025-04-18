@@ -2,6 +2,7 @@
   parserClass="com.github.aleksandrsl.intellijluau.parser.LuauParser"
   parserUtilClass="com.github.aleksandrsl.intellijluau.parser.LuauParserUtilBase"
 
+  implements='com.github.aleksandrsl.intellijluau.psi.LuauElement'
   extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
 
   psiClassPrefix="Luau"
@@ -314,7 +315,7 @@ lvalue ::= <<parseLvalue index_or_call_expr>>
 
 // TODO (AleksandrSl 05/04/2025): WHy do I chose references plural?
 // Interesting that in dart, at least, the reference itself implements psi reference. I don't know what is the benefit, less objects?
-simple_reference ::= ID { methods=[getReferences] }
+simple_reference ::= ID { methods=[getReference] }
 
 private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)*
 // TODO (AleksandrSl 05/04/2025): Array access can be a reference as well? I have a feeling that I saw it somewhere in another plugin

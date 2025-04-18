@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauVariadicTypePack extends PsiElement {
+public interface LuauVariadicTypePack extends LuauElement {
 
   @Nullable
   LuauType getType();

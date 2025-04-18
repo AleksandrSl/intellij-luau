@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauMethodName extends PsiElement {
+public interface LuauMethodName extends LuauElement {
 
   @NotNull
   List<LuauSimpleReference> getSimpleReferenceList();

@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauKeyedField extends PsiElement {
+public interface LuauKeyedField extends LuauElement {
 
   @NotNull
   LuauComputedKey getComputedKey();

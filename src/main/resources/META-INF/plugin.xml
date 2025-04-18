@@ -51,8 +51,6 @@
         <!--        />-->
         <lang.refactoringSupport language="Luau"
                                  implementationClass="com.github.aleksandrsl.intellijluau.refactoring.LuauRefactoringSupportProvider"/>
-        <psi.referenceContributor language="Luau"
-                                  implementation="com.github.aleksandrsl.intellijluau.psi.LuauReferenceContributor"/>
         <lang.quoteHandler language="Luau" implementationClass="com.github.aleksandrsl.intellijluau.LuauQuoteHandler"/>
         <lang.braceMatcher
                 language="Luau"

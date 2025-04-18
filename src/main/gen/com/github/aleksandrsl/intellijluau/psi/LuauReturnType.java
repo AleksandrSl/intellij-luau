@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauReturnType extends PsiElement {
+public interface LuauReturnType extends LuauElement {
 
   @Nullable
   LuauGenericTypePack getGenericTypePack();

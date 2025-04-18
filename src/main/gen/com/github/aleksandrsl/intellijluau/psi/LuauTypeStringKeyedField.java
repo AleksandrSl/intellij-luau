@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeStringKeyedField extends PsiElement {
+public interface LuauTypeStringKeyedField extends LuauElement {
 
   @Nullable
   LuauType getType();

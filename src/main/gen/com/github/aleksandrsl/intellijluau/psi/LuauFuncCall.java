@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauFuncCall extends PsiElement {
+public interface LuauFuncCall extends LuauElement {
 
   @Nullable
   LuauFuncArgs getFuncArgs();
