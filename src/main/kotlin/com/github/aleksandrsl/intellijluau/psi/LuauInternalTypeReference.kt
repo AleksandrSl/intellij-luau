@@ -12,7 +12,7 @@ class LuauInternalTypeReference(element: LuauSimpleTypeReference) : PsiReference
 
     // What do I want, to simplify finding generic types declared.
     // Maybe even mark the PSI as GenericDeclarationHolder search for it and get it's types.
-    override fun resolve(): PsiElement? {
+    override fun resolve(): LuauElement? {
         // (╯°□°)╯︵ ┻━┻ getChildrenOfType is not recursive.
         (myElement.parent as LuauTypeReference).let { typeReference ->
             // Our type is SomeModule.Type. Handle this later

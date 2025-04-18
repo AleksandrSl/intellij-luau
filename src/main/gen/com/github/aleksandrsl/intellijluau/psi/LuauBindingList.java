@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauBindingList extends PsiElement {
+public interface LuauBindingList extends LuauElement {
 
   @NotNull
   List<LuauBinding> getBindingList();

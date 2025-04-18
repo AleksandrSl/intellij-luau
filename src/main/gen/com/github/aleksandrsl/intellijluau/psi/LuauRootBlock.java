@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauRootBlock extends PsiElement {
+public interface LuauRootBlock extends LuauElement {
 
   @NotNull
   List<LuauAssignmentStatement> getAssignmentStatementList();

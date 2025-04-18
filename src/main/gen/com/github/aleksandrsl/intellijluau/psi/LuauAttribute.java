@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauAttribute extends PsiElement {
+public interface LuauAttribute extends LuauElement {
 
   @NotNull
   List<LuauParametrizedAttribute> getParametrizedAttributeList();

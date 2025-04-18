@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauParenthesisedType extends PsiElement {
+public interface LuauParenthesisedType extends LuauElement {
 
   @NotNull
   LuauType getType();

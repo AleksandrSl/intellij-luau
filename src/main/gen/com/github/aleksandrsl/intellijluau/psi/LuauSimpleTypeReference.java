@@ -6,7 +6,7 @@ import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiReference;
 
-public interface LuauSimpleTypeReference extends PsiElement {
+public interface LuauSimpleTypeReference extends LuauElement {
 
   @NotNull
   PsiElement getId();

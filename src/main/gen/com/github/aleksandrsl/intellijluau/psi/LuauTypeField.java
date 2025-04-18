@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauTypeField extends PsiElement {
+public interface LuauTypeField extends LuauElement {
 
   @Nullable
   LuauReadSoftKeyword getReadSoftKeyword();

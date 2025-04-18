@@ -5,8 +5,7 @@ import com.intellij.lang.ASTNode
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 
-interface LuauNamedElement: PsiNameIdentifierOwner {
-}
+interface LuauNamedElement : PsiNameIdentifierOwner, LuauElement
 
 open class LuauNamedElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), LuauNamedElement {
     override fun setName(name: String): PsiElement {

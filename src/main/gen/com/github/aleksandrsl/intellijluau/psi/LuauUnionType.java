@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauUnionType extends PsiElement {
+public interface LuauUnionType extends LuauElement {
 
   @Nullable
   LuauFunctionType getFunctionType();
