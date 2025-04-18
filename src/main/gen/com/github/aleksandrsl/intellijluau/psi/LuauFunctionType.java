@@ -17,7 +17,6 @@ public interface LuauFunctionType extends LuauGenericDeclaration {
   @Nullable
   LuauReturnType getReturnType();
 
-  @NotNull
-  Collection<LuauNamedElement> getDeclaredGenerics();
+  @NotNull Collection<@NotNull LuauNamedElement> getDeclaredGenerics();
 
 }

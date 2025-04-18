@@ -47,8 +47,7 @@ public class LuauLocalFuncDefStatementImpl extends LuauNamedElementImpl implemen
   }
 
   @Override
-  @NotNull
-  public ItemPresentation getPresentation() {
+  public @NotNull ItemPresentation getPresentation() {
     return LuauPsiImplUtilKt.getPresentation(this);
   }
 

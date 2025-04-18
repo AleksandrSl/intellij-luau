@@ -77,6 +77,7 @@ public interface LuauTypes {
   IElementType PAR_LIST = new LuauElementType("PAR_LIST");
   IElementType PLUS_EXPR = new LuauElementType("PLUS_EXPR");
   IElementType PRIMARY_GROUP_EXPR = new LuauElementType("PRIMARY_GROUP_EXPR");
+  IElementType READ_SOFT_KEYWORD = new LuauElementType("READ_SOFT_KEYWORD");
   IElementType REPEAT_STATEMENT = new LuauElementType("REPEAT_STATEMENT");
   IElementType RETURN_TYPE = new LuauElementType("RETURN_TYPE");
   IElementType ROOT_BLOCK = new LuauElementType("ROOT_BLOCK");
@@ -108,6 +109,7 @@ public interface LuauTypes {
   IElementType VARIADIC_TYPE_PACK = new LuauElementType("VARIADIC_TYPE_PACK");
   IElementType VAR_LIST = new LuauElementType("VAR_LIST");
   IElementType WHILE_STATEMENT = new LuauElementType("WHILE_STATEMENT");
+  IElementType WRITE_SOFT_KEYWORD = new LuauElementType("WRITE_SOFT_KEYWORD");
 
   IElementType AND = new LuauTokenType("and");
   IElementType ARROW = new LuauTokenType("->");
@@ -389,6 +391,9 @@ public interface LuauTypes {
       else if (type == PRIMARY_GROUP_EXPR) {
         return new LuauPrimaryGroupExprImpl(node);
       }
+      else if (type == READ_SOFT_KEYWORD) {
+        return new LuauReadSoftKeywordImpl(node);
+      }
       else if (type == REPEAT_STATEMENT) {
         return new LuauRepeatStatementImpl(node);
       }
@@ -481,6 +486,9 @@ public interface LuauTypes {
       }
       else if (type == WHILE_STATEMENT) {
         return new LuauWhileStatementImpl(node);
+      }
+      else if (type == WRITE_SOFT_KEYWORD) {
+        return new LuauWriteSoftKeywordImpl(node);
       }
       throw new AssertionError("Unknown element type: " + type);
     }

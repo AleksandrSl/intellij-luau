@@ -59,8 +59,7 @@ public class LuauTypeDeclarationStatementImpl extends LuauNamedElementImpl imple
   }
 
   @Override
-  @NotNull
-  public Collection<LuauNamedElement> getDeclaredGenerics() {
+  public @NotNull Collection<@NotNull LuauNamedElement> getDeclaredGenerics() {
     return LuauPsiImplUtilKt.getDeclaredGenerics(this);
   }
 
