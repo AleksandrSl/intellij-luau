@@ -47,8 +47,7 @@ public class LuauFunctionTypeImpl extends ASTWrapperPsiElement implements LuauFu
   }
 
   @Override
-  @NotNull
-  public Collection<LuauNamedElement> getDeclaredGenerics() {
+  public @NotNull Collection<@NotNull LuauNamedElement> getDeclaredGenerics() {
     return LuauPsiImplUtilKt.getDeclaredGenerics(this);
   }
 

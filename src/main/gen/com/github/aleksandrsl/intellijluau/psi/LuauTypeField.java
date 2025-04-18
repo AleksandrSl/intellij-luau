@@ -8,9 +8,15 @@ import com.intellij.psi.PsiElement;
 public interface LuauTypeField extends PsiElement {
 
   @Nullable
+  LuauReadSoftKeyword getReadSoftKeyword();
+
+  @Nullable
   LuauTypeKeyedField getTypeKeyedField();
 
   @Nullable
   LuauTypeStringKeyedField getTypeStringKeyedField();
+
+  @Nullable
+  LuauWriteSoftKeyword getWriteSoftKeyword();
 
 }

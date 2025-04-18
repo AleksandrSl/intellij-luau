@@ -290,6 +290,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitExpression(o);
   }
 
+  public void visitReadSoftKeyword(@NotNull LuauReadSoftKeyword o) {
+    visitSoftKeyword(o);
+  }
+
   public void visitRepeatStatement(@NotNull LuauRepeatStatement o) {
     visitStatement(o);
   }
@@ -414,6 +418,10 @@ public class LuauVisitor extends PsiElementVisitor {
 
   public void visitWhileStatement(@NotNull LuauWhileStatement o) {
     visitStatement(o);
+  }
+
+  public void visitWriteSoftKeyword(@NotNull LuauWriteSoftKeyword o) {
+    visitSoftKeyword(o);
   }
 
   public void visitGenericDeclaration(@NotNull LuauGenericDeclaration o) {

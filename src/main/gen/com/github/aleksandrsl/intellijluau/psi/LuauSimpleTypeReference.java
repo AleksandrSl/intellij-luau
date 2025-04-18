@@ -11,7 +11,6 @@ public interface LuauSimpleTypeReference extends PsiElement {
   @NotNull
   PsiElement getId();
 
-  @NotNull
-  PsiReference getReference();
+  @NotNull PsiReference getReference();
 
 }

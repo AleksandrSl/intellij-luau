@@ -41,8 +41,7 @@ public class LuauBindingImpl extends LuauNamedElementImpl implements LuauBinding
   }
 
   @Override
-  @NotNull
-  public ItemPresentation getPresentation() {
+  public @NotNull ItemPresentation getPresentation() {
     return LuauPsiImplUtilKt.getPresentation(this);
   }
 

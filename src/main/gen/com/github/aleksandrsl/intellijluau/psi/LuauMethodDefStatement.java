@@ -17,7 +17,6 @@ public interface LuauMethodDefStatement extends LuauNamedElement, LuauStatement 
   @NotNull
   LuauMethodName getMethodName();
 
-  @NotNull
-  ItemPresentation getPresentation();
+  @NotNull ItemPresentation getPresentation();
 
 }

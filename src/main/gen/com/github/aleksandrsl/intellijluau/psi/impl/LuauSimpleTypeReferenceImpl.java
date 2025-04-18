@@ -35,8 +35,7 @@ public class LuauSimpleTypeReferenceImpl extends ASTWrapperPsiElement implements
   }
 
   @Override
-  @NotNull
-  public PsiReference getReference() {
+  public @NotNull PsiReference getReference() {
     return LuauPsiImplUtilKt.getReference(this);
   }
 

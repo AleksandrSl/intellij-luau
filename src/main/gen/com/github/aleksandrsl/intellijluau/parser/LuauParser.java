@@ -2353,6 +2353,17 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // 'read'
+  public static boolean read_soft_keyword(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "read_soft_keyword")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, READ_SOFT_KEYWORD, "<read soft keyword>");
+    r = consumeToken(b, "read");
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
   // 'repeat' block 'until' expression
   public static boolean repeat_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "repeat_statement")) return false;
@@ -3117,15 +3128,60 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // type_string_keyed_field | type_keyed_field
+  // ((read_soft_keyword | write_soft_keyword) !':')? (type_string_keyed_field | type_keyed_field)
   public static boolean type_field(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_field")) return false;
-    if (!nextTokenIs(b, "<type field>", ID, LBRACK)) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, TYPE_FIELD, "<type field>");
+    r = type_field_0(b, l + 1);
+    r = r && type_field_1(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // ((read_soft_keyword | write_soft_keyword) !':')?
+  private static boolean type_field_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_field_0")) return false;
+    type_field_0_0(b, l + 1);
+    return true;
+  }
+
+  // (read_soft_keyword | write_soft_keyword) !':'
+  private static boolean type_field_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_field_0_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b);
+    r = type_field_0_0_0(b, l + 1);
+    r = r && type_field_0_0_1(b, l + 1);
+    exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // read_soft_keyword | write_soft_keyword
+  private static boolean type_field_0_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_field_0_0_0")) return false;
+    boolean r;
+    r = read_soft_keyword(b, l + 1);
+    if (!r) r = write_soft_keyword(b, l + 1);
+    return r;
+  }
+
+  // !':'
+  private static boolean type_field_0_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_field_0_0_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !consumeToken(b, COLON);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // type_string_keyed_field | type_keyed_field
+  private static boolean type_field_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_field_1")) return false;
+    boolean r;
     r = type_string_keyed_field(b, l + 1);
     if (!r) r = type_keyed_field(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -3546,6 +3602,17 @@ public class LuauParser implements PsiParser, LightPsiParser {
     r = p && consumeToken(b, END) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
+  }
+
+  /* ********************************************************** */
+  // 'write'
+  public static boolean write_soft_keyword(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "write_soft_keyword")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, WRITE_SOFT_KEYWORD, "<write soft keyword>");
+    r = consumeToken(b, "write");
+    exit_section_(b, l, m, r, false, null);
+    return r;
   }
 
   /* ********************************************************** */

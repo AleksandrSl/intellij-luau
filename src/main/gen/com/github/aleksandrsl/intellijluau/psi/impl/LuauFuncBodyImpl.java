@@ -53,8 +53,7 @@ public class LuauFuncBodyImpl extends ASTWrapperPsiElement implements LuauFuncBo
   }
 
   @Override
-  @NotNull
-  public Collection<LuauNamedElement> getDeclaredGenerics() {
+  public @NotNull Collection<@NotNull LuauNamedElement> getDeclaredGenerics() {
     return LuauPsiImplUtilKt.getDeclaredGenerics(this);
   }
 

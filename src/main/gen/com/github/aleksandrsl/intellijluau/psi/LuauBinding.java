@@ -14,7 +14,6 @@ public interface LuauBinding extends LuauNamedElement {
   @NotNull
   PsiElement getId();
 
-  @NotNull
-  ItemPresentation getPresentation();
+  @NotNull ItemPresentation getPresentation();
 
 }

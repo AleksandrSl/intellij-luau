@@ -565,10 +565,14 @@ private bound_type_list_recover ::= !(')')
 // Don't change order, see type_params
 return_type ::= variadic_type_pack | generic_type_pack | type | type_pack
 
+read_soft_keyword ::= 'read'
+write_soft_keyword ::= 'write'
+
 type_computed_key ::= '[' type ']' { pin = 1 }
 type_keyed_field ::= type_computed_key ':' type { pin = 1}
 type_string_keyed_field ::= ID ':' type { pin = 1 }
-type_field ::= type_string_keyed_field | type_keyed_field
+// lookahead is required to correctly parse `type D = {read: () -> string}`
+type_field ::= ((read_soft_keyword | write_soft_keyword) !':')? (type_string_keyed_field | type_keyed_field)
 
 private table_type_field_with_recover ::= !'}' type_field (field_sep | &'}') { recoverWhile = table_type_field_recover; pin = 1 }
 // First branch is array type, second branch is table and empty table

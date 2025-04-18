@@ -23,7 +23,6 @@ public interface LuauTypeDeclarationStatement extends LuauNamedElement, LuauGene
   @Nullable
   PsiElement getId();
 
-  @NotNull
-  Collection<LuauNamedElement> getDeclaredGenerics();
+  @NotNull Collection<@NotNull LuauNamedElement> getDeclaredGenerics();
 
 }
