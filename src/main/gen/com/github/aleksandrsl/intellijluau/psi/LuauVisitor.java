@@ -364,6 +364,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitPsiElement(o);
   }
 
+  public void visitTypeFunctionDeclarationStatement(@NotNull LuauTypeFunctionDeclarationStatement o) {
+    visitStatement(o);
+  }
+
   public void visitTypeKeyedField(@NotNull LuauTypeKeyedField o) {
     visitPsiElement(o);
   }

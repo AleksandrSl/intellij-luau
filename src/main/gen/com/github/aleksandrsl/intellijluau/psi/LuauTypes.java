@@ -97,6 +97,7 @@ public interface LuauTypes {
   IElementType TYPE_COMPUTED_KEY = new LuauElementType("TYPE_COMPUTED_KEY");
   IElementType TYPE_DECLARATION_STATEMENT = new LuauElementType("TYPE_DECLARATION_STATEMENT");
   IElementType TYPE_FIELD = new LuauElementType("TYPE_FIELD");
+  IElementType TYPE_FUNCTION_DECLARATION_STATEMENT = new LuauElementType("TYPE_FUNCTION_DECLARATION_STATEMENT");
   IElementType TYPE_KEYED_FIELD = new LuauElementType("TYPE_KEYED_FIELD");
   IElementType TYPE_LIST = new LuauElementType("TYPE_LIST");
   IElementType TYPE_PACK = new LuauElementType("TYPE_PACK");
@@ -450,6 +451,9 @@ public interface LuauTypes {
       }
       else if (type == TYPE_FIELD) {
         return new LuauTypeFieldImpl(node);
+      }
+      else if (type == TYPE_FUNCTION_DECLARATION_STATEMENT) {
+        return new LuauTypeFunctionDeclarationStatementImpl(node);
       }
       else if (type == TYPE_KEYED_FIELD) {
         return new LuauTypeKeyedFieldImpl(node);

@@ -113,6 +113,12 @@ public class LuauRootBlockImpl extends ASTWrapperPsiElement implements LuauRootB
 
   @Override
   @NotNull
+  public List<LuauTypeFunctionDeclarationStatement> getTypeFunctionDeclarationStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauTypeFunctionDeclarationStatement.class);
+  }
+
+  @Override
+  @NotNull
   public List<LuauWhileStatement> getWhileStatementList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauWhileStatement.class);
   }
