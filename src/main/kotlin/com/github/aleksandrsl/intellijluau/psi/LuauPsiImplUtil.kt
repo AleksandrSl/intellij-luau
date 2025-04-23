@@ -3,7 +3,10 @@ package com.github.aleksandrsl.intellijluau.psi
 import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.navigation.ItemPresentation
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReference
+import com.intellij.psi.ResolveState
+import com.intellij.psi.scope.PsiScopeProcessor
 import com.intellij.psi.util.PsiTreeUtil
 
 fun getReference(element: LuauSimpleTypeReference): PsiReference {
@@ -18,6 +21,13 @@ fun getDeclaredGenerics(element: LuauTypeDeclarationStatement): Collection<LuauN
     element.genericTypeListWithDefaults,
     LuauNamedElement::class.java
 )
+
+fun processDeclarations(
+    element: LuauLocalFuncDefStatement, processor: PsiScopeProcessor, state: ResolveState, lastParent: PsiElement?, place: PsiElement
+): Boolean {
+    // If the function doesn't have a name I don't know how the resolve will work at all in half-valid PSI, but let's continue to the parent
+    return element.id == null || processor.execute(element, state)
+}
 
 fun getDeclaredGenerics(element: LuauFuncBody): Collection<LuauNamedElement> = PsiTreeUtil.findChildrenOfType(
     element.funcTypeParams,

@@ -1,18 +1,28 @@
 package com.github.aleksandrsl.intellijluau.psi
 
+import com.github.aleksandrsl.intellijluau.references.LuauScopeProcessor
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiReferenceBase
+import com.intellij.psi.ResolveState
 import com.intellij.psi.util.PsiTreeUtil
 
+/**
+ * Represents a reference to a variable in Luau code.
+ * Handles resolving the reference to its declaration.
+ */
 class LuauReference(element: LuauSimpleReference) : PsiReferenceBase<LuauSimpleReference>(element) {
 
     val id = myElement.id
 
     override fun resolve(): PsiElement? {
-        // (╯°□°)╯︵ ┻━┻ getChildrenOfType is not recursive.
-        return PsiTreeUtil.findChildrenOfType(myElement.containingFile, LuauNamedElement::class.java)
-            .find { it.name == id.text }
+        val processor = LuauScopeProcessor(id.text)
+
+        if (!PsiTreeUtil.treeWalkUp(processor, myElement, null, ResolveState.initial())) {
+            return processor.result
+        }
+
+        return null
     }
 
     // If I don't want to override this, I need that fckng ElementManipulator.
