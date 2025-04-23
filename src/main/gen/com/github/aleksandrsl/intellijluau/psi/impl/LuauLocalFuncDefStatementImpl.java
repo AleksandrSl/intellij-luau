@@ -11,6 +11,8 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl;
 import com.github.aleksandrsl.intellijluau.psi.*;
 import com.intellij.navigation.ItemPresentation;
+import com.intellij.psi.ResolveState;
+import com.intellij.psi.scope.PsiScopeProcessor;
 
 public class LuauLocalFuncDefStatementImpl extends LuauNamedElementImpl implements LuauLocalFuncDefStatement {
 
@@ -49,6 +51,11 @@ public class LuauLocalFuncDefStatementImpl extends LuauNamedElementImpl implemen
   @Override
   public @NotNull ItemPresentation getPresentation() {
     return LuauPsiImplUtilKt.getPresentation(this);
+  }
+
+  @Override
+  public boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, @Nullable PsiElement lastParent, @NotNull PsiElement place) {
+    return LuauPsiImplUtilKt.processDeclarations(this, processor, state, lastParent, place);
   }
 
 }

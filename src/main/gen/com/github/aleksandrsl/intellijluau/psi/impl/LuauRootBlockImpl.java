@@ -8,10 +8,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
+import com.github.aleksandrsl.intellijluau.psi.LuauBlockImplMixin;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauRootBlockImpl extends ASTWrapperPsiElement implements LuauRootBlock {
+public class LuauRootBlockImpl extends LuauBlockImplMixin implements LuauRootBlock {
 
   public LuauRootBlockImpl(@NotNull ASTNode node) {
     super(node);

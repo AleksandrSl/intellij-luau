@@ -130,7 +130,7 @@ fake operator ::=
 
 // It's not mandatory to have the different rules for blocks, but the root one can be simpler
 private root_statement_with_recover ::= !('return' | <<eof>>) statement { pin = 1 recoverWhile = statement_recover }
-root_block ::= (root_statement_with_recover ';'?)* (return_statement ';'?)?
+root_block ::= (root_statement_with_recover ';'?)* (return_statement ';'?)? { mixin="com.github.aleksandrsl.intellijluau.psi.LuauBlockImplMixin" }
 
 /* TODO (AleksandrSl 26/03/2025):
  *  I don't know how bad 5 element lookahead is, it's good that they all are just one token.
@@ -140,7 +140,7 @@ root_block ::= (root_statement_with_recover ';'?)* (return_statement ';'?)?
  *  Probably I can split this into more granular rules if such a long lookahead is a performance problem
  */
 private statement_with_recover ::= !('end' | 'return' | continue_soft_keyword | 'break' | 'else' | 'elseif' | 'until' | <<eof>>) statement { pin = 1 recoverWhile = statement_recover }
-block ::= (statement_with_recover ';'?)* (last_statement ';'?)?
+block ::= (statement_with_recover ';'?)* (last_statement ';'?)? { mixin="com.github.aleksandrsl.intellijluau.psi.LuauBlockImplMixin" }
 
 private statement ::=
      type_function_declaration_statement
@@ -173,6 +173,7 @@ do_statement ::= 'do' block 'end' { pin = 1 }
 while_statement ::= 'while' expression 'do' block 'end' { pin = 1 }
 repeat_statement ::= 'repeat' block 'until' expression { pin = 1 }
 if_statement ::= 'if' expression 'then' block ('elseif' expression 'then' block)* ('else' block)? 'end' { pin = 1 }
+// TODO (AleksandrSl 22/04/2025): Should I consider binding '=' expression in general as a separate node to be able to get the value easier for type inference?
 // Yes, we can only have one variable here, and yes we can type it: `for i: number=10,1,-1 do print(i) end`
 classic_for_statement ::= 'for' binding '=' expression ',' expression (',' expression)? 'do' block 'end' { pin = 3 }
 // Rename for into numeric_for and generic_for as in lua docs
@@ -272,11 +273,12 @@ func_def_statement ::= attributes? 'function' ID func_body {
 // 'function' is pinned because pinning local won't allow to match variable definitions
 local_func_def_statement ::= attributes? 'local' 'function' ID func_body {
   pin = 3
-  methods=[getPresentation]
+  methods=[getPresentation processDeclarations]
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
   implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
 }
 
+// TODO (AleksandrSl 22/04/2025): Fix the fact that the first ID probably considered the name, but it should be the last one
 method_def_statement ::= attributes? 'function' method_name func_body {
   pin = 3;
   methods=[getPresentation];
