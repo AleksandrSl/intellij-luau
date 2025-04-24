@@ -2,7 +2,7 @@ package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.cli.LspCli
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
-import com.github.aleksandrsl.intellijluau.cli.RobloxCli
+import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooser
@@ -12,25 +12,24 @@ import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.CollectionListModel
 import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.selected
 import kotlinx.coroutines.launch
 import javax.swing.JComponent
-import javax.swing.JRadioButton
 import kotlin.io.path.exists
 
 private val LOG = logger<ProjectSettingsComponent>()
 
 class ProjectSettingsComponent(
     private val service: LuauCliService,
-    private val projectDir: VirtualFile?,
-    private val project: Project,
     private val settings: ProjectSettingsState.State,
+    private val project: Project,
 ) {
     private var lspVersion: String? = null
     private var styLuaVersion: String? = null
@@ -78,37 +77,11 @@ class ProjectSettingsComponent(
     }
 
     private val lspVersionLabelComponent = JBLabel()
-    private val robloxCliPathComponent = TextFieldWithBrowseButton().apply {
-        addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
-        textField.document.addDocumentListener(object : DocumentAdapter() {
-            override fun textChanged(event: javax.swing.event.DocumentEvent) {
-                if (text.isEmpty()) {
-                    return
-                }
-                val maybePath = text.toNioPathOrNull()
-                if (maybePath == null || !maybePath.exists()) {
-                    return
-                }
-                service.coroutineScope.launch {
-                    setRobloxCliVersion(RobloxCli(maybePath).queryVersion()) // New robloxCli logic
-                }
-            }
-        })
-
-    }
-    private val robloxCliVersionLabelComponent = JBLabel()
-    private val rbxpPathComponentLabelComponent = JBLabel(".rbxp")
-    private val rbxpPathComponent = TextFieldWithBrowseButton().apply {
-        // I took a brief looks at the whole hierarchy, and I don't see what useful thing happens if you provide a project.
-        // Maybe it helps with the locate project folder button.
-        // I override the initial file just to be sure we start from the project folder.
-        addBrowseFolderListener(object :
-            TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileDescriptor("rbxp"), project) {
-            override fun getInitialFile(): VirtualFile? = projectDir
-        })
-    }
     private val styluaVersionLabelComponent = JBLabel()
     private val customDefinitionsToolbar = CustomDefinitionsToolbar()
+
+    // Required only to easily enable/disable the whole lsp group. Assigned on first form creation.
+    private lateinit var lspEnabledRadioButton: JBRadioButton
 
     init {
         panel = panel {
@@ -119,35 +92,40 @@ class ProjectSettingsComponent(
                 row {
                     cell(lspVersionLabelComponent).align(AlignX.FILL).resizableColumn()
                 }
-                row("Roblox Security Level:") {
-                    comboBox(
-                        listOf(
-                            RobloxSecurityLevel.None,
-                            RobloxSecurityLevel.PluginSecurity,
-                            RobloxSecurityLevel.LocalUserSecurity,
-                            RobloxSecurityLevel.RobloxScriptSecurity,
-                        )
-                    ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
-                }
-                collapsibleGroup("Custom Definitions") {
-                    row {
-                        cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL).bind(
-                            {
-                                customDefinitionsToolbar.paths.toList()
-                            },
-                            { _, value -> customDefinitionsToolbar.paths = value },
-                            settings::customDefinitionsPaths.toMutableProperty()
-                        )
-                    }
-                }
                 buttonsGroup {
                     row {
-                        radioButton("Enabled", true)
-                    }
-                    row {
+                        lspEnabledRadioButton = radioButton("Enabled", true).component
                         radioButton("Disabled", false)
                     }
                 }.bind(settings::isLspEnabled)
+                rowsRange {
+                    // TODO (AleksandrSl 24/04/2025): Is there a nice way to disable the ones below when lsp is disabled?
+                    //  Bindings are nice, but they don't have the best documentation
+                    row("Roblox Security Level:") {
+                        comboBox(
+                            listOf(
+                                RobloxSecurityLevel.None,
+                                RobloxSecurityLevel.PluginSecurity,
+                                RobloxSecurityLevel.LocalUserSecurity,
+                                RobloxSecurityLevel.RobloxScriptSecurity,
+                            )
+                        ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
+                    }
+                    collapsibleGroup("Custom Definitions") {
+                        row {
+                            cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL).bind(
+                                {
+                                    customDefinitionsToolbar.paths.toList()
+                                },
+                                { _, value -> customDefinitionsToolbar.paths = value },
+                                settings::customDefinitionsPaths.toMutableProperty()
+                            )
+                        }
+                    }
+                    row("Sourcemap Generation Command:") {
+                        textField().bindText(settings::sourcemapGenerationCommand).align(AlignX.FILL).resizableColumn()
+                    }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
+                }.enabledIf(lspEnabledRadioButton.selected)
             }
             group("StyLua") {
                 row("Path to StyLua:") {
@@ -165,8 +143,7 @@ class ProjectSettingsComponent(
                     }
                     row {
                         radioButton(
-                            "On save and disable builtin formatter",
-                            RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
+                            "On save and disable builtin formatter", RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
                         )
                     }
                     row {
@@ -174,26 +151,7 @@ class ProjectSettingsComponent(
                     }
                 }.bind(settings::runStyLua)
             }
-            group("Roblox CLI") {
-                row("Path to Roblox CLI:") {
-                    cell(robloxCliPathComponent).align(AlignX.FILL).resizableColumn().bindText(settings::robloxCliPath)
-                }.resizableRow()
-                row {
-                    cell(robloxCliVersionLabelComponent).align(AlignX.FILL).resizableColumn()
-                }
-                row {
-                    checkBox("Generate source maps from .rbxp file").bindSelected(settings::generateSourceMapsFromRbxp)
-                    rbxpPathComponentLabelComponent.labelFor = rbxpPathComponent
-                    cell(rbxpPathComponentLabelComponent)
-                    cell(rbxpPathComponent).align(AlignX.FILL).resizableColumn()
-                        .bindText(settings::rbxpForSourcemapPath)
-                }
-            }
         }
-    }
-
-    private fun setRobloxCliVersion(newVersion: String) {
-        robloxCliVersionLabelComponent.text = "Version: $newVersion"
     }
 
     private fun setStyluaVersion(newVersion: String) {

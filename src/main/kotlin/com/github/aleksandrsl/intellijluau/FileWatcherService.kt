@@ -1,14 +1,17 @@
 package com.github.aleksandrsl.intellijluau
 
-import com.github.aleksandrsl.intellijluau.cli.RobloxCli
+import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileTypes.FileTypeRegistry
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.guessProjectDir
 import com.intellij.openapi.util.Disposer
@@ -22,7 +25,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okio.Path.Companion.toPath
 import java.io.IOException
 
 private val LOG = logger<FileWatcherService>()
@@ -40,26 +42,27 @@ class FileWatcherService(private val project: Project, private val coroutineScop
         projectDir = project.guessProjectDir()
         messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
-            ProjectSettingsConfigurable.TOPIC,
-            object : ProjectSettingsConfigurable.SettingsChangeListener {
+            ProjectSettingsConfigurable.TOPIC, object : ProjectSettingsConfigurable.SettingsChangeListener {
                 override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    LOG.warn("Settings changed, new: ${e.newState.shouldGenerateSourceMapsFromRbxp}, old: ${e.oldState.shouldGenerateSourceMapsFromRbxp}")
-                    if (e.newState.shouldGenerateSourceMapsFromRbxp && !e.oldState.shouldGenerateSourceMapsFromRbxp) {
+                    LOG.info("Settings changed, new: ${e.newState.shouldGenerateSourcemap}, old: ${e.oldState.shouldGenerateSourcemap}")
+                    if (e.newState.shouldGenerateSourcemap && !e.oldState.shouldGenerateSourcemap) {
                         start()
                     } else {
                         stop()
                     }
                 }
             })
+
+        if (ProjectSettingsState.getInstance(project).shouldGenerateSourcemap) {
+            start()
+        }
     }
 
     fun start() {
         if (projectDir == null) {
             LuauNotifications.pluginNotifications().createNotification(
-                "Cannot guess the project root. You're unlucky",
-                NotificationType.ERROR
-            )
-                .notify(project)
+                "Cannot guess the project root. You're unlucky", NotificationType.ERROR
+            ).notify(project)
             return
         }
         if (isActive) return
@@ -75,13 +78,12 @@ class FileWatcherService(private val project: Project, private val coroutineScop
             object : AsyncFileListener {
                 override fun prepareChange(events: List<VFileEvent>): AsyncFileListener.ChangeApplier? {
                     val luaFileEvents =
-                        events
-                            .filter { it is VFileMoveEvent || it is VFileCopyEvent || it is VFileCreateEvent || it is VFileDeleteEvent || (it is VFilePropertyChangeEvent && it.propertyName == VirtualFile.PROP_NAME) }
+                        events.filter { it is VFileMoveEvent || it is VFileCopyEvent || it is VFileCreateEvent || it is VFileDeleteEvent || (it is VFilePropertyChangeEvent && it.propertyName == VirtualFile.PROP_NAME) }
                             .filter {
                                 // Should be fine to feed the whole path into getFileTypeByFileName,
                                 // it searches for the last extension inside
                                 FileTypeRegistry.getInstance()
-                                    .getFileTypeByFileName(it.path) == LuauFileType && it.path.startsWith(projectDir!!.path)
+                                    .getFileTypeByFileName(it.path) == LuauFileType && it.path.startsWith(projectDir.path)
                             }
 
                     if (luaFileEvents.isEmpty()) return null
@@ -102,10 +104,8 @@ class FileWatcherService(private val project: Project, private val coroutineScop
                     regenerateSourcemap()
                 } catch (e: Exception) {
                     LuauNotifications.pluginNotifications().createNotification(
-                        "Sourcemaps generation failed", "Error: ${e}.",
-                        NotificationType.ERROR
-                    )
-                        .notify(project)
+                        LuauBundle.message("luau.sourcemap.generation.failed"), "Error: ${e}.", NotificationType.ERROR
+                    ).notify(project)
                 }
             }
         }
@@ -114,6 +114,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
     }
 
     fun stop() {
+        LOG.info("Stopping file watcher for project ${project.name}")
         if (!isActive) return
 
 
@@ -131,40 +132,43 @@ class FileWatcherService(private val project: Project, private val coroutineScop
     }
 
     private suspend fun regenerateSourcemap() {
-        LOG.warn("Regenerating sourcemap for project ${project.name}")
+        LOG.info("Regenerating sourcemap for project ${project.name}")
         val projectSettingsState = ProjectSettingsState.getInstance(project)
+        if (!projectSettingsState.shouldGenerateSourcemap) return
         withContext(Dispatchers.IO) {
             try {
-                val output =
-                    RobloxCli(projectSettingsState.robloxCliPath.toPath().toNioPath()).generateSourcemap(project)
+                val output = SourcemapGeneratorCli.generate(project)
+
                 withContext(Dispatchers.EDT) {
                     if (output.exitCode != 0) {
-                        LuauNotifications.pluginNotifications().createNotification(
-                            "Sourcemaps generation failed", "Exit code: ${output.exitCode}. Output: ${output.stdout}",
-                            NotificationType.ERROR
-                        )
-                            .notify(project)
+                        notifyError("Exit code: ${output.exitCode}. ${if (output.stdout.isNotBlank()) "Output: ${output.stdout}" else ""}. ${if (output.stderr.isNotBlank()) "Error: ${output.stderr}" else ""}")
                     }
                 }
             } catch (e: IOException) {
-                LuauNotifications.pluginNotifications().createNotification(
-                    "Sourcemaps generation failed", e.message ?: "",
-                    NotificationType.ERROR
-                )
-                    .notify(project)
+                notifyError(e.message ?: "")
             } catch (e: InterruptedException) {
-                LuauNotifications.pluginNotifications().createNotification(
-                    "Sourcemaps generation failed", e.message ?: "",
-                    NotificationType.ERROR
-                )
-                    .notify(project)
+                notifyError(e.message ?: "")
             }
 
         }
     }
 
+    private fun notifyError(message: String) {
+        LuauNotifications.pluginNotifications().createNotification(
+            LuauBundle.message("luau.sourcemap.generation.failed"), message, NotificationType.ERROR
+        ).addAction(NotificationAction.createSimple("Open settings") {
+            ShowSettingsUtil.getInstance().showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
+        }).notify(project)
+    }
+
     override fun dispose() {
         stop()
         messageBusConnection?.disconnect()
+    }
+
+    companion object {
+
+        @JvmStatic
+        fun getInstance(project: Project): FileWatcherService = project.service()
     }
 }
