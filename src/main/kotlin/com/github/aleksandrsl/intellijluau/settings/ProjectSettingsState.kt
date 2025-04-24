@@ -19,8 +19,8 @@ class ProjectSettingsState :
     val styLuaPath: String
         get() = internalState.styLuaPath
 
-    val robloxCliPath: String
-        get() = internalState.robloxCliPath
+    val sourcemapGenerationCommand: String
+        get() = internalState.sourcemapGenerationCommand
 
     val runStyluaOnSave
         get() = runStyLua == RunStyluaOption.RunOnSave || runStyLua == RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
@@ -44,11 +44,8 @@ class ProjectSettingsState :
     val customDefinitionsPaths
         get() = internalState.customDefinitionsPaths
 
-    val rbxpForSourcemapPath
-        get() = internalState.rbxpForSourcemapPath
-
-    val shouldGenerateSourceMapsFromRbxp
-        get() = internalState.shouldGenerateSourceMapsFromRbxp
+    val shouldGenerateSourcemap
+        get() = internalState.shouldGenerateSourcemap
 
     val isLspConfiguredAndEnabled
         get() = internalState.isLspConfiguredAndEnabled
@@ -65,16 +62,14 @@ class ProjectSettingsState :
     data class State(
         var lspPath: String = "",
         var styLuaPath: String = "",
-        var robloxCliPath: String = "",
+        var sourcemapGenerationCommand: String = "",
         var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
         var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
         var customDefinitionsPaths: List<String> = listOf(),
-        var generateSourceMapsFromRbxp: Boolean = false,
-        var rbxpForSourcemapPath: String = "",
         var isLspEnabled: Boolean = true
     ) {
-        val shouldGenerateSourceMapsFromRbxp: Boolean
-            get() = rbxpForSourcemapPath.isNotBlank() && generateSourceMapsFromRbxp && robloxCliPath.isNotBlank()
+        val shouldGenerateSourcemap: Boolean
+            get() = sourcemapGenerationCommand.isNotBlank()
         val isLspConfiguredAndEnabled: Boolean
             get() = lspPath.isNotBlank() && isLspEnabled
     }

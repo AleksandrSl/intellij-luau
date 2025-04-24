@@ -20,9 +20,8 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     override fun createComponent(): JComponent {
         return ProjectSettingsComponent(
             project.service<LuauCliService>(),
-            project.guessProjectDir(),
+            settings.state,
             project,
-            settings.state
         ).also {
             _component = it
         }.panel
