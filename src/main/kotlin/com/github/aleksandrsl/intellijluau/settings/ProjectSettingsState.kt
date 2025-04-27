@@ -69,7 +69,7 @@ class ProjectSettingsState :
         var isLspEnabled: Boolean = true
     ) {
         val shouldGenerateSourcemap: Boolean
-            get() = sourcemapGenerationCommand.isNotBlank()
+            get() = isLspConfiguredAndEnabled && sourcemapGenerationCommand.isNotBlank()
         val isLspConfiguredAndEnabled: Boolean
             get() = lspPath.isNotBlank() && isLspEnabled
     }
