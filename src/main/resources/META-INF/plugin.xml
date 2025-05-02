@@ -92,6 +92,9 @@
                         testServiceImplementation="com.github.aleksandrsl.intellijluau.LuauStdLibServiceTestImpl"
                         serviceInterface="com.github.aleksandrsl.intellijluau.LuauStdLibService"
         />
+        <completion.contributor language="Luau"
+                                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"
+                                order="first"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
