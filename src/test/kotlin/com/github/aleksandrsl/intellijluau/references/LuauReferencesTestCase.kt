@@ -107,5 +107,8 @@ class LuauReferencesTestCase : BasePlatformTestCase() {
     //  4. Qualified names (a.b.c)- there is a question how their resolution and introduction works.
     //  Should I resolve the topmost first and the look into it's internal declarations?
 
+    // T is not resolved
+    // local format = require(Dash.format) :: (<T...>(string, T...) -> string)
+
 }
 

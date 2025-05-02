@@ -315,9 +315,7 @@ binding_list ::= <<list binding>>
 var_list ::= <<list lvalue>>
 lvalue ::= <<parseLvalue index_or_call_expr>>
 
-// TODO (AleksandrSl 05/04/2025): WHy do I chose references plural?
-// Interesting that in dart, at least, the reference itself implements psi reference. I don't know what is the benefit, less objects?
-simple_reference ::= ID { methods=[getReference] }
+simple_reference ::= ID { mixin="com.github.aleksandrsl.intellijluau.psi.LuauSimpleReferenceImplMixin" }
 
 private index_or_call_expr ::= (simple_reference | paren_expr) (index_access | func_call)*
 // TODO (AleksandrSl 05/04/2025): Array access can be a reference as well? I have a feeling that I saw it somewhere in another plugin

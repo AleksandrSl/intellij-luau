@@ -8,11 +8,10 @@ import com.intellij.psi.PsiElement;
 import com.intellij.psi.PsiElementVisitor;
 import com.intellij.psi.util.PsiTreeUtil;
 import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
-import com.intellij.extapi.psi.ASTWrapperPsiElement;
+import com.github.aleksandrsl.intellijluau.psi.LuauSimpleReferenceImplMixin;
 import com.github.aleksandrsl.intellijluau.psi.*;
-import com.intellij.psi.PsiReference;
 
-public class LuauSimpleReferenceImpl extends ASTWrapperPsiElement implements LuauSimpleReference {
+public class LuauSimpleReferenceImpl extends LuauSimpleReferenceImplMixin implements LuauSimpleReference {
 
   public LuauSimpleReferenceImpl(@NotNull ASTNode node) {
     super(node);
@@ -32,11 +31,6 @@ public class LuauSimpleReferenceImpl extends ASTWrapperPsiElement implements Lua
   @NotNull
   public PsiElement getId() {
     return findNotNullChildByType(ID);
-  }
-
-  @Override
-  public @NotNull PsiReference getReference() {
-    return LuauPsiImplUtilKt.getReference(this);
   }
 
 }
