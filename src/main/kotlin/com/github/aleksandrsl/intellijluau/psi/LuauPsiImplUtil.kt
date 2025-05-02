@@ -13,10 +13,6 @@ fun getReference(element: LuauSimpleTypeReference): PsiReference {
     return LuauInternalTypeReference(element)
 }
 
-fun getReference(element: LuauSimpleReference): PsiReference {
-    return LuauReference(element)
-}
-
 fun getDeclaredGenerics(element: LuauTypeDeclarationStatement): Collection<LuauNamedElement> = PsiTreeUtil.findChildrenOfType(
     element.genericTypeListWithDefaults,
     LuauNamedElement::class.java

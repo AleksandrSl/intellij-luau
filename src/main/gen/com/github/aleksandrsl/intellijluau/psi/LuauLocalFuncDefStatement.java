@@ -22,4 +22,5 @@ public interface LuauLocalFuncDefStatement extends LuauNamedElement, LuauStateme
   @NotNull ItemPresentation getPresentation();
 
   boolean processDeclarations(@NotNull PsiScopeProcessor processor, @NotNull ResolveState state, @Nullable PsiElement lastParent, @NotNull PsiElement place);
+
 }
