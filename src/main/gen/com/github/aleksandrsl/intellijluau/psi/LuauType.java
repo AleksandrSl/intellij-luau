@@ -5,7 +5,7 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauType extends LuauElement {
+public interface LuauType extends LuauTypeElement {
 
   @Nullable
   LuauFunctionType getFunctionType();
@@ -24,5 +24,7 @@ public interface LuauType extends LuauElement {
 
   @Nullable
   LuauTypeofType getTypeofType();
+
+  @NotNull String getTextPresentation();
 
 }

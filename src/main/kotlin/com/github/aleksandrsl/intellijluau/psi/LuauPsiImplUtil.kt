@@ -1,5 +1,6 @@
 package com.github.aleksandrsl.intellijluau.psi
 
+import com.github.aleksandrsl.intellijluau.types.LuauTy
 import com.intellij.icons.AllIcons
 import com.intellij.ide.projectView.PresentationData
 import com.intellij.navigation.ItemPresentation
@@ -13,13 +14,18 @@ fun getReference(element: LuauSimpleTypeReference): PsiReference {
     return LuauInternalTypeReference(element)
 }
 
-fun getDeclaredGenerics(element: LuauTypeDeclarationStatement): Collection<LuauNamedElement> = PsiTreeUtil.findChildrenOfType(
-    element.genericTypeListWithDefaults,
-    LuauNamedElement::class.java
-)
+fun getDeclaredGenerics(element: LuauTypeDeclarationStatement): Collection<LuauNamedElement> =
+    PsiTreeUtil.findChildrenOfType(
+        element.genericTypeListWithDefaults,
+        LuauNamedElement::class.java
+    )
 
 fun processDeclarations(
-    element: LuauLocalFuncDefStatement, processor: PsiScopeProcessor, state: ResolveState, lastParent: PsiElement?, place: PsiElement
+    element: LuauLocalFuncDefStatement,
+    processor: PsiScopeProcessor,
+    state: ResolveState,
+    lastParent: PsiElement?,
+    place: PsiElement
 ): Boolean {
     // If the function doesn't have a name I don't know how the resolve will work at all in half-valid PSI, but let's continue to the parent
     return element.id == null || processor.execute(element, state)
@@ -61,9 +67,23 @@ fun getPresentation(element: LuauMethodDefStatement): ItemPresentation {
 
 fun getPresentation(element: LuauBinding): ItemPresentation {
     return PresentationData().apply {
-        val type = element.type
-        // Let's mimic Kotlin text
-        presentableText = "${element.id.text}${if (type != null) ": ${type.text}" else ""}" ?: "no name provided"
+        val type = element.ty
+        presentableText =
+            "${element.id.text}${if (type != null) ": ${type.getTextPresentation()}" else ""}"
         setIcon(AllIcons.Nodes.Variable)
     }
+}
+
+fun getTextPresentation(element: LuauType): String {
+    // TODO (AleksandrSl 04/05/2025): Implement all the types plus resolving
+    if (element.singletonType != null) {
+        return element.singletonType!!.text
+    } else if (element.typeReference != null) {
+        return element.typeReference!!.text
+    }
+    return ""
+}
+
+fun getTy(element: LuauBinding): LuauTy? {
+    return element.type
 }

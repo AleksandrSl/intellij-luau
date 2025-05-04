@@ -1,6 +1,8 @@
 package com.github.aleksandrsl.intellijluau.psi
 
+import com.github.aleksandrsl.intellijluau.completion.LuauCompletionScopeProcessor
 import com.github.aleksandrsl.intellijluau.references.LuauScopeProcessor
+import com.intellij.codeInsight.completion.CompletionUtil
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
 import com.intellij.openapi.util.TextRange
@@ -29,6 +31,12 @@ abstract class LuauSimpleReferenceImplMixin(node: ASTNode) : PsiReference, LuauS
             return processor.result
         }
         return null
+    }
+
+    override fun getVariants(): Array<out Any?> {
+        val processor = LuauCompletionScopeProcessor()
+        PsiTreeUtil.treeWalkUp(processor, this, null, ResolveState.initial())
+        return processor.results
     }
 
     override fun getCanonicalText(): String = this.text

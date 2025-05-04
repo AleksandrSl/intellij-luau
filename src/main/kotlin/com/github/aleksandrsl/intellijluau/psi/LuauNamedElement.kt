@@ -1,11 +1,19 @@
 package com.github.aleksandrsl.intellijluau.psi
 
+import com.github.aleksandrsl.intellijluau.types.LuauTy
 import com.intellij.extapi.psi.ASTWrapperPsiElement
 import com.intellij.lang.ASTNode
+import com.intellij.navigation.NavigationItem
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiNameIdentifierOwner
 
-interface LuauNamedElement : PsiNameIdentifierOwner, LuauElement
+// NavigationItem added solely to force getPresentation implementation
+interface LuauNamedElement : PsiNameIdentifierOwner, NavigationItem, LuauElement {
+    // Temporary until I don't figure out how I want to support the types. For now, it's used only for presentation
+    // It's not a PsiElement because I believe that I may need to return stubs or fake types
+    val ty: LuauTy?
+        get() = null
+}
 
 open class LuauNamedElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), LuauNamedElement {
     override fun setName(name: String): PsiElement {
