@@ -306,7 +306,7 @@ binding ::= ID (':' type)?  {
   // But usually it's not the case.
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
   implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
-  methods=[getPresentation]
+  methods=[getPresentation getTy]
 }
 
 // equivalent of Lua 5.1 'namelist', except with optional type annotations
@@ -522,6 +522,7 @@ type ::=
   simple_type ('?' union_type* | union_type+ | intersection_type+)?
   | union_type+
   | intersection_type+
+  { implements = "LuauTypeElement" methods=[getTextPresentation] }
 
 // left makes the rule recursive plus leaves the leading | and & out of the rule.
 // Upper replaces the root most type, includes the leading token but doesn't nest anything 😭

@@ -63,4 +63,9 @@ public class LuauTypeImpl extends ASTWrapperPsiElement implements LuauType {
     return findChildByClass(LuauTypeofType.class);
   }
 
+  @Override
+  public @NotNull String getTextPresentation() {
+    return LuauPsiImplUtilKt.getTextPresentation(this);
+  }
+
 }
