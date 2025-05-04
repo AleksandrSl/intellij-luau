@@ -14,15 +14,18 @@ import com.intellij.util.ProcessingContext
 
 class LuauKeywordCompletionContributor : CompletionContributor(), DumbAware {
     init {
+        // Can be more sophisticated, but given compound keywords are rarely used, hardcoding them is enough.
+        // Export is not used on its own, hence it's glued with type.
         extend(
             CompletionType.BASIC,
-            declarationPattern(),
+            statementStartPattern(),
             KeywordCompletionProvider(
                 "local",
+                "local function",
                 "function",
                 "while",
                 "for",
-                "export",
+                "export type",
                 "type",
                 "return",
                 "do",
@@ -54,9 +57,8 @@ inline fun <reified E : PsiElement> psiElement(): PsiElementPattern.Capture<E> {
 }
 
 
-fun declarationPattern(): PsiElementPattern.Capture<PsiElement> =
+fun statementStartPattern(): PsiElementPattern.Capture<PsiElement> =
     psiElement(LuauTypes.ID).withParents(LuauSimpleReference::class.java, LuauExpressionStatement::class.java)
-
 
 private object SpaceAfterInsertHandler : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {

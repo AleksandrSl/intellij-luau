@@ -20,11 +20,13 @@ class LuauCompletionTestCase : BasePlatformTestCase() {
         assertNotNull(lookupElementStrings)
         assertSameElements(
             lookupElementStrings as Collection<String>,
+            "f", // Wrapper function declared in the file. Is it possible to exclude reference contribution?
             "local",
             "function",
+            "local function",
             "while",
             "for",
-            "export",
+            "export type",
             "type",
             "return",
             "do",
