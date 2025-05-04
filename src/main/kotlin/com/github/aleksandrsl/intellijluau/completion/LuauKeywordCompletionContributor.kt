@@ -3,6 +3,7 @@ package com.github.aleksandrsl.intellijluau.completion
 import com.github.aleksandrsl.intellijluau.psi.LuauExpressionStatement
 import com.github.aleksandrsl.intellijluau.psi.LuauSimpleReference
 import com.github.aleksandrsl.intellijluau.psi.LuauTypes
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.codeInsight.lookup.LookupElementBuilder
@@ -33,6 +34,11 @@ class LuauKeywordCompletionContributor : CompletionContributor(), DumbAware {
                 "if"
             )
         )
+    }
+
+    override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
+        if (ProjectSettingsState.getInstance(parameters.position.project).isLspConfiguredAndEnabled) return
+        super.fillCompletionVariants(parameters, result)
     }
 }
 
