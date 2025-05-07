@@ -86,6 +86,9 @@ class ProjectSettingsComponent(
     init {
         panel = panel {
             group("LSP") {
+                row {
+                    comment("You can find the latest lsp binaries on <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a>.")
+                }
                 row("Path to luau lsp:") {
                     cell(lspPathComponent).align(AlignX.FILL).resizableColumn().bindText(settings::lspPath)
                 }
@@ -111,6 +114,9 @@ class ProjectSettingsComponent(
                             )
                         ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
                     }
+                    row("Sourcemap Generation Command:") {
+                        textField().bindText(settings::sourcemapGenerationCommand).align(AlignX.FILL).resizableColumn()
+                    }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
                     collapsibleGroup("Custom Definitions") {
                         row {
                             cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL).bind(
@@ -122,9 +128,6 @@ class ProjectSettingsComponent(
                             )
                         }
                     }
-                    row("Sourcemap Generation Command:") {
-                        textField().bindText(settings::sourcemapGenerationCommand).align(AlignX.FILL).resizableColumn()
-                    }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
                 }.enabledIf(lspEnabledRadioButton.selected)
             }
             group("StyLua") {
