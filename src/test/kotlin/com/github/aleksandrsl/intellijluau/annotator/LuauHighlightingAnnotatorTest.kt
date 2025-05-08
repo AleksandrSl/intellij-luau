@@ -30,4 +30,9 @@ class LuauHighlightingAnnotatorTest : BasePlatformTestCase() {
         myFixture.configureByFile("attributes.luau")
         myFixture.checkHighlighting(false, true, true, false)
     }
+
+    fun `test double curly braces in interpolation`() {
+        myFixture.configureByFile("doubleCurlyBracesInInterpolation.luau")
+        myFixture.checkHighlighting(false, true, true, false)
+    }
 }

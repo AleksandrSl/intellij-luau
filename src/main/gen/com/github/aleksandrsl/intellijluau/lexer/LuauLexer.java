@@ -460,20 +460,35 @@ class LuauLexer implements FlexLexer {
   private boolean zzEOFDone;
 
   /* user code: */
+  private static final class State {
+    final int nBraces;
+    final int state;
+
+    private State(int state, int nBraces) {
+      this.state = state;
+      this.nBraces = nBraces;
+    }
+  }
+
   public LuauLexer() {
     this((java.io.Reader)null);
   }
-  private Stack<Integer> stack = new Stack<>();
+  private final Stack<State> stack = new Stack<>();
+
   private void pushState(int state) {
-    stack.push(yystate());
+    stack.push(new State(yystate(), nBraces));
     yybegin(state);
+    nBraces = 0;
   }
   private void popState() {
-    Integer state = stack.pop();
-    yybegin(state);
+    State state = stack.pop();
+    yybegin(state.state);
+    nBraces = state.nBraces;
   }
 
+  private int nBraces = 0;
   private int nBrackets = 0;
+
   private boolean checkAhead(char c, int offset) {
     return this.zzMarkedPos + offset < this.zzBuffer.length() && this.zzBuffer.charAt(this.zzMarkedPos + offset) == c;
   }
@@ -910,7 +925,7 @@ class LuauLexer implements FlexLexer {
           // fall through
           case 109: break;
           case 29:
-            { return LCURLY;
+            { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { ++nBraces; }; return LCURLY;
             }
           // fall through
           case 110: break;
@@ -920,7 +935,7 @@ class LuauLexer implements FlexLexer {
           // fall through
           case 111: break;
           case 31:
-            { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { popState(); }; return RCURLY;
+            { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { if (nBraces == 0) { popState(); } else {nBraces--; }; }; return RCURLY;
             }
           // fall through
           case 112: break;

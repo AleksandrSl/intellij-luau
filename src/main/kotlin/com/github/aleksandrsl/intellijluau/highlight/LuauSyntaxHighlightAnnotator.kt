@@ -43,6 +43,23 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
             is LuauSimpleTypeReference -> typeReference(element)
             is LuauFuncTypeParams -> functionTypeParams(element)
             is LuauGenericTypeListWithDefaults -> genericsTypeList(element)
+            is LuauTemplateStringExpr -> template(element)
+        }
+    }
+
+    private fun AnnotationHolder.template(element: LuauTemplateStringExpr) {
+        for (child in element.children) {
+            // Every nested {} is a table expression, so we can be a bit more highlevel than checking the text, not sure if it's better or not.
+            // It's also much easier to do the error in annotator than on the lexer level, it's tricky to add custom error messages there.
+            if (child is LuauTableConstructorExpr && child.prevSibling.text == "{") {
+                newAnnotation(
+                    HighlightSeverity.ERROR,
+                    // TODO (AleksandrSl 08/05/2025): I don't think I like this message, maybe I can do better.
+                    "Double braces are not permitted within interpolated strings; did you mean '\\{'?"
+                )
+                    .range(child.prevSibling)
+                    .create()
+            }
         }
     }
 
