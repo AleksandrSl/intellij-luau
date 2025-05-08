@@ -9,20 +9,35 @@ import java.util.Stack;
 %%
 
 %{
+  private static final class State {
+    final int nBraces;
+    final int state;
+
+    private State(int state, int nBraces) {
+      this.state = state;
+      this.nBraces = nBraces;
+    }
+  }
+
   public LuauLexer() {
     this((java.io.Reader)null);
   }
-  private Stack<Integer> stack = new Stack<>();
+  private final Stack<State> stack = new Stack<>();
+
   private void pushState(int state) {
-    stack.push(yystate());
+    stack.push(new State(yystate(), nBraces));
     yybegin(state);
+    nBraces = 0;
   }
   private void popState() {
-    Integer state = stack.pop();
-    yybegin(state);
+    State state = stack.pop();
+    yybegin(state.state);
+    nBraces = state.nBraces;
   }
 
+  private int nBraces = 0;
   private int nBrackets = 0;
+
   private boolean checkAhead(char c, int offset) {
     return this.zzMarkedPos + offset < this.zzBuffer.length() && this.zzBuffer.charAt(this.zzMarkedPos + offset) == c;
   }
@@ -76,13 +91,14 @@ import java.util.Stack;
 %function advance
 %type IElementType
 
-EOL="\r"|"\n"|"\r\n"
+EOL=\r|\n|\r\n
 LINE_WS=[\ \t\f]
 WHITE_SPACE=({LINE_WS}|{EOL})+
 
 VALID_CHAR=[a-zA-Z_\u00ff-\uffff]
 ID={VALID_CHAR} ({VALID_CHAR}|[0-9])*
 
+// It's fine to have trailing _ in number, you can do both 10_____ and 10_____.___
 //Number
 n=[0-9][0-9_]*
 h=[0-9a-fA-F][0-9a-fA-F_]*
@@ -213,8 +229,8 @@ TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})+
     }
   }
   "]"                         { return RBRACK; }
-  "{"                         { return LCURLY; }
-  "}"                         { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { popState(); }; return RCURLY; }
+  "{"                         { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { ++nBraces; }; return LCURLY; }
+  "}"                         { if (yystate() == xTEMPLATE_STRING_EXPRESSION) { if (nBraces == 0) { popState(); } else {nBraces--; }; }; return RCURLY; }
   "#"                         { return GETN; }
   ","                         { return COMMA; }
   ";"                         { return SEMI; }
