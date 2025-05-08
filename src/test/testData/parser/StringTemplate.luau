@@ -10,3 +10,7 @@ a = `{"1" .. `{"2"}`} {c} asdasd`
 -- Table with a value
 a = `{ {123}}`
 a = `4{(function(a) end)({{890}})}`
+a = `{ {
+--test
+123
+}}`

@@ -16,3 +16,7 @@ print(`Welcome to {
     name
 }!`)
 --> Welcome to Luau!
+
+print(`Test\
+\
+`)
