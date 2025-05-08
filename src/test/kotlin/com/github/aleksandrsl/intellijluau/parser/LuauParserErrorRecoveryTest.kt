@@ -2,6 +2,7 @@ package com.github.aleksandrsl.intellijluau.parser
 
 import com.github.aleksandrsl.intellijluau.psi.LuauListArgs
 import com.github.aleksandrsl.intellijluau.psi.LuauTableConstructor
+import com.github.aleksandrsl.intellijluau.psi.LuauTemplateStringExpr
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiElementVisitor
 import com.intellij.psi.PsiErrorElement
@@ -14,6 +15,9 @@ class LuauParserRecoveryTest : LuauParsingBaseTestCase("recovery") {
     fun testFunctionCall() = doTest(LuauListArgs::class.java)
     fun testTableConstructor() = doTest(LuauTableConstructor::class.java)
     fun testTableConstructor2() = doTest(LuauTableConstructor::class.java)
+    fun testStringTemplate() = doTest(LuauTemplateStringExpr::class.java)
+    fun testStringTemplate2() = doTest(LuauTemplateStringExpr::class.java)
+    fun testStringTemplate3() = doTest(LuauTemplateStringExpr::class.java)
 
     private fun doTest(target: Class<out PsiElement>) {
         val name = testName
@@ -65,7 +69,7 @@ class LuauParserRecoveryTest : LuauParsingBaseTestCase("recovery") {
         }
 
         if (unexpectedErrorTrace != null) {
-            return ErrorRecoveryResult.UnexpectedError(unexpectedErrorTrace!!)
+            return ErrorRecoveryResult.UnexpectedError(unexpectedErrorTrace)
         }
         return ErrorRecoveryResult.Success
     }

@@ -354,7 +354,8 @@ list_args ::= '(' arg_with_recover* ')' { extends = func_args; pin = 1 }
 // So the correct recover should stop at the start of the symbol which may indicate the beginning of
 // the new element of the same type, on an end of the parent expression
 private arg_with_recover ::= !')' expression (',' !')' | &')') { pin = 1 recoverWhile = arg_recover }
-private arg_recover ::= !(exp_first | ')' | 'end' | '}' | statement_first | last_statement_first | ';')
+// I added TEMPLATE_STRING_EQUOTE to the recoveries to improve cases when the function call is not finished in template string, but that's minor and can be drop if there will be downsides.
+private arg_recover ::= !(exp_first | ')' | 'end' | '}' | statement_first | last_statement_first | ';' | TEMPLATE_STRING_EQUOTE)
 
 // See this https://github.com/JetBrains/Grammar-Kit/blob/master/HOWTO.md#24-compact-expression-parsing-with-priorities for extends example. In this case Parser switches to a different algo (Pratt) so it's ok to have left-recursion
 // TODO (AleksandrSl 07/03/2025): Figure out priorities later
@@ -442,7 +443,9 @@ paren_expr ::= '(' expression ')'
 
 literal_expr ::= NUMBER | STRING | 'nil' | 'true' | 'false' | '...'
 closure_expr ::= attributes? 'function' func_body { pin = 2 }
-template_string_expr ::= TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE { pin = 1 }
+private template_string_internals ::= (STRING | '{' expression '}')* { recoverWhile = template_string_internals_recover pin(".*")=1 }
+private template_string_internals_recover ::= !(TEMPLATE_STRING_EQUOTE | statement_first | last_statement_first)
+template_string_expr ::= TEMPLATE_STRING_SQUOTE template_string_internals TEMPLATE_STRING_EQUOTE { pin = 1 }
 ifelse_expr ::= 'if' expression 'then' expression ('elseif' expression 'then' expression)* 'else' expression { pin = 1 }
 table_constructor_expr ::= table_constructor
 

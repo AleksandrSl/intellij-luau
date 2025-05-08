@@ -24,6 +24,12 @@ import java.util.Stack;
   }
   private final Stack<State> stack = new Stack<>();
 
+  private void resetState() {
+    stack.clear();
+    yybegin(YYINITIAL);
+    nBraces = 0;
+  }
+
   private void pushState(int state) {
     stack.push(new State(yystate(), nBraces));
     yybegin(state);
@@ -164,21 +170,30 @@ TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})+
 %%
 
 <YYINITIAL> {
-  "--"                        {
-    boolean block = checkBlock();
-    if (block) {
-      boolean docBlock = checkDocBlock();
-      yypushback(yylength());
-      zzMarkedPos += checkBlockEnd();
-      return docBlock ? DOC_BLOCK_COMMENT : BLOCK_COMMENT;
-    } else { yypushback(yylength()); pushState(xCOMMENT); }
-  }
   {REGION_START}              { return REGION; }
   {REGION_END}                { return ENDREGION; }
   "#!"                        { pushState(xSHEBANG); return SHEBANG; }
 }
 
+// We cannot end expression on \R as I do for the xTEMPLATE_STRING because everything is allowed inside the expression
+// So if you didn't close the expression and string then the whole file will go inside
+<xTEMPLATE_STRING_EXPRESSION> {
+  // If we got ` at the end of the line, we may treat it as the end of the template string in cases when the expressions inside are not finished properly,
+  // like `{  `. Most probably we just missed a matching brace inside. If you were typing one char at a time this might be start of the nested expression,
+  // but we shouldn't loose much, it will be parsed as complete string first and wehn you add more simbols it will reparse correctly
+  "`"$                        { resetState(); return TEMPLATE_STRING_EQUOTE; }
+}
+
 <YYINITIAL, xTEMPLATE_STRING_EXPRESSION> {
+  "--"                        {
+      boolean block = checkBlock();
+      if (block) {
+        boolean docBlock = checkDocBlock();
+        yypushback(yylength());
+        zzMarkedPos += checkBlockEnd();
+        return docBlock ? DOC_BLOCK_COMMENT : BLOCK_COMMENT;
+      } else { yypushback(yylength()); pushState(xCOMMENT); }
+    }
   {WHITE_SPACE}               { return TokenType.WHITE_SPACE; }
   "and"                       { return AND; }
   "break"                     { return BREAK; }
@@ -283,5 +298,8 @@ TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})+
   "{"                         { pushState(xTEMPLATE_STRING_EXPRESSION); return LCURLY; }
   "`"                         { popState(); return TEMPLATE_STRING_EQUOTE; }
   {TEMPLATE_STRING_PART}      { return STRING; }
+  // End the template string on the line end if there were no escapes.
+  // Either escapes were forgotter, or the ` is missing
+  \R                          { resetState(); return TokenType.WHITE_SPACE; }
   [^]                         { return TokenType.BAD_CHARACTER; }
 }

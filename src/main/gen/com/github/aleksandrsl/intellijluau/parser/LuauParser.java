@@ -66,7 +66,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(exp_first | ')' | 'end' | '}' | statement_first | last_statement_first | ';')
+  // !(exp_first | ')' | 'end' | '}' | statement_first | last_statement_first | ';' | TEMPLATE_STRING_EQUOTE)
   static boolean arg_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "arg_recover")) return false;
     boolean r;
@@ -76,7 +76,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // exp_first | ')' | 'end' | '}' | statement_first | last_statement_first | ';'
+  // exp_first | ')' | 'end' | '}' | statement_first | last_statement_first | ';' | TEMPLATE_STRING_EQUOTE
   private static boolean arg_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "arg_recover_0")) return false;
     boolean r;
@@ -87,6 +87,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = statement_first(b, l + 1);
     if (!r) r = last_statement_first(b, l + 1);
     if (!r) r = consumeTokenFast(b, SEMI);
+    if (!r) r = consumeTokenFast(b, TEMPLATE_STRING_EQUOTE);
     return r;
   }
 
@@ -2896,7 +2897,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // TEMPLATE_STRING_SQUOTE (STRING | '{' expression '}')* TEMPLATE_STRING_EQUOTE
+  // TEMPLATE_STRING_SQUOTE template_string_internals TEMPLATE_STRING_EQUOTE
   public static boolean template_string_expr(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "template_string_expr")) return false;
     if (!nextTokenIsFast(b, TEMPLATE_STRING_SQUOTE)) return false;
@@ -2904,43 +2905,68 @@ public class LuauParser implements PsiParser, LightPsiParser {
     Marker m = enter_section_(b, l, _NONE_, TEMPLATE_STRING_EXPR, null);
     r = consumeTokenFast(b, TEMPLATE_STRING_SQUOTE);
     p = r; // pin = 1
-    r = r && report_error_(b, template_string_expr_1(b, l + 1));
+    r = r && report_error_(b, template_string_internals(b, l + 1));
     r = p && consumeToken(b, TEMPLATE_STRING_EQUOTE) && r;
     exit_section_(b, l, m, r, p, null);
     return r || p;
   }
 
+  /* ********************************************************** */
   // (STRING | '{' expression '}')*
-  private static boolean template_string_expr_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "template_string_expr_1")) return false;
+  static boolean template_string_internals(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_internals")) return false;
+    Marker m = enter_section_(b, l, _NONE_);
     while (true) {
       int c = current_position_(b);
-      if (!template_string_expr_1_0(b, l + 1)) break;
-      if (!empty_element_parsed_guard_(b, "template_string_expr_1", c)) break;
+      if (!template_string_internals_0(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "template_string_internals", c)) break;
     }
+    exit_section_(b, l, m, true, false, LuauParser::template_string_internals_recover);
     return true;
   }
 
   // STRING | '{' expression '}'
-  private static boolean template_string_expr_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "template_string_expr_1_0")) return false;
+  private static boolean template_string_internals_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_internals_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = consumeTokenFast(b, STRING);
-    if (!r) r = template_string_expr_1_0_1(b, l + 1);
+    r = consumeToken(b, STRING);
+    if (!r) r = template_string_internals_0_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // '{' expression '}'
-  private static boolean template_string_expr_1_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "template_string_expr_1_0_1")) return false;
+  private static boolean template_string_internals_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_internals_0_1")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = consumeToken(b, LCURLY);
+    p = r; // pin = 1
+    r = r && report_error_(b, expression(b, l + 1, -1));
+    r = p && consumeToken(b, RCURLY) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
+  // !(TEMPLATE_STRING_EQUOTE | statement_first | last_statement_first)
+  static boolean template_string_internals_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_internals_recover")) return false;
     boolean r;
-    Marker m = enter_section_(b);
-    r = consumeTokenFast(b, LCURLY);
-    r = r && expression(b, l + 1, -1);
-    r = r && consumeToken(b, RCURLY);
-    exit_section_(b, m, null, r);
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !template_string_internals_recover_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // TEMPLATE_STRING_EQUOTE | statement_first | last_statement_first
+  private static boolean template_string_internals_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "template_string_internals_recover_0")) return false;
+    boolean r;
+    r = consumeTokenFast(b, TEMPLATE_STRING_EQUOTE);
+    if (!r) r = statement_first(b, l + 1);
+    if (!r) r = last_statement_first(b, l + 1);
     return r;
   }
 
