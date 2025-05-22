@@ -1,27 +1,43 @@
 package com.github.aleksandrsl.intellijluau.cli
 
+import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
+import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.openapi.diagnostic.logger
-import java.nio.file.Path
-import kotlin.io.path.pathString
+import com.intellij.openapi.project.Project
 
 private val LOG = logger<LspCli>()
 
 /**
  * Interact with external `Lsp` process.
  */
-class LspCli(private val lspExecutablePath: Path) {
+class LspCli(private val project: Project, private val lspConfiguration: LspConfiguration.Enabled) {
 
-    fun queryVersion(): String {
+    fun createLspCli(): GeneralCommandLine {
+        return GeneralCommandLine().apply {
+            withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
+            withWorkDirectory(project.basePath)
+            withCharset(Charsets.UTF_8)
+            withExePath(lspConfiguration.executablePath.toString())
+            addParameter("lsp")
+            lspConfiguration.definitions.forEach {
+                addParameter("--definitions")
+                addParameter(it.toString())
+            }
+        }
+    }
+
+
+    fun queryVersion(): Version {
         val firstLine = CapturingProcessHandler(GeneralCommandLine().apply {
             withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
             withCharset(Charsets.UTF_8)
-            withExePath(lspExecutablePath.pathString)
+            withWorkDirectory(project.basePath)
+            withExePath(lspConfiguration.executablePath.toString())
             addParameter("--version")
 //                 TODO: Do lazy reading?
         }).runProcess().stdoutLines.first()
-        LOG.warn(firstLine)
-        return firstLine
+        return Version.parse(firstLine)
     }
 }

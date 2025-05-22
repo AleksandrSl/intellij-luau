@@ -1,8 +1,6 @@
 package com.github.aleksandrsl.intellijluau.settings
 
-import com.github.aleksandrsl.intellijluau.cli.LspCli
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
-import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooser
@@ -17,9 +15,7 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.layout.selected
 import kotlinx.coroutines.launch
 import javax.swing.JComponent
 import kotlin.io.path.exists
@@ -30,31 +26,12 @@ class ProjectSettingsComponent(
     private val service: LuauCliService,
     private val settings: ProjectSettingsState.State,
     private val project: Project,
+    private val applyAndSaveAsDefault: () -> Unit,
 ) {
-    private var lspVersion: String? = null
     private var styLuaVersion: String? = null
     val panel: DialogPanel
+    private val lspSettings = LuauLspSettings(project, settings, service.coroutineScope)
 
-
-    private val lspPathComponent = TextFieldWithBrowseButton().apply {
-        addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
-        textField.document.addDocumentListener(object : DocumentAdapter() {
-            override fun textChanged(event: javax.swing.event.DocumentEvent) {
-                if (text.isEmpty()) {
-                    return
-                }
-                val maybePath = text.toNioPathOrNull()
-                if (maybePath == null || !maybePath.exists()) {
-                    return
-                }
-                // I guess this will launch in project scope, so the coroutine will finish even if I close the settings.
-                // Not sure if I should about it or not.
-                service.coroutineScope.launch {
-                    setLspVersion(LspCli(maybePath).queryVersion())
-                }
-            }
-        })
-    }
     private val styLuaPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
         textField.document.addDocumentListener(object : DocumentAdapter() {
@@ -76,60 +53,36 @@ class ProjectSettingsComponent(
         })
     }
 
-    private val lspVersionLabelComponent = JBLabel()
     private val styluaVersionLabelComponent = JBLabel()
-    private val customDefinitionsToolbar = CustomDefinitionsToolbar()
 
-    // Required only to easily enable/disable the whole lsp group. Assigned on first form creation.
-    private lateinit var lspEnabledRadioButton: JBRadioButton
+    private val customDefinitionsToolbar = CustomDefinitionsToolbar()
 
     init {
         panel = panel {
-            group("LSP") {
-                row {
-                    comment("You can find the latest lsp binaries on <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a>.")
+            group("Roblox") {
+                row("Roblox Security Level:") {
+                    comboBox(
+                        listOf(
+                            RobloxSecurityLevel.None,
+                            RobloxSecurityLevel.PluginSecurity,
+                            RobloxSecurityLevel.LocalUserSecurity,
+                            RobloxSecurityLevel.RobloxScriptSecurity,
+                        )
+                    ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
                 }
-                row("Path to luau lsp:") {
-                    cell(lspPathComponent).align(AlignX.FILL).resizableColumn().bindText(settings::lspPath)
-                }
-                row {
-                    cell(lspVersionLabelComponent).align(AlignX.FILL).resizableColumn()
-                }
-                buttonsGroup {
+                collapsibleGroup("Custom Definitions") {
                     row {
-                        lspEnabledRadioButton = radioButton("Enabled", true).component
-                        radioButton("Disabled", false)
+                        cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL).bind(
+                            {
+                                customDefinitionsToolbar.paths.toList()
+                            },
+                            { _, value -> customDefinitionsToolbar.paths = value },
+                            settings::customDefinitionsPaths.toMutableProperty()
+                        )
                     }
-                }.bind(settings::isLspEnabled)
-                rowsRange {
-                    // TODO (AleksandrSl 24/04/2025): Is there a nice way to disable the ones below when lsp is disabled?
-                    //  Bindings are nice, but they don't have the best documentation
-                    row("Roblox Security Level:") {
-                        comboBox(
-                            listOf(
-                                RobloxSecurityLevel.None,
-                                RobloxSecurityLevel.PluginSecurity,
-                                RobloxSecurityLevel.LocalUserSecurity,
-                                RobloxSecurityLevel.RobloxScriptSecurity,
-                            )
-                        ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
-                    }
-                    row("Sourcemap Generation Command:") {
-                        textField().bindText(settings::sourcemapGenerationCommand).align(AlignX.FILL).resizableColumn()
-                    }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
-                    collapsibleGroup("Custom Definitions") {
-                        row {
-                            cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL).bind(
-                                {
-                                    customDefinitionsToolbar.paths.toList()
-                                },
-                                { _, value -> customDefinitionsToolbar.paths = value },
-                                settings::customDefinitionsPaths.toMutableProperty()
-                            )
-                        }
-                    }
-                }.enabledIf(lspEnabledRadioButton.selected)
+                }
             }
+            lspSettings.render(this)
             group("StyLua") {
                 row("Path to StyLua:") {
                     cell(styLuaPathComponent).align(AlignX.FILL).resizableColumn().bindText(settings::styLuaPath)
@@ -154,6 +107,9 @@ class ProjectSettingsComponent(
                     }
                 }.bind(settings::runStyLua)
             }
+            row {
+                button("Apply & Save as Default") { applyAndSaveAsDefault() }
+            }
         }
     }
 
@@ -163,12 +119,8 @@ class ProjectSettingsComponent(
         styluaVersionLabelComponent.text = "Version: $styLuaVersion"
     }
 
-    private fun setLspVersion(newVersion: String) {
-        lspVersion = newVersion
-        lspVersionLabelComponent.text = "Version: $lspVersion"
-    }
-
-    val preferredFocusedComponent: JComponent = this.lspPathComponent
+    // TODO (AleksandrSl 18/05/2025):
+    val preferredFocusedComponent: JComponent = this.panel
 }
 
 class CustomDefinitionsToolbar {
