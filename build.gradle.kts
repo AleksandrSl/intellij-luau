@@ -13,6 +13,7 @@ plugins {
     alias(libs.plugins.qodana) // Gradle Qodana Plugin
     alias(libs.plugins.kover) // Gradle Kover Plugin
     alias(libs.plugins.grammarkit)
+    alias(libs.plugins.serialization)
 }
 
 group = properties("pluginGroup").get()
@@ -35,13 +36,14 @@ repositories {
 
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
+    implementation(libs.serialization)
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
         // Comment this if you want to run webstorm. But at the same time webstorm fails to run tests.
-         create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
+//         create(providers.gradleProperty("platformType"), providers.gradleProperty("platformVersion"))
 
         // Plugin Dependencies. Uses `platformBundledPlugins` property from the gradle.properties file for bundled IntelliJ Platform plugins.
         bundledPlugins(properties("platformBundledPlugins").map { it.split(',') })
@@ -49,6 +51,7 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',') })
 
+        webstorm("2024.3.4")
         testFramework(TestFrameworkType.Platform)
     }
 }
@@ -160,6 +163,14 @@ sourceSets["main"].java.srcDirs("src/main/gen")
 tasks {
     wrapper {
         gradleVersion = providers.gradleProperty("gradleVersion").get()
+    }
+//    test {
+//        systemProperty("idea.tests.overwrite.data", "true")
+//    }
+
+    runIde {
+        systemProperty("idea.log.debug.categories", "com.github.aleksandrsl.intellijluau")
+        jvmArgs("-XX:+UnlockDiagnosticVMOptions")
     }
 
     generateLexer {

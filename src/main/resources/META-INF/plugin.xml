@@ -74,6 +74,9 @@
                            displayType="BALLOON"
                            key="luau.notification.group.name"/>
         <backgroundPostStartupActivity implementation="com.github.aleksandrsl.intellijluau.FileWatcherStartupActivity" />
+        <postStartupActivity implementation="com.github.aleksandrsl.intellijluau.settings.DefaultSettingsStartupActivity" />
+        <postStartupActivity implementation="com.github.aleksandrsl.intellijluau.lsp.LuauLspCheckStartupActivity" />
+
         <actionOnSaveInfoProvider
                 id="LuauOnSaveActionInfoProvider"
                 order="after FormatOnSaveInfoProvider"

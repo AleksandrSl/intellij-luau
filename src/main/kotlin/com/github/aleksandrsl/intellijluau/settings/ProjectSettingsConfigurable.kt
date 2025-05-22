@@ -2,12 +2,11 @@ package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
-import com.github.aleksandrsl.intellijluau.restartLspServerAsync
+import com.github.aleksandrsl.intellijluau.lsp.restartLspServerAsync
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState.State
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.project.guessProjectDir
 import com.intellij.util.messages.Topic
 import javax.swing.JComponent
 import kotlin.reflect.KProperty1
@@ -22,6 +21,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             project.service<LuauCliService>(),
             settings.state,
             project,
+            ::applyAndsSveAsDefault,
         ).also {
             _component = it
         }.panel
@@ -58,9 +58,10 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
 
     private fun restartLsp(settingsChangedEvent: SettingsChangedEvent) {
         if (settingsChangedEvent.isChanged(State::lspPath)
+            || settingsChangedEvent.isChanged(State::lspVersion)
             || settingsChangedEvent.isChanged(State::robloxSecurityLevel)
             || settingsChangedEvent.isChanged(State::customDefinitionsPaths)
-            || settingsChangedEvent.isChanged(State::isLspEnabled)
+            || settingsChangedEvent.isChanged(State::lspConfigurationType)
         ) {
             restartLspServerAsync(project)
         }
@@ -72,6 +73,11 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
 
     private fun notifySettingsChanged(event: SettingsChangedEvent) {
         project.messageBus.syncPublisher(TOPIC).settingsChanged(event)
+    }
+
+    private fun applyAndsSveAsDefault() {
+        apply()
+        LuauDefaultSettingsState.getInstance().save(settings.state)
     }
 
     class SettingsChangedEvent(val oldState: State, val newState: State) {
