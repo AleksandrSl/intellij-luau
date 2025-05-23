@@ -347,7 +347,11 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                     }
                     return CheckLspResult.UpdateAvailable(latestVersion)
                 }
-                return CheckLspResult.ReadyToUse
+                // Currently selected version may be the same as the latest, but we don't have it
+                if (installedVersions.contains(currentVersion)) {
+                    return CheckLspResult.ReadyToUse
+                }
+                return CheckLspResult.BinaryMissing(latestVersion)
             } else {
                 if (currentVersion == null) {
                     return CheckLspResult.LspIsNotConfigured
