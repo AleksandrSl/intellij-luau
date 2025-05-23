@@ -113,7 +113,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         }
     }
 
-    private fun getExecutableForVersion(version: Version.Semantic): Path? {
+    fun getExecutableForVersion(version: Version.Semantic): Path? {
         val executablePath = path(version).resolve(getExecutableName())
         LOG.debug("Getting executable for version: $version, $executablePath")
         if (executablePath.toFile().exists() && executablePath.toFile().canExecute()) {
@@ -122,7 +122,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         return null
     }
 
-    private fun getGlobalTypesForVersion(version: Version.Semantic, securityLevel: RobloxSecurityLevel): Path {
+    fun getGlobalTypesForVersion(version: Version.Semantic, securityLevel: RobloxSecurityLevel): Path {
         return path(version).resolve("globalTypes.${securityLevel}.d.luau")
     }
 
