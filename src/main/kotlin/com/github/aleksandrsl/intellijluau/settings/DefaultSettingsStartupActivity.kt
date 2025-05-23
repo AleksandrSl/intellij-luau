@@ -11,8 +11,8 @@ import com.intellij.openapi.startup.ProjectActivity
 private const val DEFAULT_SETTINGS_DISMISSED_PROPERTY = "com.github.aleksandrsl.intellijluau.defaultSettingsDismissed"
 
 class DefaultSettingsStartupActivity : ProjectActivity {
-    fun dontShowAgain() {
-        PropertiesComponent.getInstance().setValue(DEFAULT_SETTINGS_DISMISSED_PROPERTY, true)
+    fun dontShowAgain(project: Project) {
+        PropertiesComponent.getInstance(project).setValue(DEFAULT_SETTINGS_DISMISSED_PROPERTY, true)
     }
 
     override suspend fun execute(project: Project) {
@@ -31,10 +31,10 @@ class DefaultSettingsStartupActivity : ProjectActivity {
             .addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.apply")) {
                 val projectSettings = ProjectSettingsState.getInstance(project)
                 projectSettings.loadDefaultSettings()
-                dontShowAgain()
+                dontShowAgain(project)
             })
             .addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.dont.show.for.project")) {
-                dontShowAgain()
+                dontShowAgain(project)
             })
             .notify(project)
     }
