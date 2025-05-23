@@ -217,9 +217,14 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         data object LspIsNotConfigured : CheckLspResult()
     }
 
+    // Temporary path to store the downloaded files before they are moved to the target directory.
     private fun downloadPath(): Path = Paths.get(PathManager.getTempPath())
-    private fun basePath() = Paths.get(PathManager.getSystemPath()).resolve("intellij-luau").resolve("lsp")
-    private fun path(version: Version.Semantic) = basePath().resolve(versionToDirName(version))
+
+    // Directory with all the LSPs
+    fun basePath(): Path = Paths.get(PathManager.getSystemPath()).resolve("intellij-luau").resolve("lsp")
+
+    // Get directory where specific version of LSP lies
+    private fun path(version: Version.Semantic): Path = basePath().resolve(versionToDirName(version))
 
     private fun versionToDirName(version: Version.Semantic): String =
         "${version.major}_${version.minor}_${version.patch}"
