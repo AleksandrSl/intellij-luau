@@ -359,7 +359,7 @@ class LuauLspSettings(
                     val lspManager = LuauLspManager.getInstance()
                     // TODO (AleksandrSl 12/05/2025): Maybe cache this for a short time?
                     lspVersionsForDownload = try {
-                        VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload())
+                        VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload(project))
                     } catch (err: Exception) {
                         VersionsForDownload.Failed(err.message ?: "Failed to load versions")
                     }
