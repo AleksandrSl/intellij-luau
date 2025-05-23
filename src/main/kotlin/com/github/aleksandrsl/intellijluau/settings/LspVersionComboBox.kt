@@ -56,7 +56,7 @@ class LspVersionComboBox(
         installedVersions.sortedDescending().forEachIndexed { index, version ->
             _model.addElement(Item.InstalledVersion(version, index))
         }
-        availableVersions.filter { installedVersions.contains(it) }.sortedDescending()
+        availableVersions.filterNot { installedVersions.contains(it) }.sortedDescending()
             .forEachIndexed { index, version ->
                 _model.addElement(Item.VersionForDownload(version, index))
             }
