@@ -187,7 +187,15 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
     fun getInstalledVersions(): List<Version.Semantic> {
         return try {
-            basePath().toFile().list()?.mapNotNull { dirNameToVersion(it) }?.sorted() ?: emptyList()
+            basePath().toFile().list()?.mapNotNull {
+                try {
+                    dirNameToVersion(it)
+                } catch (e: IllegalArgumentException) {
+                    // Well, MacOS adds the DS_Store folder in the directory,
+                    // who knows what else we may have, let's ignore errors parsing the name
+                    null
+                }
+            }?.sorted() ?: emptyList()
         } catch (e: Exception) {
             LOG.error("Failed to get LSP versions. Basepath: ${basePath()}. Error:", e)
             emptyList()
