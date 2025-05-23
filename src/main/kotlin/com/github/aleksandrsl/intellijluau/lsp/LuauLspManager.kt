@@ -262,7 +262,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                 is CheckLspResult.BinaryMissing -> {
                     LuauNotifications.pluginNotifications().createNotification(
                         LuauBundle.message("luau.lsp.binary.missing.title"), NotificationType.INFORMATION
-                    ).addAction(NotificationAction.createSimple(LuauBundle.message("luau.lsp.download")) {
+                    ).addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.lsp.download")) {
                         coroutineScope.launch {
                             withBackgroundProgress(project, LuauBundle.message("luau.lsp.downloading")) {
                                 downloadLspWithNotification(checkResult.version, project)
@@ -271,7 +271,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                             }
                         }
                     })
-                        .addAction(NotificationAction.createSimple(LuauBundle.message("luau.notification.actions.open.settings")) {
+                        .addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
                             ShowSettingsUtil.getInstance()
                                 .showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
                         }).notify(project)
@@ -283,7 +283,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                         LuauBundle.message("luau.lsp.not.configured.content"),
                         NotificationType.INFORMATION
                     )
-                        .addAction(NotificationAction.createSimple(LuauBundle.message("luau.notification.actions.open.settings")) {
+                        .addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
                             ShowSettingsUtil.getInstance()
                                 .showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
                         }).notify(project)
