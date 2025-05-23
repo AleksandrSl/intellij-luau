@@ -7,9 +7,12 @@ import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
 import com.github.aleksandrsl.intellijluau.lsp.restartLspServerAsync
 import com.github.aleksandrsl.intellijluau.util.Version
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.toNioPathOrNull
@@ -27,6 +30,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.awt.Desktop
 import java.awt.event.ActionEvent
 import java.awt.event.ItemEvent
 import javax.swing.AbstractAction
@@ -289,32 +293,37 @@ class LuauLspSettings(
                                             if (download(version)) {
                                                 afterUpdate()
                                             }
-                                        }))
-                                        .bind(
-                                            { component -> component.getSelectedVersion() },
-                                            { component, value -> component.setSelectedVersion(value) },
-                                            lspVersionBinding
-                                        )
-                                        .component.apply {
-                                            // Disabled until the versions are loaded
-                                            isEnabled = false
-                                            addItemListener {
-                                                if (it.stateChange == ItemEvent.SELECTED) {
-                                                    updateLspVersionActions(
-                                                        lspVersionsForDownload,
-                                                        lspInstalledVersions
-                                                    )
-                                                }
+                                        })).bind(
+                                        { component -> component.getSelectedVersion() },
+                                        { component, value -> component.setSelectedVersion(value) },
+                                        lspVersionBinding
+                                    ).component.apply {
+                                        // Disabled until the versions are loaded
+                                        isEnabled = false
+                                        addItemListener {
+                                            if (it.stateChange == ItemEvent.SELECTED) {
+                                                updateLspVersionActions(
+                                                    lspVersionsForDownload, lspInstalledVersions
+                                                )
                                             }
                                         }
+                                    }
                                 cell(downloadLspButton)
                                 cell(lspVersionStateLabelComponent)
                                 // I empirically learned that icon will cancel coroutine passed to it if you unload it.
                                 loading = cell(AsyncProcessIcon("Loading")).component.apply { isVisible = false }
-                                contextHelp("Updates will be suggested if available as notifications when you open a project or you can check for them on this page.")
-                                    .visibleIf(
-                                        lspVersionCombobox.selectedValueIs(LspVersionComboBox.Item.LatestVersion)
-                                    )
+                                contextHelp("Updates will be suggested if available as notifications when you open a project or you can check for them on this page.").visibleIf(
+                                    lspVersionCombobox.selectedValueIs(LspVersionComboBox.Item.LatestVersion)
+                                )
+                                actionButton(object :
+                                    DumbAwareAction("Open LSP Storage Folder", "", AllIcons.Actions.MenuOpen) {
+                                    override fun actionPerformed(e: AnActionEvent) {
+                                        val lspDir = LuauLspManager.getInstance().basePath().toFile()
+                                        if (lspDir.exists()) {
+                                            Desktop.getDesktop().open(lspDir)
+                                        }
+                                    }
+                                }).align(AlignX.RIGHT)
                             }
                         }.enabledIf(lspAuto.selected)
                     }.rowComment("Binaries are downloaded from <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a> when you select a version in the download section of combobox.")
