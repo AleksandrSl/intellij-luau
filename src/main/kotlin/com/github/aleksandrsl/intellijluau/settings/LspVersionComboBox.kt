@@ -48,18 +48,21 @@ class LspVersionComboBox(
 
     fun setVersions(
         installedVersions: List<Version.Semantic>,
-        availableVersions: List<Version.Semantic> = listOf()
+        versionsForDownload: List<Version.Semantic> = listOf()
     ) {
         val selectedVersion = getSelectedVersion()
-        _model.removeAll()
-        _model.addElement(Item.LatestVersion)
-        installedVersions.sortedDescending().forEachIndexed { index, version ->
-            _model.addElement(Item.InstalledVersion(version, index))
-        }
-        availableVersions.filterNot { installedVersions.contains(it) }.sortedDescending()
-            .forEachIndexed { index, version ->
-                _model.addElement(Item.VersionForDownload(version, index))
-            }
+        _model.replaceAll(
+            listOf(Item.LatestVersion).plus(
+                installedVersions.sortedDescending()
+                    .mapIndexed { index, version ->
+                        Item.InstalledVersion(version, index)
+                    })
+                .plus(
+                    versionsForDownload.filterNot { installedVersions.contains(it) }.sortedDescending()
+                        .mapIndexed { index, version ->
+                            Item.VersionForDownload(version, index)
+                        })
+        )
 
         if (selectedVersion != null) {
             val itemToSelect = _model.items
@@ -74,7 +77,7 @@ class LspVersionComboBox(
         }
     }
 
-    // Helper to set the initial version (I don't want to do any actions, neither I want to create an Item manually)
+    // Helper to set the initial version (I don't want to create an Item manually)
     fun setSelectedVersion(version: Version?) {
         if (version == null) {
             selectedItem = null

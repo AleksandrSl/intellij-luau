@@ -374,7 +374,7 @@ class LuauLspSettings(
                         } else {
                             listOf()
                         }
-                    }, availableVersions = lspVersionsForDownload.let {
+                    }, versionsForDownload = lspVersionsForDownload.let {
                         if (it is VersionsForDownload.Loaded) {
                             it.versions
                         } else {
