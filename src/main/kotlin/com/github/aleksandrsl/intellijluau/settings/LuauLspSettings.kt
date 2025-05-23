@@ -357,7 +357,6 @@ class LuauLspSettings(
             coroutineScope.launch {
                 try {
                     val lspManager = LuauLspManager.getInstance()
-                    // TODO (AleksandrSl 12/05/2025): Maybe cache this for a short time?
                     lspVersionsForDownload = try {
                         VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload(project))
                     } catch (err: Exception) {
