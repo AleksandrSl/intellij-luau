@@ -10,6 +10,8 @@ import com.intellij.openapi.startup.ProjectActivity
 
 private const val DEFAULT_SETTINGS_DISMISSED_PROPERTY = "com.github.aleksandrsl.intellijluau.defaultSettingsDismissed"
 
+// RunOnceUtil is similar to what I have, but I do want to show again it if it weren't closed manually.
+// If there is a different need, this utility can be used.
 class DefaultSettingsStartupActivity : ProjectActivity {
     fun dontShowAgain(project: Project) {
         PropertiesComponent.getInstance(project).setValue(DEFAULT_SETTINGS_DISMISSED_PROPERTY, true)
