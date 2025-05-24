@@ -8,11 +8,14 @@ import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 import com.intellij.util.xmlb.XmlSerializerUtil
 
-// TODO (AleksandrSl 11/05/2025): Try using - SerializablePersistentStateComponent. https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html#implementing-the-persistentstatecomponent-interface
+// TODO (AleksandrSl 11/05/2025): Try using - SerializablePersistentStateComponent.
+//  https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html#implementing-the-persistentstatecomponent-interface
+// TODO (AleksandrSl 24/05/2025): I tried and it doesn't work, settings are not saved to the disk at all.
+//  Maybe it's this issue - https://youtrack.jetbrains.com/issue/IJPL-188400/SerializablePersistentStateComponent-is-not-persisted.
+//  Check again when it's resolved.
 @Service(Service.Level.PROJECT)
 @State(name = "LuauPluginSettings", storages = [Storage("luauPlugin.xml")])
-class ProjectSettingsState :
-    PersistentStateComponent<ProjectSettingsState.State> {
+class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State> {
     private var internalState: State = State()
 
     var lspVersion: Version.Semantic?
@@ -128,28 +131,19 @@ interface ShareableProjectSettingsState {
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabled: Boolean
-        get() = lspConfigurationType == LspConfigurationType.Auto && !lspVersion.isNullOrEmpty()
-                || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+        get() = lspConfigurationType == LspConfigurationType.Auto && !lspVersion.isNullOrEmpty() || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
 }
 
 enum class LspConfigurationType {
-    Disabled,
-    Auto,
-    Manual,
+    Disabled, Auto, Manual,
 }
 
 enum class RobloxSecurityLevel {
-    None,
-    LocalUserSecurity,
-    PluginSecurity,
-    RobloxScriptSecurity,
+    None, LocalUserSecurity, PluginSecurity, RobloxScriptSecurity,
 }
 
 val defaultRobloxSecurityLevel = RobloxSecurityLevel.None
 
 enum class RunStyluaOption {
-    Disabled,
-    RunOnSave,
-    RunOnSaveAndDisableBuiltinFormatter,
-    RunInsteadOfFormatter,
+    Disabled, RunOnSave, RunOnSaveAndDisableBuiltinFormatter, RunInsteadOfFormatter,
 }
