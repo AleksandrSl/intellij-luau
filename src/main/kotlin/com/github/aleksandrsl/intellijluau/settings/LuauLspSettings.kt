@@ -8,6 +8,7 @@ import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
 import com.github.aleksandrsl.intellijluau.lsp.restartLspServerAsync
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.icons.AllIcons
+import com.intellij.ide.actions.RevealFileAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
@@ -320,10 +321,12 @@ class LuauLspSettings(
                                     override fun actionPerformed(e: AnActionEvent) {
                                         val lspDir = LuauLspManager.getInstance().basePath().toFile()
                                         if (lspDir.exists()) {
-                                            Desktop.getDesktop().open(lspDir)
+                                            RevealFileAction.openDirectory(lspDir)
                                         }
                                     }
-                                }).align(AlignX.RIGHT)
+                                    // TODO (AleksandrSl 24/05/2025): Should I show something if it's not available? I'd like to show a copyable path, but i'm yet to fond a good way.
+                                    //  Both contextualHelp and rowComment are not copyable.
+                                }).align(AlignX.RIGHT).enabled(RevealFileAction.isDirectoryOpenSupported())
                             }
                         }.enabledIf(lspAuto.selected)
                     }.rowComment("Binaries are downloaded from <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a> when you select a version in the download section of combobox.")
