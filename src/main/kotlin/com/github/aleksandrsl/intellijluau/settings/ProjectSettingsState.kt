@@ -1,23 +1,18 @@
 package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.util.Version
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
+import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
-import com.intellij.util.xmlb.XmlSerializerUtil
+import kotlinx.serialization.Serializable
+import kotlin.text.isNullOrEmpty
 
-// TODO (AleksandrSl 11/05/2025): Try using - SerializablePersistentStateComponent. https://plugins.jetbrains.com/docs/intellij/persisting-state-of-components.html#implementing-the-persistentstatecomponent-interface
 @Service(Service.Level.PROJECT)
 @State(name = "LuauPluginSettings", storages = [Storage("luauPlugin.xml")])
-class ProjectSettingsState :
-    PersistentStateComponent<ProjectSettingsState.State> {
-    private var internalState: State = State()
+class ProjectSettingsState : SerializablePersistentStateComponent<MyState>(MyState()) {
 
     var lspVersion: Version.Semantic?
         get() {
-            val version = internalState.lspVersion
+            val version = state.lspVersion
             if (version == null) {
                 return null
             }
@@ -28,20 +23,35 @@ class ProjectSettingsState :
             }
         }
         set(value) {
-            internalState.lspVersion = value?.toString()
+            updateState {
+                it.copy(lspVersion = value?.toString())
+            }
         }
 
-    val lspConfigurationType: LspConfigurationType
-        get() = internalState.lspConfigurationType
+    var lspConfigurationType: LspConfigurationType
+        get() = state.lspConfigurationType
+        set(value) {
+            updateState { it.copy(lspConfigurationType = value) }
+        }
 
-    val lspPath: String
-        get() = internalState.lspPath
+    var lspPath: String
+        get() = state.lspPath
+        set(value) {
+            updateState { it.copy(lspPath = value) }
+        }
 
-    val styLuaPath: String
-        get() = internalState.styLuaPath
+    var styLuaPath: String
+        get() = state.styLuaPath
+        set(value) {
+            updateState { it.copy(styLuaPath = value) }
+        }
 
-    val sourcemapGenerationCommand: String
-        get() = internalState.sourcemapGenerationCommand
+    var sourcemapGenerationCommand: String
+        get() = state.sourcemapGenerationCommand
+        // Seems like internal doesn't limit the mutability to the same package 😿
+        internal set(value) {
+            updateState { it.copy(sourcemapGenerationCommand = value) }
+        }
 
     val runStyluaOnSave
         get() = runStyLua == RunStyluaOption.RunOnSave || runStyLua == RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
@@ -52,65 +62,86 @@ class ProjectSettingsState :
     val runStyLuaInsteadOfFormatter
         get() = runStyLua == RunStyluaOption.RunInsteadOfFormatter
 
-    val runStyLua
-        get() = if (internalState.styLuaPath.isNotBlank()) {
-            internalState.runStyLua
+    private val runStyLua
+        get() = if (state.styLuaPath.isNotBlank()) {
+            state.runStyLua
         } else {
             RunStyluaOption.Disabled
         }
 
-    val robloxSecurityLevel
-        get() = internalState.robloxSecurityLevel
+    internal var runStyLuaRaw
+        get() = if (state.styLuaPath.isNotBlank()) {
+            state.runStyLua
+        } else {
+            RunStyluaOption.Disabled
+        }
+        set(value) {
+            updateState { it.copy(runStyLua = value) }
+        }
 
-    val customDefinitionsPaths
-        get() = internalState.customDefinitionsPaths
+    var robloxSecurityLevel
+        get() = state.robloxSecurityLevel
+        set(value) {
+            updateState { it.copy(robloxSecurityLevel = value) }
+        }
+
+    var customDefinitionsPaths
+        get() = state.customDefinitionsPaths
+        set(value) {
+            updateState { it.copy(customDefinitionsPaths = value) }
+        }
 
     val shouldGenerateSourcemap
-        get() = internalState.shouldGenerateSourcemap
+        get() = isLspEnabled && sourcemapGenerationCommand.isNotBlank()
 
     val isLspEnabled
-        get() = internalState.isLspEnabled
+        get() = lspConfigurationType == LspConfigurationType.Auto && !state.lspVersion.isNullOrEmpty() || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
 
-    val lspUseLatest
-        get() = internalState.lspUseLatest
-
-    override fun getState(): State {
-        return internalState
-    }
-
-    override fun loadState(state: State) {
-        XmlSerializerUtil.copyBean(state, internalState)
-    }
+    var lspUseLatest
+        get() = state.lspUseLatest
+        set(value) {
+            updateState { it.copy(lspUseLatest = value) }
+        }
 
     fun loadDefaultSettings() {
         val defaults = LuauDefaultSettingsState.getInstance().state
-        internalState.lspUseLatest = defaults.lspUseLatest
-        internalState.lspConfigurationType = defaults.lspConfigurationType
-        internalState.styLuaPath = defaults.styLuaPath
-        internalState.lspVersion = defaults.lspVersion
-        internalState.lspPath = defaults.lspPath
-        internalState.sourcemapGenerationCommand = defaults.sourcemapGenerationCommand
-        internalState.runStyLua = defaults.runStyLua
-        internalState.robloxSecurityLevel = defaults.robloxSecurityLevel
-        internalState.customDefinitionsPaths = defaults.customDefinitionsPaths
+        updateState {
+            it.copy(
+                lspUseLatest = defaults.lspUseLatest,
+                lspConfigurationType = defaults.lspConfigurationType,
+                styLuaPath = defaults.styLuaPath,
+                lspVersion = defaults.lspVersion,
+                lspPath = defaults.lspPath,
+                sourcemapGenerationCommand = defaults.sourcemapGenerationCommand,
+                runStyLua = defaults.runStyLua,
+                robloxSecurityLevel = defaults.robloxSecurityLevel,
+                customDefinitionsPaths = defaults.customDefinitionsPaths,
+            )
+        }
     }
 
-    data class State(
-        override var lspUseLatest: Boolean = true,
-        override var lspVersion: String? = null,
-        override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
-        override var lspPath: String = "",
-        override var styLuaPath: String = "",
-        override var sourcemapGenerationCommand: String = "",
-        override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
-        override var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
-        override var customDefinitionsPaths: List<String> = listOf(),
-    ) : ShareableProjectSettingsState
+    fun updateLspVersion(version: Version.Semantic?, useLatest: Boolean) {
+        updateState {
+            it.copy(lspVersion = version?.toString(), lspUseLatest = useLatest)
+        }
+    }
 
     companion object {
-        fun getInstance(project: Project): ProjectSettingsState = project.getService(ProjectSettingsState::class.java)
+        fun getInstance(project: Project): ProjectSettingsState = project.service()
     }
 }
+
+data class MyState(
+    @JvmField val lspUseLatest: Boolean = true,
+    @JvmField val lspVersion: String? = null,
+    @JvmField val lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
+    @JvmField val lspPath: String = "",
+    @JvmField val styLuaPath: String = "",
+    @JvmField val sourcemapGenerationCommand: String = "",
+    @JvmField val runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
+    @JvmField val robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
+    @JvmField val customDefinitionsPaths: List<String> = listOf(),
+)
 
 interface ShareableProjectSettingsState {
     val lspConfigurationType: LspConfigurationType
@@ -128,28 +159,19 @@ interface ShareableProjectSettingsState {
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabled: Boolean
-        get() = lspConfigurationType == LspConfigurationType.Auto && !lspVersion.isNullOrEmpty()
-                || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+        get() = lspConfigurationType == LspConfigurationType.Auto && !lspVersion.isNullOrEmpty() || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
 }
 
 enum class LspConfigurationType {
-    Disabled,
-    Auto,
-    Manual,
+    Disabled, Auto, Manual,
 }
 
 enum class RobloxSecurityLevel {
-    None,
-    LocalUserSecurity,
-    PluginSecurity,
-    RobloxScriptSecurity,
+    None, LocalUserSecurity, PluginSecurity, RobloxScriptSecurity,
 }
 
 val defaultRobloxSecurityLevel = RobloxSecurityLevel.None
 
 enum class RunStyluaOption {
-    Disabled,
-    RunOnSave,
-    RunOnSaveAndDisableBuiltinFormatter,
-    RunInsteadOfFormatter,
+    Disabled, RunOnSave, RunOnSaveAndDisableBuiltinFormatter, RunInsteadOfFormatter,
 }

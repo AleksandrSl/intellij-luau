@@ -44,12 +44,12 @@ class FileWatcherService(private val project: Project, private val coroutineScop
         messageBusConnection?.subscribe(
             ProjectSettingsConfigurable.TOPIC, object : ProjectSettingsConfigurable.SettingsChangeListener {
                 override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    LOG.info("Settings changed, new: ${e.newState.shouldGenerateSourcemap}, old: ${e.oldState.shouldGenerateSourcemap}")
-                    if (e.newState.shouldGenerateSourcemap && !e.oldState.shouldGenerateSourcemap) {
-                        start()
-                    } else {
-                        stop()
-                    }
+//                    LOG.info("Settings changed, new: ${e.newState.shouldGenerateSourcemap}, old: ${e.oldState.shouldGenerateSourcemap}")
+//                    if (e.newState.shouldGenerateSourcemap && !e.oldState.shouldGenerateSourcemap) {
+//                        start()
+//                    } else {
+//                        stop()
+//                    }
                 }
             })
 

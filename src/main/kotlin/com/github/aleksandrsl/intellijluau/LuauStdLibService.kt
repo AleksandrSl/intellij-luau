@@ -33,9 +33,9 @@ class LuauStdLibServiceImpl(val project: Project, private val coroutineScope: Co
             ProjectSettingsConfigurable.TOPIC,
             object : ProjectSettingsConfigurable.SettingsChangeListener {
                 override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    if (e.newState.robloxSecurityLevel != e.oldState.robloxSecurityLevel) {
-                        loadStdLibDeclarations()
-                    }
+//                    if (e.newState.robloxSecurityLevel != e.oldState.robloxSecurityLevel) {
+//                        loadStdLibDeclarations()
+//                    }
                 }
             })
         loadStdLibDeclarations()

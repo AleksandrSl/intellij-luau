@@ -14,29 +14,28 @@ private val LOG = logger<LuauDefaultSettingsState>()
     storages = [Storage(StoragePathMacros.NON_ROAMABLE_FILE)]
 )
 class LuauDefaultSettingsState :
-    PersistentStateComponent<ShareableProjectSettingsState> {
-    private var internalState = DefaultState()
+    SerializablePersistentStateComponent<DefaultState>(DefaultState()) {
 
-    override fun getState(): ShareableProjectSettingsState {
-        return internalState
-    }
+//    fun save(newState: ShareableProjectSettingsState) {
+//        setState(newState)
+//        val propertiesComponent = PropertiesComponent.getInstance()
+//        propertiesComponent.setValue("defaultSettingsSet", true)
+//    }
 
-    override fun loadState(state: ShareableProjectSettingsState) {
-        XmlSerializerUtil.copyBean(state, internalState)
-    }
-
-    fun save(state: ShareableProjectSettingsState) {
-        internalState.lspUseLatest = state.lspUseLatest
-        internalState.lspVersion = state.lspVersion
-        internalState.lspConfigurationType = state.lspConfigurationType
-        internalState.lspPath = state.lspPath
-        internalState.styLuaPath = state.styLuaPath
-        internalState.sourcemapGenerationCommand = state.sourcemapGenerationCommand
-        internalState.runStyLua = state.runStyLua
-        internalState.robloxSecurityLevel = state.robloxSecurityLevel
-        internalState.customDefinitionsPaths = state.customDefinitionsPaths
-        val propertiesComponent = PropertiesComponent.getInstance()
-        propertiesComponent.setValue("defaultSettingsSet", true)
+    fun save(newState: MyState) {
+//        setState(DefaultState(
+//            lspUseLatest = newState.lspUseLatest,
+//            lspVersion = newState.lspVersion,
+//            lspConfigurationType = newState.lspConfigurationType,
+//            lspPath = newState.lspPath,
+//            styLuaPath = newState.styLuaPath,
+//            sourcemapGenerationCommand = newState.sourcemapGenerationCommand,
+//            runStyLua = newState.runStyLua,
+//            robloxSecurityLevel = newState.robloxSecurityLevel,
+//            customDefinitionsPaths = newState.customDefinitionsPaths,
+//        ))
+//        val propertiesComponent = PropertiesComponent.getInstance()
+//        propertiesComponent.setValue("defaultSettingsSet", true)
     }
 
     val hasDefaultSettings
@@ -44,18 +43,18 @@ class LuauDefaultSettingsState :
 
     companion object {
         fun getInstance(): LuauDefaultSettingsState =
-            ApplicationManager.getApplication().getService(LuauDefaultSettingsState::class.java)
+            ApplicationManager.getApplication().service()
     }
 }
 
 data class DefaultState(
-    override var lspUseLatest: Boolean = true,
-    override var lspVersion: String? = null,
-    override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
-    override var lspPath: String = "",
-    override var styLuaPath: String = "",
-    override var sourcemapGenerationCommand: String = "",
-    override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
-    override var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
-    override var customDefinitionsPaths: List<String> = listOf(),
+    override val lspUseLatest: Boolean = true,
+    override val lspVersion: String? = null,
+    override val lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
+    override val lspPath: String = "",
+    override val styLuaPath: String = "",
+    override val sourcemapGenerationCommand: String = "",
+    override val runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
+    override val robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
+    override val customDefinitionsPaths: List<String> = listOf(),
 ) : ShareableProjectSettingsState

@@ -24,8 +24,8 @@ private val LOG = logger<ProjectSettingsComponent>()
 
 class ProjectSettingsComponent(
     private val service: LuauCliService,
-    private val settings: ProjectSettingsState.State,
-    private val project: Project,
+    private val settings: ProjectSettingsState,
+    project: Project,
     private val applyAndSaveAsDefault: () -> Unit,
 ) {
     private var styLuaVersion: String? = null
@@ -82,7 +82,7 @@ class ProjectSettingsComponent(
                     }
                 }
             }
-            lspSettings.render(this)
+//            lspSettings.render(this)
             group("StyLua") {
                 row("Path to StyLua:") {
                     cell(styLuaPathComponent).align(AlignX.FILL).resizableColumn().bindText(settings::styLuaPath)
@@ -105,7 +105,7 @@ class ProjectSettingsComponent(
                     row {
                         radioButton("Instead of builtin formatter", RunStyluaOption.RunInsteadOfFormatter)
                     }
-                }.bind(settings::runStyLua)
+                }.bind(settings::runStyLuaRaw)
             }
             row {
                 button("Apply & Save as Default") { applyAndSaveAsDefault() }
@@ -115,7 +115,7 @@ class ProjectSettingsComponent(
 
     private fun setStyluaVersion(newVersion: String) {
         styLuaVersion = newVersion
-        // styluaVersionLabel.bindTextIn() Experimental but suits my purpose I guess?
+        // styluaVersionLabel.bindTextIn() Experimental but suits my purpose, I guess?
         styluaVersionLabelComponent.text = "Version: $styLuaVersion"
     }
 

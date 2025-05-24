@@ -42,7 +42,7 @@ private val LOG = logger<LuauLspSettings>()
 
 class LuauLspSettings(
     private val project: com.intellij.openapi.project.Project,
-    private val settings: ProjectSettingsState.State,
+    private val settings: ProjectSettingsState,
     private val coroutineScope: CoroutineScope,
 ) {
     private lateinit var lspVersionCombobox: LspVersionComboBox
@@ -57,17 +57,13 @@ class LuauLspSettings(
     private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) "No binary specified" else "")
 
     private val lspVersionBinding = object : MutableProperty<Version?> {
-        override fun get(): Version? = if (settings.lspUseLatest) Version.Latest else settings.lspVersion?.let {
-            Version.Semantic.parse(it)
-        }
+        override fun get(): Version? = if (settings.lspUseLatest) Version.Latest else settings.lspVersion
 
         override fun set(value: Version?) {
-            if (value == Version.Latest) {
-                settings.lspUseLatest = true
-                settings.lspVersion = getLatestInstalledVersion()?.toString() ?: Version.Latest.toString()
+            if (value is Version.Latest) {
+                settings.updateLspVersion(getLatestInstalledVersion(), true)
             } else {
-                settings.lspUseLatest = false
-                settings.lspVersion = value?.toString()
+                settings.updateLspVersion(value as Version.Semantic?, false)
             }
         }
     }
@@ -151,7 +147,7 @@ class LuauLspSettings(
         downloadLspButton.action = object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent) {
                 download(version)
-                settings.lspVersion = version.toString()
+                settings.lspVersion = version
             }
         }
         downloadLspButton.text = if (isUpdate) "Update to $version" else "Download: $version"
@@ -207,9 +203,9 @@ class LuauLspSettings(
         val shouldShowActions = !(isLspVersionModified || isConfigurationTypeModified)
         val selectedVersion = lspVersionCombobox.getSelectedVersion()
         when (val result = LuauLspManager.checkLsp(
-            // I don't like this but this is a trick to show the download instead of update if the current version in settings is null.
-            (if (isLspVersionModified) selectedVersion.toString() else settings.lspVersion)?.let {
-                when (val parsed = Version.parse(it)) {
+            // I don't like this, but this is a trick to show the download instead of update if the current version in settings is null.
+            (if (isLspVersionModified) selectedVersion else settings.lspVersion)?.let {
+                when (val parsed = it) {
                     Version.Latest -> latestInstalled
                     is Version.Semantic -> parsed
                 }
@@ -250,7 +246,7 @@ class LuauLspSettings(
             is LuauLspManager.CheckLspResult.UpdateSettings -> {
                 // This state should not be possible in settings since I will update the settings for the latest
                 // version at the project start and maybe when download is done in a project.
-                settings.lspVersion = result.version.toString()
+                settings.lspVersion = result.version
                 updateLspVersionActions(versionsForDownload, lspInstalledVersions)
             }
         }
@@ -395,6 +391,12 @@ class LuauLspSettings(
 }
 
 // Yes, this could be a downloadable resource and maybe will be.
+// The main point was to not mistake two lists because they are too similar, but their position usually matters.
+// I tried creating a Resource<T> and value classed for two versions.
+// But eat shit at the point of list ordering, because a list contains of the value classes,
+// but comparable are for their internal values.
+// Creating separate comparable for values classes gave errors in several places as well.
+// So I gave up, but may take another attempt.
 sealed class VersionsForDownload {
     data object Loading : VersionsForDownload()
     data class Loaded(val versions: List<Version.Semantic>) : VersionsForDownload()

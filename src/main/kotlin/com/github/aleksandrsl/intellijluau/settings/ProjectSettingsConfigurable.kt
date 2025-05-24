@@ -3,7 +3,6 @@ package com.github.aleksandrsl.intellijluau.settings
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.lsp.restartLspServerAsync
-import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState.State
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
@@ -19,9 +18,9 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     override fun createComponent(): JComponent {
         return ProjectSettingsComponent(
             project.service<LuauCliService>(),
-            settings.state,
+            settings,
             project,
-            ::applyAndsSveAsDefault,
+            ::applyAndsSaveAsDefault,
         ).also {
             _component = it
         }.panel
@@ -34,14 +33,15 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     override fun getPreferredFocusedComponent(): JComponent? = _component?.preferredFocusedComponent
 
     override fun apply() {
-        val oldState = settings.state.copy()
+        // TODO (AleksandrSl 24/05/2025): Given I'm now using copy on write object, I can just set the value without copy?
+//        val oldState = settings.state
         _component?.panel?.apply()
-        val event = SettingsChangedEvent(
-            oldState,
-            settings.state
-        )
-        notifySettingsChanged(event)
-        restartLsp(event)
+//        val event = SettingsChangedEvent(
+//            oldState,
+//            settings.state
+//        )
+//        notifySettingsChanged(event)
+//        restartLsp(event)
     }
 
     override fun reset() {
@@ -57,11 +57,11 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
     }
 
     private fun restartLsp(settingsChangedEvent: SettingsChangedEvent) {
-        if (settingsChangedEvent.isChanged(State::lspPath)
-            || settingsChangedEvent.isChanged(State::lspVersion)
-            || settingsChangedEvent.isChanged(State::robloxSecurityLevel)
-            || settingsChangedEvent.isChanged(State::customDefinitionsPaths)
-            || settingsChangedEvent.isChanged(State::lspConfigurationType)
+        if (settingsChangedEvent.isChanged(MyState::lspPath)
+            || settingsChangedEvent.isChanged(MyState::lspVersion)
+            || settingsChangedEvent.isChanged(MyState::robloxSecurityLevel)
+            || settingsChangedEvent.isChanged(MyState::customDefinitionsPaths)
+            || settingsChangedEvent.isChanged(MyState::lspConfigurationType)
         ) {
             restartLspServerAsync(project)
         }
@@ -75,14 +75,14 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         project.messageBus.syncPublisher(TOPIC).settingsChanged(event)
     }
 
-    private fun applyAndsSveAsDefault() {
+    private fun applyAndsSaveAsDefault() {
         apply()
         LuauDefaultSettingsState.getInstance().save(settings.state)
     }
 
-    class SettingsChangedEvent(val oldState: State, val newState: State) {
+    class SettingsChangedEvent(val oldState: MyState, val newState: MyState) {
         /** Use it like `event.isChanged(State::foo)` to check whether `foo` property is changed or not */
-        fun isChanged(prop: KProperty1<State, *>): Boolean = prop.get(oldState) != prop.get(newState)
+        fun isChanged(prop: KProperty1<MyState, *>): Boolean = prop.get(oldState) != prop.get(newState)
     }
 
     companion object {
