@@ -2,6 +2,7 @@ package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LspCli
+import com.github.aleksandrsl.intellijluau.cli.RojoCli
 import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
@@ -13,14 +14,19 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.observable.properties.AtomicProperty
+import com.intellij.openapi.observable.util.transform
 import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.platform.ide.progress.runWithModalProgressBlocking
 import com.intellij.ui.DocumentAdapter
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.and
 import com.intellij.ui.layout.not
 import com.intellij.ui.layout.selected
 import com.intellij.ui.layout.selectedValueIs
@@ -31,30 +37,41 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.awt.Desktop
 import java.awt.event.ActionEvent
 import java.awt.event.ItemEvent
+import java.nio.file.Path
 import javax.swing.AbstractAction
 import javax.swing.JButton
+import javax.swing.JLabel
 import javax.swing.JRadioButton
 import kotlin.io.path.exists
 
 private val LOG = logger<LuauLspSettings>()
 
+// Important learning, when parent becomes visible it makes all the children visible as well, even if they were explicitly hidden.
+// The only escape is to use a predicate or observable
+// TODO (AleksandrSl 27/05/2025): Try to use AtomicActions more, since I've switched to them for versions. Now I use it only for the loader.
 class LuauLspSettings(
     private val project: com.intellij.openapi.project.Project,
     private val settings: ProjectSettingsState.State,
     private val coroutineScope: CoroutineScope,
 ) {
+    private lateinit var rojoVersionLabel: JLabel
+    private lateinit var rojoVersionLoader: AnimatedIcon
+    private val rojoVersion = AtomicProperty("")
+    private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(VersionsForDownload.Loading)
+    private val lspInstalledVersions = AtomicProperty<InstalledVersions>(InstalledVersions.Loading)
+
+    private lateinit var sourcemapGenerationManulRadio: JBRadioButton
+    private lateinit var sourcemapGenerationRojoRadio: JBRadioButton
+    private lateinit var sourcemapSupportCheckbox: JBCheckBox
     private lateinit var lspVersionCombobox: LspVersionComboBox
     private lateinit var lspDisabled: JRadioButton
     private lateinit var lspManual: JRadioButton
     private lateinit var lspAuto: JRadioButton
-    private lateinit var loading: AnimatedIcon
+    private lateinit var lspVersionsLoader: AnimatedIcon
     private val lspVersionStateLabelComponent = JBLabel().apply { isVisible = false }
     private val downloadLspButton = JButton().apply { isVisible = false }
-    private var lspVersionsForDownload: VersionsForDownload = VersionsForDownload.Loading
-    private var lspInstalledVersions: InstalledVersions = InstalledVersions.Loading
     private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) "No binary specified" else "")
 
     private val lspVersionBinding = object : MutableProperty<Version?> {
@@ -74,7 +91,7 @@ class LuauLspSettings(
     }
 
     private fun getLatestInstalledVersion(): Version.Semantic? {
-        val container = lspInstalledVersions
+        val container = lspInstalledVersions.get()
         if (container is InstalledVersions.Loaded) {
             return container.versions.maxOrNull()
         }
@@ -94,15 +111,15 @@ class LuauLspSettings(
 
                     is LuauLspManager.DownloadResult.AlreadyExists, is LuauLspManager.DownloadResult.Ok -> {
                         withContext(Dispatchers.EDT) {
-                            lspInstalledVersions = lspInstalledVersions.let {
+                            lspInstalledVersions.set(lspInstalledVersions.get().let {
                                 // Consider getting versions anew?
                                 if (it is InstalledVersions.Loaded) {
                                     InstalledVersions.Loaded(it.versions + version)
                                 } else {
                                     InstalledVersions.Loaded(listOf(version))
                                 }
-                            }
-                            updateLspVersionActions(lspVersionsForDownload, lspInstalledVersions)
+                            })
+                            updateLspVersionActions(lspVersionsForDownload.get(), lspInstalledVersions.get())
                             restartLspServerAsync(project)
                         }
                         true
@@ -126,26 +143,35 @@ class LuauLspSettings(
 
     private val lspPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
-        textField.document.addDocumentListener(object : DocumentAdapter() {
-            override fun textChanged(event: javax.swing.event.DocumentEvent) {
-                if (text.isEmpty()) {
-                    return
-                }
-                val maybePath = text.toNioPathOrNull()
-                if (maybePath == null || !maybePath.exists()) {
-                    return
-                }
-                // I guess this will launch in project scope, so the coroutine will finish even if I close the settings.
-                // Not sure if I should about it or not.
-                coroutineScope.launch(Dispatchers.IO) {
-                    setManualLspVersion(
-                        LspCli(
-                            project, LspConfiguration.ForSettings(project, maybePath, listOf(), true)
-                        ).queryVersion().toString()
-                    )
-                }
+        onExistingFileChanged {
+            // I guess this will launch in project scope, so the coroutine will finish even if I close the settings.
+            // Not sure if I should about it or not.
+            coroutineScope.launch(Dispatchers.IO) {
+                setManualLspVersion(
+                    LspCli(
+                        project, LspConfiguration.ForSettings(project, it, listOf(), true)
+                    ).queryVersion().toString()
+                )
             }
-        })
+        }
+    }
+
+    private val rojoProjectFileComponent = TextFieldWithBrowseButton().apply {
+        addBrowseFolderListener(
+            TextBrowseFolderListener(
+                FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(),
+                // Using a project here and for sourcemap, but not for manual LSP is on purpose. These two are most likely located in your project, while LSP isn't
+                project
+            )
+        )
+    }
+
+    private val sourcemapFileComponent = TextFieldWithBrowseButton().apply {
+        addBrowseFolderListener(
+            TextBrowseFolderListener(
+                FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor(), project
+            )
+        )
     }
 
     private fun showLspDownloadButton(version: Version.Semantic, isUpdate: Boolean) {
@@ -252,8 +278,36 @@ class LuauLspSettings(
                 // This state should not be possible in settings since I will update the settings for the latest
                 // version at the project start and maybe when download is done in a project.
                 settings.lspVersion = result.version.toString()
-                updateLspVersionActions(versionsForDownload, lspInstalledVersions)
+                updateLspVersionActions(versionsForDownload, lspInstalledVersions.get())
             }
+        }
+    }
+
+    private fun checkRojoVersion() {
+        coroutineScope.launch {
+            withLoader(rojoVersionLoader) {
+                try {
+                    val version = withContext(Dispatchers.IO) {
+                        RojoCli.queryVersion()
+                    }
+                    rojoVersion.set(version)
+                    rojoVersionLabel.foreground = UIUtil.getLabelForeground()
+                } catch (err: Exception) {
+                    rojoVersion.set(err.message ?: "Failed to get rojo version")
+                    rojoVersionLabel.foreground = UIUtil.getErrorForeground()
+                }
+            }
+        }
+    }
+
+    private suspend fun withLoader(loader: AnimatedIcon, f: suspend () -> Unit) {
+        try {
+            loader.isVisible = true
+            loader.resume()
+            f()
+        } finally {
+            loader.suspend()
+            loader.isVisible = false
         }
     }
 
@@ -304,7 +358,7 @@ class LuauLspSettings(
                                         addItemListener {
                                             if (it.stateChange == ItemEvent.SELECTED) {
                                                 updateLspVersionActions(
-                                                    lspVersionsForDownload, lspInstalledVersions
+                                                    lspVersionsForDownload.get(), lspInstalledVersions.get()
                                                 )
                                             }
                                         }
@@ -312,7 +366,8 @@ class LuauLspSettings(
                                 cell(downloadLspButton)
                                 cell(lspVersionStateLabelComponent)
                                 // I empirically learned that icon will cancel coroutine passed to it if you unload it.
-                                loading = cell(AsyncProcessIcon("Loading")).component.apply { isVisible = false }
+                                lspVersionsLoader =
+                                    cell(AsyncProcessIcon("Loading")).visibleIf(lspVersionsForDownload.transform { it is VersionsForDownload.Loading }).component
                                 contextHelp("Updates will be suggested if available as notifications when you open a project or you can check for them on this page.").visibleIf(
                                     lspVersionCombobox.selectedValueIs(LspVersionComboBox.Item.LatestVersion)
                                 )
@@ -344,57 +399,124 @@ class LuauLspSettings(
                         cell(lspVersionLabelComponent).align(AlignX.FILL).resizableColumn()
                     }
                 }.visibleIf(lspManual.selected)
-                rowsRange {
-                    row("Sourcemap Generation Command:") {
-                        textField().bindText(settings::sourcemapGenerationCommand).align(AlignX.FILL).resizableColumn()
-                    }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
-                }.enabledIf(!lspDisabled.selected)
+
+                row {
+                    sourcemapSupportCheckbox =
+                        checkBox(LuauBundle.message("luau.settings.lsp.sourcemap.enabled")).bindSelected(
+                            settings::lspSourcemapSupportEnabled
+                        ).component
+                }.topGap(TopGap.SMALL).enabledIf(!lspDisabled.selected)
+
+                collapsibleGroup(LuauBundle.message("luau.settings.lsp.sourcemap.title")) {
+                    row("Sourcemap file:") {
+                        cell(sourcemapFileComponent).align(AlignX.FILL).resizableColumn()
+                            .bindText(settings::lspSourcemapFile)
+                    }
+
+                    buttonsGroup {
+                        row("Sourcemap generation:") {
+                            radioButton("Disabled", LspSourcemapGenerationType.Disabled)
+                            sourcemapGenerationRojoRadio =
+                                radioButton("Rojo", LspSourcemapGenerationType.Rojo).component.apply {
+                                    addItemListener { e ->
+                                        if (e.stateChange == ItemEvent.SELECTED) {
+                                            checkRojoVersion()
+                                        }
+                                    }
+                                }
+                            sourcemapGenerationManulRadio =
+                                radioButton("Manual", LspSourcemapGenerationType.Manual).component
+                        }
+                    }.bind(settings::lspSourcemapGenerationType)
+
+                    panel {
+                        row("Rojo version:") {
+                            rojoVersionLoader =
+                                cell(AsyncProcessIcon("Loading rojo version")).visibleIf(rojoVersion.transform { it.isEmpty() }).component
+                            rojoVersionLabel = label("").bindText(rojoVersion).component
+                        }
+                        row("Rojo project file:") {
+                            cell(rojoProjectFileComponent).align(AlignX.FILL).resizableColumn()
+                                .bindText(settings::lspRojoProjectFile)
+                        }
+                    }.visibleIf(sourcemapGenerationRojoRadio.selected)
+
+                    panel {
+                        row("Sourcemap Generation Command:") {
+                            textField().bindText(settings::sourcemapGenerationCommand).align(AlignX.FILL)
+                                .resizableColumn()
+                        }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
+                        row {
+                            checkBox("Use IDEA file watcher").bindSelected(settings::lspSourcemapGenerationUseIdeaWatcher)
+                                .comment(
+                                    "Enable if the generator doesn't have a builtin watcher, and the specified command will be run on every file creation/deletion"
+                                )
+                        }
+                    }.visibleIf(sourcemapGenerationManulRadio.selected)
+                }.topGap(TopGap.NONE).enabledIf(sourcemapSupportCheckbox.selected.and(!lspDisabled.selected))
             }
         }
     }
 
     private fun loadVersions() {
         if (lspAuto.isSelected) {
-            loading.isVisible = true
-            loading.resume()
             coroutineScope.launch {
-                try {
-                    val lspManager = LuauLspManager.getInstance()
-                    lspVersionsForDownload = try {
-                        VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload(project))
+                withLoader(lspVersionsLoader) {
+                    try {
+                        val lspManager = LuauLspManager.getInstance()
+                        lspVersionsForDownload.set(
+                            try {
+                                VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload(project))
+                            } catch (err: Exception) {
+                                VersionsForDownload.Failed(err.message ?: "Failed to load versions")
+                            }
+                        )
+                        lspInstalledVersions.set(
+                            try {
+                                InstalledVersions.Loaded(lspManager.getInstalledVersions())
+                            } catch (err: Exception) {
+                                InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
+                            }
+                        )
+                        lspVersionCombobox.setVersions(installedVersions = lspInstalledVersions.get().let {
+                            if (it is InstalledVersions.Loaded) {
+                                it.versions
+                            } else {
+                                listOf()
+                            }
+                        }, versionsForDownload = lspVersionsForDownload.get().let {
+                            if (it is VersionsForDownload.Loaded) {
+                                it.versions
+                            } else {
+                                listOf()
+                            }
+                        })
+                        updateLspVersionActions(
+                            versionsForDownload = lspVersionsForDownload.get(),
+                            installedVersions = lspInstalledVersions.get()
+                        )
                     } catch (err: Exception) {
-                        VersionsForDownload.Failed(err.message ?: "Failed to load versions")
+                        LOG.error(err)
                     }
-                    lspInstalledVersions = try {
-                        InstalledVersions.Loaded(lspManager.getInstalledVersions())
-                    } catch (err: Exception) {
-                        InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
-                    }
-                    lspVersionCombobox.setVersions(installedVersions = lspInstalledVersions.let {
-                        if (it is InstalledVersions.Loaded) {
-                            it.versions
-                        } else {
-                            listOf()
-                        }
-                    }, versionsForDownload = lspVersionsForDownload.let {
-                        if (it is VersionsForDownload.Loaded) {
-                            it.versions
-                        } else {
-                            listOf()
-                        }
-                    })
-                    updateLspVersionActions(
-                        versionsForDownload = lspVersionsForDownload, installedVersions = lspInstalledVersions
-                    )
-                } catch (err: Exception) {
-                    LOG.error(err)
-                } finally {
-                    loading.suspend()
-                    loading.isVisible = false
                 }
             }
         }
     }
+}
+
+private fun TextFieldWithBrowseButton.onExistingFileChanged(action: (Path) -> Unit) {
+    addDocumentListener(object : DocumentAdapter() {
+        override fun textChanged(event: javax.swing.event.DocumentEvent) {
+            if (text.isEmpty()) {
+                return
+            }
+            val maybePath = text.toNioPathOrNull()
+            if (maybePath == null || !maybePath.exists()) {
+                return
+            }
+            action(maybePath)
+        }
+    })
 }
 
 // Yes, this could be a downloadable resource and maybe will be.

@@ -53,6 +53,12 @@ data class DefaultState(
     override var lspVersion: String? = null,
     override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
     override var lspPath: String = "",
+    override val lspSourcemapSupportEnabled: Boolean = true,
+    override val lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Rojo,
+    override val lspSourcemapFile: String? = "sourcemap.json",
+    override val lspRojoProjectFile: String? = "default.project.json",
+    override val lspSourcemapGenerationUseIdeaWatcher: Boolean = false,
+
     override var styLuaPath: String = "",
     override var sourcemapGenerationCommand: String = "",
     override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,

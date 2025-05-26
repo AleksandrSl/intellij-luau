@@ -68,8 +68,8 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val customDefinitionsPaths
         get() = internalState.customDefinitionsPaths
 
-    val shouldGenerateSourcemap
-        get() = internalState.shouldGenerateSourcemap
+    val shouldUseWatcherToGenerateSourcemap
+        get() = internalState.shouldUseWatcherToGenerateSourcemap
 
     val isLspEnabled
         get() = internalState.isLspEnabled
@@ -90,8 +90,9 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         internalState.lspUseLatest = defaults.lspUseLatest
         internalState.lspConfigurationType = defaults.lspConfigurationType
         internalState.styLuaPath = defaults.styLuaPath
-        internalState.lspVersion = defaults.lspVersion
         internalState.lspPath = defaults.lspPath
+
+        internalState.lspVersion = defaults.lspVersion
         internalState.sourcemapGenerationCommand = defaults.sourcemapGenerationCommand
         internalState.runStyLua = defaults.runStyLua
         internalState.robloxSecurityLevel = defaults.robloxSecurityLevel
@@ -103,6 +104,12 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var lspVersion: String? = null,
         override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
         override var lspPath: String = "",
+        override var lspSourcemapSupportEnabled: Boolean = true,
+        override var lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Rojo,
+        override var lspSourcemapGenerationUseIdeaWatcher: Boolean = false,
+        override var lspSourcemapFile: String = "sourcemap.json",
+        override var lspRojoProjectFile: String = "default.project.json",
+
         override var styLuaPath: String = "",
         override var sourcemapGenerationCommand: String = "",
         override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
@@ -120,18 +127,33 @@ interface ShareableProjectSettingsState {
     val lspVersion: String?
     val lspPath: String
     val lspUseLatest: Boolean
-    val styLuaPath: String
+    val lspSourcemapSupportEnabled: Boolean
+    val lspSourcemapGenerationType: LspSourcemapGenerationType
+
+    // TODO (AleksandrSl 24/05/2025): Support luau-lsp.sourcemap.includeNonScripts:
+    //  Whether to include non script instances in the sourcemap.
+    //  May be disabled for expensive DataModels later.
+    val lspSourcemapFile: String?
+    val lspRojoProjectFile: String?
+    val lspSourcemapGenerationUseIdeaWatcher: Boolean
     val sourcemapGenerationCommand: String
+
+    val styLuaPath: String
     val runStyLua: RunStyluaOption
     val robloxSecurityLevel: RobloxSecurityLevel
     val customDefinitionsPaths: List<String>
 
-    val shouldGenerateSourcemap: Boolean
+    // TODO (AleksandrSl 24/05/2025): Update according to the new logic.
+    val shouldUseWatcherToGenerateSourcemap: Boolean
         get() = isLspEnabled && sourcemapGenerationCommand.isNotBlank()
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabled: Boolean
         get() = lspConfigurationType == LspConfigurationType.Auto && !lspVersion.isNullOrEmpty() || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+}
+
+enum class LspSourcemapGenerationType {
+    Disabled, Rojo, Manual
 }
 
 enum class LspConfigurationType {
