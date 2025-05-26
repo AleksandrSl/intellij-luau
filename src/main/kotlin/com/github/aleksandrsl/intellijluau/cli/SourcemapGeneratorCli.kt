@@ -20,6 +20,7 @@ object SourcemapGeneratorCli {
             withWorkDirectory(workingDir(project))
             withCharset(Charsets.UTF_8)
             withExePath(exe)
+            // Exclude the exe name
             addParameters(parts.drop(1))
         }).runProcess(5000)
     }

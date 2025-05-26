@@ -38,14 +38,14 @@ class FileWatcherService(private val project: Project, private val coroutineScop
     private val projectDir: VirtualFile?
 
     init {
-        LOG.warn("Initializing file watcher for project ${project.name}")
+        LOG.info("Initializing file watcher for project ${project.name}")
         projectDir = project.guessProjectDir()
         messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
             ProjectSettingsConfigurable.TOPIC, object : ProjectSettingsConfigurable.SettingsChangeListener {
                 override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    LOG.info("Settings changed, new: ${e.newState.shouldGenerateSourcemap}, old: ${e.oldState.shouldGenerateSourcemap}")
-                    if (e.newState.shouldGenerateSourcemap && !e.oldState.shouldGenerateSourcemap) {
+                    LOG.info("Settings changed, new: ${e.newState.shouldUseWatcherToGenerateSourcemap}, old: ${e.oldState.shouldUseWatcherToGenerateSourcemap}")
+                    if (e.newState.shouldUseWatcherToGenerateSourcemap && !e.oldState.shouldUseWatcherToGenerateSourcemap) {
                         start()
                     } else {
                         stop()
@@ -53,7 +53,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
                 }
             })
 
-        if (ProjectSettingsState.getInstance(project).shouldGenerateSourcemap) {
+        if (ProjectSettingsState.getInstance(project).shouldUseWatcherToGenerateSourcemap) {
             start()
         }
     }
@@ -72,7 +72,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
         // Regenerate sourcemap on the first start
         queueSourcemapRegeneration()
 
-        LOG.warn("Starting file watcher for project ${project.name}")
+        LOG.info("Starting file watcher for project ${project.name}")
 
         VirtualFileManager.getInstance().addAsyncFileListener(
             object : AsyncFileListener {
@@ -134,7 +134,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
     private suspend fun regenerateSourcemap() {
         LOG.info("Regenerating sourcemap for project ${project.name}")
         val projectSettingsState = ProjectSettingsState.getInstance(project)
-        if (!projectSettingsState.shouldGenerateSourcemap) return
+        if (!projectSettingsState.shouldUseWatcherToGenerateSourcemap) return
         withContext(Dispatchers.IO) {
             try {
                 val output = SourcemapGeneratorCli.generate(project)
