@@ -53,6 +53,7 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         }
 
         try {
+            // TODO (AleksandrSl 27/05/2025): Ensure that I call withContext(Dispatchers.IO) as closer to the IO as possible. https://plugins.jetbrains.com/docs/intellij/coroutine-dispatchers.html#io-dispatcher
             val output = withContext(Dispatchers.IO) {
                 val handler = CapturingProcessHandler(commandLine)
                 handler.processInput.use { it.write(stdin.toByteArray(charset)) }

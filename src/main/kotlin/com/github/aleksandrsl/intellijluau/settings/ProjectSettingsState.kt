@@ -1,5 +1,6 @@
 package com.github.aleksandrsl.intellijluau.settings
 
+import com.github.aleksandrsl.intellijluau.lsp.DEFAULT_ROJO_PROJECT_FILE
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
@@ -77,12 +78,25 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val lspUseLatest
         get() = internalState.lspUseLatest
 
+    val lspRojoProjectFile
+        get() = internalState.lspRojoProjectFile
+
+    val lspSourcemapGenerationType
+        get() = internalState.lspSourcemapGenerationType
+
+    val lspSourcemapFile
+        get() = internalState.lspSourcemapFile
+
     override fun getState(): State {
         return internalState
     }
 
     override fun loadState(state: State) {
         XmlSerializerUtil.copyBean(state, internalState)
+    }
+
+    fun enableRojoSourcemapGeneration() {
+        internalState.lspSourcemapGenerationType = LspSourcemapGenerationType.Rojo
     }
 
     fun loadDefaultSettings() {
@@ -105,10 +119,10 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
         override var lspPath: String = "",
         override var lspSourcemapSupportEnabled: Boolean = true,
-        override var lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Rojo,
+        override var lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Disabled,
         override var lspSourcemapGenerationUseIdeaWatcher: Boolean = false,
         override var lspSourcemapFile: String = "sourcemap.json",
-        override var lspRojoProjectFile: String = "default.project.json",
+        override var lspRojoProjectFile: String = DEFAULT_ROJO_PROJECT_FILE,
 
         override var styLuaPath: String = "",
         override var sourcemapGenerationCommand: String = "",

@@ -73,9 +73,14 @@
         <notificationGroup id="Luau notifications"
                            displayType="BALLOON"
                            key="luau.notification.group.name"/>
-        <backgroundPostStartupActivity implementation="com.github.aleksandrsl.intellijluau.FileWatcherStartupActivity" />
-        <postStartupActivity implementation="com.github.aleksandrsl.intellijluau.settings.DefaultSettingsStartupActivity" />
-        <postStartupActivity implementation="com.github.aleksandrsl.intellijluau.lsp.LuauLspCheckStartupActivity" />
+        <notificationGroup id="Luau sourcemap generation"
+                           displayType="BALLOON"
+                           key="luau.notification.group.sourcemap.name"/>
+        <backgroundPostStartupActivity
+                implementation="com.github.aleksandrsl.intellijluau.lsp.SourcemapGeneratorStartupActivity"/>
+        <postStartupActivity
+                implementation="com.github.aleksandrsl.intellijluau.settings.DefaultSettingsStartupActivity"/>
+        <postStartupActivity implementation="com.github.aleksandrsl.intellijluau.lsp.LuauLspCheckStartupActivity"/>
 
         <actionOnSaveInfoProvider
                 id="LuauOnSaveActionInfoProvider"
@@ -84,7 +89,7 @@
         <actionOnSave id="LuauExternalFormatOnSaveAction"
                       implementation="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatOnSaveAction"
                       order="after FormatOnSaveAction"/>
-        <formattingService implementation="com.github.aleksandrsl.intellijluau.formatter.StyluaFormatterService" />
+        <formattingService implementation="com.github.aleksandrsl.intellijluau.formatter.StyluaFormatterService"/>
         <additionalTextAttributes
                 scheme="Default"
                 file="colorSchemes/luauDefault.xml"/>

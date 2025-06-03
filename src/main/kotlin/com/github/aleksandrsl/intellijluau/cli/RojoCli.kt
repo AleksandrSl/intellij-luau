@@ -1,28 +1,33 @@
 package com.github.aleksandrsl.intellijluau.cli
 
+import com.github.aleksandrsl.intellijluau.lsp.DEFAULT_ROJO_PROJECT_FILE
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
-import com.intellij.execution.process.ProcessOutput
+import com.intellij.execution.process.OSProcessHandler
 import com.intellij.openapi.project.Project
 
 // Use only global Rojo for now
 class RojoCli() {
-    fun generateSourcemap(project: Project): ProcessOutput {
-        return CapturingProcessHandler(
+    fun generateSourcemap(project: Project, rojoProjectFile: String, sourcemapFile: String): OSProcessHandler {
+        val actualRojoProjectFile = rojoProjectFile.ifBlank { DEFAULT_ROJO_PROJECT_FILE }
+        val actualSourcemapFile = sourcemapFile.ifBlank { "sourcemap.json" }
+
+        return OSProcessHandler(
             GeneralCommandLine(
                 listOf(
                     "rojo",
                     "sourcemap",
                     "--watch",
-                    "default.project.json",
+                    actualRojoProjectFile,
                     "--output",
-                    "sourcemap.json"
+                    actualSourcemapFile
                 )
             ).apply {
+                // TODO (AleksandrSl 27/05/2025): Should it be console? What's the difference between it and System?
                 withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
                 withWorkDirectory(project.basePath)
                 withCharset(Charsets.UTF_8)
-            }).runProcess()
+            })
     }
 
     companion object {

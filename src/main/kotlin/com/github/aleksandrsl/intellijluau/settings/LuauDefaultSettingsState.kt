@@ -1,5 +1,6 @@
 package com.github.aleksandrsl.intellijluau.settings
 
+import com.github.aleksandrsl.intellijluau.lsp.DEFAULT_ROJO_PROJECT_FILE
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
@@ -56,7 +57,7 @@ data class DefaultState(
     override val lspSourcemapSupportEnabled: Boolean = true,
     override val lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Rojo,
     override val lspSourcemapFile: String? = "sourcemap.json",
-    override val lspRojoProjectFile: String? = "default.project.json",
+    override val lspRojoProjectFile: String? = DEFAULT_ROJO_PROJECT_FILE,
     override val lspSourcemapGenerationUseIdeaWatcher: Boolean = false,
 
     override var styLuaPath: String = "",
