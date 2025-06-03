@@ -1,5 +1,9 @@
-package com.github.aleksandrsl.intellijluau
+package com.github.aleksandrsl.intellijluau.lsp
 
+import com.github.aleksandrsl.intellijluau.LuauBundle
+import com.github.aleksandrsl.intellijluau.LuauFileType
+import com.github.aleksandrsl.intellijluau.LuauNotifications
+import com.github.aleksandrsl.intellijluau.LuauPluginDisposable
 import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
@@ -7,8 +11,6 @@ import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileTypes.FileTypeRegistry
 import com.intellij.openapi.options.ShowSettingsUtil
@@ -19,20 +21,20 @@ import com.intellij.openapi.vfs.AsyncFileListener
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.events.*
-import com.intellij.util.messages.MessageBusConnection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.IOException
 
-private val LOG = logger<FileWatcherService>()
+private val LOG = logger<IdeaWatcherSourcemapGenerator>()
 
-@Service(Service.Level.PROJECT)
-class FileWatcherService(private val project: Project, private val coroutineScope: CoroutineScope) : Disposable {
+class IdeaWatcherSourcemapGenerator(private val project: Project, private val coroutineScope: CoroutineScope) :
+    SourcemapGenerator {
+    private var watcherJob: Job? = null
     private var isActive = false
-    private var messageBusConnection: MessageBusConnection? = null
     private var fileListenerDisposable: Disposable? = null
     private lateinit var processQueue: Channel<Unit>
     private val projectDir: VirtualFile?
@@ -40,25 +42,9 @@ class FileWatcherService(private val project: Project, private val coroutineScop
     init {
         LOG.info("Initializing file watcher for project ${project.name}")
         projectDir = project.guessProjectDir()
-        messageBusConnection = project.messageBus.connect(this)
-        messageBusConnection?.subscribe(
-            ProjectSettingsConfigurable.TOPIC, object : ProjectSettingsConfigurable.SettingsChangeListener {
-                override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    LOG.info("Settings changed, new: ${e.newState.shouldUseWatcherToGenerateSourcemap}, old: ${e.oldState.shouldUseWatcherToGenerateSourcemap}")
-                    if (e.newState.shouldUseWatcherToGenerateSourcemap && !e.oldState.shouldUseWatcherToGenerateSourcemap) {
-                        start()
-                    } else {
-                        stop()
-                    }
-                }
-            })
-
-        if (ProjectSettingsState.getInstance(project).shouldUseWatcherToGenerateSourcemap) {
-            start()
-        }
     }
 
-    fun start() {
+    override fun start() {
         if (projectDir == null) {
             LuauNotifications.pluginNotifications().createNotification(
                 "Cannot guess the project root. You're unlucky", NotificationType.ERROR
@@ -68,7 +54,7 @@ class FileWatcherService(private val project: Project, private val coroutineScop
         if (isActive) return
         processQueue = Channel(Channel.CONFLATED)
         fileListenerDisposable =
-            Disposer.newDisposable(LuauPluginDisposable.getInstance(project), "FileListenerDisposable")
+            Disposer.newDisposable(LuauPluginDisposable.Companion.getInstance(project), "FileListenerDisposable")
         // Regenerate sourcemap on the first start
         queueSourcemapRegeneration()
 
@@ -98,8 +84,9 @@ class FileWatcherService(private val project: Project, private val coroutineScop
             }, fileListenerDisposable!!
         )
 
-        coroutineScope.launch(Dispatchers.IO) {
-            for (commandLine in processQueue) {
+        watcherJob = coroutineScope.launch(Dispatchers.IO) {
+            for (item in processQueue) {
+                if (!isActive) break
                 try {
                     regenerateSourcemap()
                 } catch (e: Exception) {
@@ -113,18 +100,23 @@ class FileWatcherService(private val project: Project, private val coroutineScop
         isActive = true
     }
 
-    fun stop() {
-        LOG.info("Stopping file watcher for project ${project.name}")
+    // Should I make this synchronized? I think not, because service shouldn't be called in parallel.
+    override fun stop() {
         if (!isActive) return
+        isActive = false
+        LOG.info("Stopping file watcher for project ${project.name}")
 
-
+        processQueue.close()
+        watcherJob?.cancel()
         fileListenerDisposable?.let {
             Disposer.dispose(it)
             fileListenerDisposable = null
         }
-        processQueue.close()
+        watcherJob = null
+    }
 
-        isActive = false
+    override fun isRunning(): Boolean {
+        return isActive
     }
 
     private fun queueSourcemapRegeneration() {
@@ -149,7 +141,6 @@ class FileWatcherService(private val project: Project, private val coroutineScop
             } catch (e: InterruptedException) {
                 notifyError(e.message ?: "")
             }
-
         }
     }
 
@@ -163,12 +154,5 @@ class FileWatcherService(private val project: Project, private val coroutineScop
 
     override fun dispose() {
         stop()
-        messageBusConnection?.disconnect()
-    }
-
-    companion object {
-
-        @JvmStatic
-        fun getInstance(project: Project): FileWatcherService = project.service()
     }
 }
