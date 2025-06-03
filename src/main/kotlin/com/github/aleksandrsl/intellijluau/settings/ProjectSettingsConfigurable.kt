@@ -21,7 +21,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             project.service<LuauCliService>(),
             settings.state,
             project,
-            ::applyAndsSveAsDefault,
+            ::applyAndSaveAsDefault,
         ).also {
             _component = it
         }.panel
@@ -42,6 +42,10 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         )
         notifySettingsChanged(event)
         restartLsp(event)
+        // Controversial one,
+        // but if the person didn't dismiss the default settings
+        // but went and changed the actual ones, using defaults makes little sense.
+        dontSuggestDefaultSettingsAgain(project)
     }
 
     override fun reset() {
@@ -75,7 +79,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         project.messageBus.syncPublisher(TOPIC).settingsChanged(event)
     }
 
-    private fun applyAndsSveAsDefault() {
+    private fun applyAndSaveAsDefault() {
         apply()
         LuauDefaultSettingsState.getInstance().save(settings.state)
     }
