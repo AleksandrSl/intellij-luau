@@ -52,6 +52,7 @@ private class LuauLspServerDescriptor(project: Project, private val lspConfigura
     override fun isSupportedFile(file: VirtualFile) = file.fileType == LuauFileType
 
     override fun createCommandLine(): GeneralCommandLine {
+        LuauLspManager.getInstance().checkLsp(project)
         return LspCli(project, lspConfiguration).createLspCli()
     }
 }

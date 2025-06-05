@@ -80,7 +80,6 @@
                 implementation="com.github.aleksandrsl.intellijluau.lsp.SourcemapGeneratorStartupActivity"/>
         <postStartupActivity
                 implementation="com.github.aleksandrsl.intellijluau.settings.DefaultSettingsStartupActivity"/>
-        <postStartupActivity implementation="com.github.aleksandrsl.intellijluau.lsp.LuauLspCheckStartupActivity"/>
 
         <actionOnSaveInfoProvider
                 id="LuauOnSaveActionInfoProvider"

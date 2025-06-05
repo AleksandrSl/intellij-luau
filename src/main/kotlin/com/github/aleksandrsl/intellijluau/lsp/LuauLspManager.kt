@@ -60,6 +60,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
     private var cachedVersionsList: List<Version.Semantic>? = null
     private var cacheExpirationTimeMs: Long = 0L
+    // TODO (AleksandrSl 05/06/2025): Check, do I block request if they start concurrently?
     private val cacheMutex = Mutex() // To ensure thread-safe access to cache variables
     private val cacheDurationMs = 25.minutes.inWholeMilliseconds
 
@@ -314,7 +315,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             when (checkResult) {
                 is CheckLspResult.BinaryMissing -> {
                     LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.lsp.binary.missing.title"), NotificationType.INFORMATION
+                        LuauBundle.message("luau.lsp.binary.missing.title"), NotificationType.WARNING
                     ).addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.lsp.download")) {
                         coroutineScope.launch {
                             withBackgroundProgress(project, LuauBundle.message("luau.lsp.downloading")) {
