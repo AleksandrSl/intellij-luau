@@ -117,7 +117,7 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
         if (version == null) {
             SourcemapGenerator.notifications().showNotification(
                 LuauBundle.message("luau.sourcemap.generation.rojo.title"),
-                "Sourcemap generation requires Rojo installed globally. Please, install it or configure sourcemap generation.",
+                "Sourcemap generation requires Rojo installed globally. Please install it or configure sourcemap generation to use a different tool.",
                 NotificationType.INFORMATION,
             ) {
                 addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
@@ -131,7 +131,7 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
         if (!Path(settings.lspRojoProjectFile).exists()) {
             SourcemapGenerator.notifications().showNotification(
                 LuauBundle.message("luau.sourcemap.generation.rojo.title"),
-                "Rojo project file (${settings.lspRojoProjectFile}) doesn't exist. You can configure which file to use in the settings",
+                "Project file (${settings.lspRojoProjectFile}) doesn't exist. Please configure which file to use in the settings",
                 NotificationType.INFORMATION,
             ) {
                 addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
