@@ -102,6 +102,7 @@
         <completion.contributor language="Luau"
                                 implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"
                                 order="first"/>
+        <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
