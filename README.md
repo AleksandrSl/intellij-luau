@@ -64,7 +64,6 @@ Plugin based on the [IntelliJ Platform Plugin Template][template].
 
 ## Acknowledgements
 
-- EmmyLua and Luanalysis for grammar stuff that I used as a base. 
 - IntellijElm, IntellijHaxe, and Intellij plugins for a ton of helpful examples and good code comments.
 - Luau LSP for existence.
 
