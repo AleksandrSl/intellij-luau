@@ -80,7 +80,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                 try {
                     Version.Semantic.parse(it.name)
                 } catch (err: Exception) {
-                    LOG.error("Failed to parse release version: ${it.name}", err)
+                    LOG.warn("Failed to parse LSP GitHub release version: ${it.name}", err)
                     null
                 }
             }
@@ -229,7 +229,6 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             LOG.info("Successfully downloaded LSP to $destination")
             return DownloadResult.Ok(destination)
         } catch (e: Exception) {
-            LOG.error("Failed to download LSP", e)
             return DownloadResult.Failed(e.message)
         }
     }
@@ -246,7 +245,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                 }
             }?.sorted() ?: emptyList()
         } catch (e: Exception) {
-            LOG.error("Failed to get LSP versions. Basepath: ${basePath()}. Error:", e)
+            LOG.error("Failed to get LSP versions from disk. Basepath: ${basePath()}. Error:", e)
             emptyList()
         }
     }

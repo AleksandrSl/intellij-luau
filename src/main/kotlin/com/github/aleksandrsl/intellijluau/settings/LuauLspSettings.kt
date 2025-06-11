@@ -462,42 +462,38 @@ class LuauLspSettings(
         if (lspAuto.isSelected) {
             coroutineScope.launch {
                 withLoader(lspVersionsLoader) {
-                    try {
-                        val lspManager = LuauLspManager.getInstance()
-                        lspVersionsForDownload.set(
-                            try {
-                                VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload(project))
-                            } catch (err: Exception) {
-                                VersionsForDownload.Failed(err.message ?: "Failed to load versions")
-                            }
-                        )
-                        lspInstalledVersions.set(
-                            try {
-                                InstalledVersions.Loaded(lspManager.getInstalledVersions())
-                            } catch (err: Exception) {
-                                InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
-                            }
-                        )
-                        lspVersionCombobox.setVersions(installedVersions = lspInstalledVersions.get().let {
-                            if (it is InstalledVersions.Loaded) {
-                                it.versions
-                            } else {
-                                listOf()
-                            }
-                        }, versionsForDownload = lspVersionsForDownload.get().let {
-                            if (it is VersionsForDownload.Loaded) {
-                                it.versions
-                            } else {
-                                listOf()
-                            }
-                        })
-                        updateLspVersionActions(
-                            versionsForDownload = lspVersionsForDownload.get(),
-                            installedVersions = lspInstalledVersions.get()
-                        )
-                    } catch (err: Exception) {
-                        LOG.error(err)
-                    }
+                    val lspManager = LuauLspManager.getInstance()
+                    lspVersionsForDownload.set(
+                        try {
+                            VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload(project))
+                        } catch (err: Exception) {
+                            VersionsForDownload.Failed(err.message ?: "Failed to load versions")
+                        }
+                    )
+                    lspInstalledVersions.set(
+                        try {
+                            InstalledVersions.Loaded(lspManager.getInstalledVersions())
+                        } catch (err: Exception) {
+                            InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
+                        }
+                    )
+                    lspVersionCombobox.setVersions(installedVersions = lspInstalledVersions.get().let {
+                        if (it is InstalledVersions.Loaded) {
+                            it.versions
+                        } else {
+                            listOf()
+                        }
+                    }, versionsForDownload = lspVersionsForDownload.get().let {
+                        if (it is VersionsForDownload.Loaded) {
+                            it.versions
+                        } else {
+                            listOf()
+                        }
+                    })
+                    updateLspVersionActions(
+                        versionsForDownload = lspVersionsForDownload.get(),
+                        installedVersions = lspInstalledVersions.get()
+                    )
                 }
             }
         }

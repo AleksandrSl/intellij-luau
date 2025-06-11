@@ -75,7 +75,7 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
 
                     return object : AsyncFileListener.ChangeApplier {
                         override fun afterVfsChange() {
-                            LOG.warn("Processing file events: ${luaFileEvents.joinToString(",")}")
+                            LOG.debug("Processing file events: ${luaFileEvents.joinToString(",")}")
                             queueSourcemapRegeneration()
                         }
                     }
