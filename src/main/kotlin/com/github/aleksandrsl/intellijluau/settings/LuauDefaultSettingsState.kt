@@ -65,4 +65,5 @@ data class DefaultState(
     override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
     override var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
     override var customDefinitionsPaths: List<String> = listOf(),
+    override val useLuauExtension: Boolean = true,
 ) : ShareableProjectSettingsState

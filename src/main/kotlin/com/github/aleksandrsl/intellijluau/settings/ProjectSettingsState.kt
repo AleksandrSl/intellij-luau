@@ -72,6 +72,9 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val isLspEnabled
         get() = internalState.isLspEnabled
 
+    val useLuauExtension
+        get() = internalState.useLuauExtension
+
     val lspUseLatest
         get() = internalState.lspUseLatest
 
@@ -114,6 +117,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         internalState.runStyLua = defaults.runStyLua
         internalState.robloxSecurityLevel = defaults.robloxSecurityLevel
         internalState.customDefinitionsPaths = defaults.customDefinitionsPaths
+        internalState.useLuauExtension = defaults.useLuauExtension
     }
 
     data class State(
@@ -132,6 +136,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
         override var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
         override var customDefinitionsPaths: List<String> = listOf(),
+        override var useLuauExtension: Boolean = true,
     ) : ShareableProjectSettingsState
 
     companion object {
@@ -159,6 +164,7 @@ interface ShareableProjectSettingsState {
     val runStyLua: RunStyluaOption
     val robloxSecurityLevel: RobloxSecurityLevel
     val customDefinitionsPaths: List<String>
+    val useLuauExtension: Boolean
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabled: Boolean

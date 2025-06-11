@@ -60,6 +60,14 @@ class ProjectSettingsComponent(
 
     init {
         panel = panel {
+            group("General") {
+                buttonsGroup {
+                    row("Extension of the new file:") {
+                        radioButton(".luau", true)
+                        radioButton(".lua", false)
+                    }
+                }.bind(settings::useLuauExtension)
+            }
             group("Roblox") {
                 row("Roblox Security Level:") {
                     comboBox(
