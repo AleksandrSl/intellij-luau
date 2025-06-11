@@ -6,7 +6,6 @@ import com.github.aleksandrsl.intellijluau.LuauNotifications
 import com.github.aleksandrsl.intellijluau.LuauPluginDisposable
 import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
-import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -125,8 +124,6 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
 
     private suspend fun regenerateSourcemap() {
         LOG.info("Regenerating sourcemap for project ${project.name}")
-        val projectSettingsState = ProjectSettingsState.getInstance(project)
-        if (!projectSettingsState.shouldUseWatcherToGenerateSourcemap) return
         withContext(Dispatchers.IO) {
             try {
                 val output = SourcemapGeneratorCli.generate(project)

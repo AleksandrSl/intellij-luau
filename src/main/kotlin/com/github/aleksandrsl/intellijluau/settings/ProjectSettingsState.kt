@@ -69,9 +69,6 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val customDefinitionsPaths
         get() = internalState.customDefinitionsPaths
 
-    val shouldUseWatcherToGenerateSourcemap
-        get() = internalState.shouldUseWatcherToGenerateSourcemap
-
     val isLspEnabled
         get() = internalState.isLspEnabled
 
@@ -162,10 +159,6 @@ interface ShareableProjectSettingsState {
     val runStyLua: RunStyluaOption
     val robloxSecurityLevel: RobloxSecurityLevel
     val customDefinitionsPaths: List<String>
-
-    // TODO (AleksandrSl 24/05/2025): Update according to the new logic.
-    val shouldUseWatcherToGenerateSourcemap: Boolean
-        get() = isLspEnabled && lspSourcemapGenerationCommand.isNotBlank()
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabled: Boolean
