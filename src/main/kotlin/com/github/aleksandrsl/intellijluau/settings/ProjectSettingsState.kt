@@ -44,8 +44,8 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val styLuaPath: String
         get() = internalState.styLuaPath
 
-    val sourcemapGenerationCommand: String
-        get() = internalState.sourcemapGenerationCommand
+    val lspSourcemapGenerationCommand: String
+        get() = internalState.lspSourcemapGenerationCommand
 
     val runStyluaOnSave
         get() = runStyLua == RunStyluaOption.RunOnSave || runStyLua == RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
@@ -84,6 +84,12 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val lspSourcemapGenerationType
         get() = internalState.lspSourcemapGenerationType
 
+    val lspSourcemapSupportEnabled
+        get() = internalState.lspSourcemapSupportEnabled
+
+    val lspSourcemapGenerationUseIdeaWatcher
+        get() = internalState.lspSourcemapGenerationUseIdeaWatcher
+
     val lspSourcemapFile
         get() = internalState.lspSourcemapFile
 
@@ -107,7 +113,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         internalState.lspPath = defaults.lspPath
 
         internalState.lspVersion = defaults.lspVersion
-        internalState.sourcemapGenerationCommand = defaults.sourcemapGenerationCommand
+        internalState.lspSourcemapGenerationCommand = defaults.lspSourcemapGenerationCommand
         internalState.runStyLua = defaults.runStyLua
         internalState.robloxSecurityLevel = defaults.robloxSecurityLevel
         internalState.customDefinitionsPaths = defaults.customDefinitionsPaths
@@ -121,11 +127,11 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var lspSourcemapSupportEnabled: Boolean = true,
         override var lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Disabled,
         override var lspSourcemapGenerationUseIdeaWatcher: Boolean = false,
+        override var lspSourcemapGenerationCommand: String = "",
         override var lspSourcemapFile: String = "sourcemap.json",
         override var lspRojoProjectFile: String = DEFAULT_ROJO_PROJECT_FILE,
 
         override var styLuaPath: String = "",
-        override var sourcemapGenerationCommand: String = "",
         override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
         override var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
         override var customDefinitionsPaths: List<String> = listOf(),
@@ -150,7 +156,7 @@ interface ShareableProjectSettingsState {
     val lspSourcemapFile: String?
     val lspRojoProjectFile: String?
     val lspSourcemapGenerationUseIdeaWatcher: Boolean
-    val sourcemapGenerationCommand: String
+    val lspSourcemapGenerationCommand: String
 
     val styLuaPath: String
     val runStyLua: RunStyluaOption
@@ -159,7 +165,7 @@ interface ShareableProjectSettingsState {
 
     // TODO (AleksandrSl 24/05/2025): Update according to the new logic.
     val shouldUseWatcherToGenerateSourcemap: Boolean
-        get() = isLspEnabled && sourcemapGenerationCommand.isNotBlank()
+        get() = isLspEnabled && lspSourcemapGenerationCommand.isNotBlank()
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabled: Boolean
