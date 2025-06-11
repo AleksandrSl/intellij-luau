@@ -1,5 +1,6 @@
 package com.github.aleksandrsl.intellijluau.settings
 
+import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.intellij.openapi.diagnostic.logger
@@ -108,7 +109,7 @@ class ProjectSettingsComponent(
                 }.bind(settings::runStyLua)
             }
             row {
-                button("Apply & Save as Default") { applyAndSaveAsDefault() }
+                button(LuauBundle.message("luau.settings.apply.and.save.as.default")) { applyAndSaveAsDefault() }
             }
         }
     }
