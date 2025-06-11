@@ -2,6 +2,7 @@ package com.github.aleksandrsl.intellijluau.actions;
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauIcons
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.ide.actions.CreateFileFromTemplateAction
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.openapi.project.DumbAware
@@ -16,7 +17,11 @@ class CreateLuauFileAction : CreateFileFromTemplateAction(
 ), DumbAware {
     override fun buildDialog(project: Project, directory: PsiDirectory, builder: CreateFileFromTemplateDialog.Builder) {
         builder.setTitle(LuauBundle.message("luau.action.new.file.dialog.title"))
-            .addKind("Source file", LuauIcons.FILE, "Luau file.lua");
+            .addKind(
+                "Source file",
+                LuauIcons.FILE,
+                if (ProjectSettingsState.getInstance(project).useLuauExtension) "Luau file.luau" else "Luau file.lua"
+            )
     }
 
     // Though already provided in constructor, this method override is required
