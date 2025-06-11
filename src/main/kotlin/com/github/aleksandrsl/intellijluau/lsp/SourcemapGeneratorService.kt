@@ -39,7 +39,15 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         updateStrategyBasedOnSettings()
     }
 
-    fun updateStrategyBasedOnSettings(change: ProjectSettingsConfigurable.SettingsChangedEvent? = null) {
+    val canRestart: Boolean
+        get() = generator != null
+
+    fun restart() {
+        if (!canRestart) return
+        updateStrategyBasedOnSettings()
+    }
+
+    private fun updateStrategyBasedOnSettings(change: ProjectSettingsConfigurable.SettingsChangedEvent? = null) {
         val settings = ProjectSettingsState.getInstance(project)
 
         val oldGenerator = generator
@@ -75,20 +83,22 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     }
 
     private suspend fun determineStrategy(settings: ProjectSettingsState): SourcemapGenerator? {
-        val state = settings.state
-
-        if (!state.lspSourcemapSupportEnabled || !state.isLspEnabled || !project.hasLuauFiles()) {
+        if (!settings.lspSourcemapSupportEnabled || !settings.isLspEnabled || !project.hasLuauFiles()) {
             return null
         }
 
-        return when (state.lspSourcemapGenerationType) {
+        return when (settings.lspSourcemapGenerationType) {
             LspSourcemapGenerationType.Rojo -> {
                 RojoSourcemapGenerator(project, coroutineScope.createChildScope())
             }
 
             LspSourcemapGenerationType.Manual -> {
-                if (state.sourcemapGenerationCommand.isNotBlank()) {
-                    IdeaWatcherSourcemapGenerator(project, coroutineScope.createChildScope())
+                if (settings.lspSourcemapGenerationCommand.isNotBlank()) {
+                    if (settings.lspSourcemapGenerationUseIdeaWatcher) {
+                        IdeaWatcherSourcemapGenerator(project, coroutineScope.createChildScope())
+                    } else {
+                        ExternalWatcherSourcemapGenerator(project, coroutineScope.createChildScope())
+                    }
                 } else {
                     // TODO (AleksandrSl 27/05/2025):
                     null // Manual selected but no command

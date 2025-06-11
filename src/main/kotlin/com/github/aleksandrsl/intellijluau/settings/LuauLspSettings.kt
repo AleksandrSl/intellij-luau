@@ -443,7 +443,7 @@ class LuauLspSettings(
 
                     panel {
                         row("Sourcemap Generation Command:") {
-                            textField().bindText(settings::sourcemapGenerationCommand).align(AlignX.FILL)
+                            textField().bindText(settings::lspSourcemapGenerationCommand).align(AlignX.FILL)
                                 .resizableColumn()
                         }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
                         row {

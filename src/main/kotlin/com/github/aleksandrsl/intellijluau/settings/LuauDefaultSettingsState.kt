@@ -32,7 +32,7 @@ class LuauDefaultSettingsState :
         internalState.lspConfigurationType = state.lspConfigurationType
         internalState.lspPath = state.lspPath
         internalState.styLuaPath = state.styLuaPath
-        internalState.sourcemapGenerationCommand = state.sourcemapGenerationCommand
+        internalState.lspSourcemapGenerationCommand = state.lspSourcemapGenerationCommand
         internalState.runStyLua = state.runStyLua
         internalState.robloxSecurityLevel = state.robloxSecurityLevel
         internalState.customDefinitionsPaths = state.customDefinitionsPaths
@@ -61,7 +61,7 @@ data class DefaultState(
     override val lspSourcemapGenerationUseIdeaWatcher: Boolean = false,
 
     override var styLuaPath: String = "",
-    override var sourcemapGenerationCommand: String = "",
+    override var lspSourcemapGenerationCommand: String = "",
     override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
     override var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
     override var customDefinitionsPaths: List<String> = listOf(),
