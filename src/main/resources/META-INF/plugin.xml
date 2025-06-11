@@ -45,10 +45,6 @@
         <lang.psiStructureViewFactory
                 language="Luau"
                 implementationClass="com.github.aleksandrsl.intellijluau.structureView.LuauStructureViewFactory"/>
-        <!--        <completion.contributor-->
-        <!--                language="Luau"-->
-        <!--                implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"-->
-        <!--        />-->
         <lang.refactoringSupport language="Luau"
                                  implementationClass="com.github.aleksandrsl.intellijluau.refactoring.LuauRefactoringSupportProvider"/>
         <lang.quoteHandler language="Luau" implementationClass="com.github.aleksandrsl.intellijluau.LuauQuoteHandler"/>
