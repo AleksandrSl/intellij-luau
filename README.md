@@ -6,13 +6,41 @@
 
 ## Description
 <!-- Plugin description -->
-This plugin adds support for Luau language, it's very raw, but I hope to shape it with time
+This plugin adds support for [Luau language](https://luau.org)
 
-- [x] Luau LSP ([Only for IDEs with LSP support](https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html#supported-ides))
-- [x] Basic syntax highlighting
-- [x] StyLua: format action to format current file
+- Luau LSP integration ([Only for IDEs with LSP support](https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html#supported-ides))
+- StyLua: format action and ability to use it instead of builtin-in IDEA formatter
+- Basic syntax highlighting/completion when LSP is disabled
 
-Visit Luau settings for LSP and other tools configuration `File | Settings | Languages & Frameworks | Luau`
+Plugin is in development, feel free to request features and suggest changes in [Issue tracker](https://github.com/AleksandrSl/intellij-luau/issues).
+
+## Getting started
+
+### Supported file extensions
+
+Plugin works both with `.luau` and `.lua` and may conflict with other Lua plugins.
+
+### Install the plugin
+
+- Launch the IDE and open the plugin settings at `File | Settings | Plugins`
+- Search for "Luau" and install it
+
+### Configure the plugin
+
+By default, LSP is enabled if [supported](https://plugins.jetbrains.com/docs/intellij/language-server-protocol.html#supported-ides) by the IDE.
+Once you open any Luau file, you will be prompted to download the latest version of the LSP (it will be installed into the IDE service directory).
+
+If you want to configure a specific version of the LSP go to `File | Settings | Languages & Frameworks | Luau`.
+
+By default `sourcemap.json` is used to enhance autocompletion. 
+There are several ways to autogenerate it as in the VSCode plugin.
+If you have `default.project.json` and `rojo` installed, you'll be prompted to enable rojo autogeneration.
+If you have a custom command to run, you can configure sourcemap generation in the same settings.
+
+If you want to make settings default for the rest of the projects, there is an "apply and save as default" button at the end of the settings page. 
+Once you saved the default configuration, you will be prompted to apply them when opening a new project. 
+
+[LSP docs](https://github.com/JohnnyMorganz/luau-lsp)
 
 <!-- Plugin description end -->
 
@@ -37,8 +65,8 @@ Plugin based on the [IntelliJ Platform Plugin Template][template].
 ## Acknowledgements
 
 - EmmyLua and Luanalysis for grammar stuff that I used as a base. 
-- IntellijElm, IntellijHaxe and Intellij plugins for a ton of helpful examples and good code comments.
-- Luau LSP for existence 
+- IntellijElm, IntellijHaxe, and Intellij plugins for a ton of helpful examples and good code comments.
+- Luau LSP for existence.
 
 ## Questions
 
