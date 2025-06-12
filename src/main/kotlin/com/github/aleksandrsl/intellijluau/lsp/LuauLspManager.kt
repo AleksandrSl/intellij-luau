@@ -60,6 +60,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
     private var cachedVersionsList: List<Version.Semantic>? = null
     private var cacheExpirationTimeMs: Long = 0L
+
     // TODO (AleksandrSl 05/06/2025): Check, do I block request if they start concurrently?
     private val cacheMutex = Mutex() // To ensure thread-safe access to cache variables
     private val cacheDurationMs = 25.minutes.inWholeMilliseconds
@@ -127,7 +128,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         }
     }
 
-    suspend fun downloadLspWithNotification(version: Version.Semantic, project: Project): Path? {
+    private suspend fun downloadLspWithNotification(version: Version.Semantic, project: Project): Path? {
         val result = downloadLspSynchronously(version)
         return withContext(Dispatchers.EDT) {
             when (result) {
@@ -175,7 +176,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         return path(version).resolve("globalTypes.${securityLevel}.d.luau")
     }
 
-    fun downloadLspSynchronously(version: Version.Semantic): DownloadResult {
+    private fun downloadLspSynchronously(version: Version.Semantic): DownloadResult {
         if (getInstalledVersions().contains(version)) {
             return DownloadResult.AlreadyExists(path(version))
         }
@@ -472,5 +473,5 @@ sealed class LspConfiguration() {
             get() = ProjectSettingsState.getInstance(project).customDefinitionsPaths.mapNotNull { it.toNioPathOrNull() }
     }
 
-    object Disabled : LspConfiguration()
+    data object Disabled : LspConfiguration()
 }

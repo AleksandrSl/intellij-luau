@@ -42,6 +42,7 @@ class LuauLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
                     "SPACE_AFTER_COMMA"
                 )
             }
+
             SettingsType.WRAPPING_AND_BRACES_SETTINGS -> {
                 consumer.showStandardOptions(
                     "METHOD_PARAMETERS_WRAP",
@@ -54,6 +55,7 @@ class LuauLanguageCodeStyleSettingsProvider : LanguageCodeStyleSettingsProvider(
                     "ALIGN_CONSECUTIVE_VARIABLE_DECLARATIONS"
                 )
             }
+
             else -> {
             }
         }

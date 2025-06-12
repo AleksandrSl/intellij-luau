@@ -104,13 +104,13 @@ class LspVersionComboBox(
     }
 
     sealed class Item {
-        sealed class VersionItem<T : Version>(open val version: T) : Item() {
+        sealed class VersionItem<T : Version>(val version: T) : Item() {
             override val text = version.toString()
         }
 
         class InstalledVersion(version: Version.Semantic, val index: Number) : VersionItem<Version.Semantic>(version)
         class VersionForDownload(version: Version.Semantic, val index: Number) : VersionItem<Version.Semantic>(version)
-        object LatestVersion : VersionItem<Version.Latest>(Version.Latest)
+        data object LatestVersion : VersionItem<Version.Latest>(Version.Latest)
 
         abstract val text: String
     }

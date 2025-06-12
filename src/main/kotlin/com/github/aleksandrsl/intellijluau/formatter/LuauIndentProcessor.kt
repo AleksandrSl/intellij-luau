@@ -32,11 +32,11 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         }
 
         if (needIndent(parentType, elementType)) {
-            val psi = node.psi;
+            val psi = node.psi
             if (psi.parent is PsiFile) {
-                return Indent.getNoneIndent();
+                return Indent.getNoneIndent()
             }
-            return Indent.getNormalIndent();
+            return Indent.getNormalIndent()
         }
 
         // About continuation indents. From here - https://www.jetbrains.com/help/idea/code-style-sql-tabs-and-indents.html

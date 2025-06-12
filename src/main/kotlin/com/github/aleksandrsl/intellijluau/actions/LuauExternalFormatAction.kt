@@ -49,12 +49,14 @@ class LuauExternalFormatAction : AnAction() {
                         "File formatted",
                         NotificationType.INFORMATION
                     )
-                        .notify(project);
+                        .notify(project)
+
                     is StyLuaCli.FormatResult.StyluaError -> notificationGroupManager.createNotification(
                         result.msg,
                         NotificationType.ERROR
                     )
-                        .notify(project);
+                        .notify(project)
+
                     null -> null
                 }
             }

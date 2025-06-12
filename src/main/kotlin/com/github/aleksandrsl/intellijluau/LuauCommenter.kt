@@ -14,5 +14,5 @@ class LuauCommenter : Commenter, IndentedCommenter {
 
     override fun getCommentedBlockCommentSuffix() = null
 
-    override fun forceIndentedLineComment() =  true
+    override fun forceIndentedLineComment() = true
 }

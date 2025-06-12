@@ -55,7 +55,7 @@ class LuauExternalFormatOnSaveAction : ActionsOnSaveFileDocumentManagerListener.
         if (result is StyLuaCli.FormatResult.StyluaError) {
             LuauNotifications
                 .pluginNotifications()
-                .createNotification("StyLua Error", result.msg, NotificationType.ERROR)
+                .createNotification("StyLua error", result.msg, NotificationType.ERROR)
                 .addAction(NotificationAction.createSimple("Open settings") {
                     ShowSettingsUtil.getInstance().showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
                 })

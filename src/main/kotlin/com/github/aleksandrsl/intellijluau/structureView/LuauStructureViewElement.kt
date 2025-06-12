@@ -33,13 +33,14 @@ class LuauStructureViewElement(private val myElement: NavigatablePsiElement, val
                         LuauFuncDefStatement::class.java,
                         LuauLocalFuncDefStatement::class.java,
                     )
-                    .map2Array { LuauStructureViewElement(it as NavigatablePsiElement) }.plus(PsiTreeUtil
-                        .findChildrenOfAnyType(
-                            myElement,
-                            LuauLocalDefStatement::class.java,
-                        )
-                        .mapNotNull { it.bindingList?.bindingList }.flatten()
-                        .map2Array { LuauStructureViewElement(it as NavigatablePsiElement, Context(methods)) })
+                    .map2Array { LuauStructureViewElement(it as NavigatablePsiElement) }.plus(
+                        PsiTreeUtil
+                            .findChildrenOfAnyType(
+                                myElement,
+                                LuauLocalDefStatement::class.java,
+                            )
+                            .mapNotNull { it.bindingList?.bindingList }.flatten()
+                            .map2Array { LuauStructureViewElement(it as NavigatablePsiElement, Context(methods)) })
             }
 
             is LuauBinding -> {

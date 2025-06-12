@@ -24,7 +24,7 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
      * First, trying to color them without looking at what they are referencing, e.g. primitive types
      * If all this fails, they check the reference through resolve and color according to its type.
     * */
-    private fun AnnotationHolder.highlight(element: PsiElement): Unit {
+    private fun AnnotationHolder.highlight(element: PsiElement) {
         when (element) {
             is LuauSoftKeyword -> softKeyword(element)
             is LuauAttribute -> attribute(element)
@@ -126,14 +126,6 @@ class LuauSyntaxHighlightAnnotator : Annotator, DumbAware {
             }
 
             is LuauDeclaration.TypeAlias -> {
-                // TODO (AleksandrSl 08/04/2025): I don't know how I am supposed to use types 🤔
-            }
-
-            is LuauDeclaration.GlobalObject -> {
-                // TODO (AleksandrSl 08/04/2025): I don't know how I am supposed to use types 🤔
-            }
-
-            is LuauDeclaration.Function -> {
                 // TODO (AleksandrSl 08/04/2025): I don't know how I am supposed to use types 🤔
             }
 

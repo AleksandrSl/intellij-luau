@@ -35,13 +35,15 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
         }
     }
 
-    override fun createLspServerWidgetItem(lspServer: LspServer, currentFile: VirtualFile?): LspServerWidgetItem = object : LspServerWidgetItem(
+    override fun createLspServerWidgetItem(lspServer: LspServer, currentFile: VirtualFile?): LspServerWidgetItem =
+        object : LspServerWidgetItem(
             lspServer, currentFile,
             LuauIcons.FILE, ProjectSettingsConfigurable::class.java
         ) {
-        override val versionPostfix: @NlsSafe String
-            get() = lspServer.project.getLspConfiguration().let { if (it is LspConfiguration.Auto && it.version != null) " ${it.version}" else super.versionPostfix }
-    }
+            override val versionPostfix: @NlsSafe String
+                get() = lspServer.project.getLspConfiguration()
+                    .let { if (it is LspConfiguration.Auto && it.version != null) " ${it.version}" else super.versionPostfix }
+        }
 }
 
 private class LuauLspServerDescriptor(project: Project, private val lspConfiguration: LspConfiguration.Enabled) :

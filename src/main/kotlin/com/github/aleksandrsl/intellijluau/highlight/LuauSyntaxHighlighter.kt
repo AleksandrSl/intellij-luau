@@ -24,20 +24,25 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
             in LuauTokenSets.KEYWORDS -> {
                 KEYWORD_KEYS
             }
+
             in LuauTokenSets.COMMENTS -> {
                 COMMENT_KEYS
             }
+
             in LuauTokenSets.STRINGS -> STRING_KEYS
             LuauTypes.NUMBER -> NUMBER_KEYS
             LuauTypes.OPERATOR -> {
                 OPERATOR_KEYS
             }
+
             LuauTypes.ID -> {
                 IDENTIFIER_KEYS
             }
+
             TokenType.BAD_CHARACTER -> {
                 BAD_CHAR_KEYS
             }
+
             else -> {
                 EMPTY_KEYS
             }
@@ -62,6 +67,7 @@ class LuauSyntaxHighlighter : SyntaxHighlighterBase() {
             createTextAttributesKey("LUAU_ATTRIBUTE", DefaultLanguageHighlighterColors.METADATA)
         val TYPE: TextAttributesKey =
             createTextAttributesKey("LUAU_TYPE", DefaultLanguageHighlighterColors.PARAMETER)
+
         // TODO (AleksandrSl 06/04/2025): Can add primitives later, but now it's just extra work
         val TYPE_PARAMETER: TextAttributesKey =
             createTextAttributesKey("LUAU_TYPE_PARAMETER", TYPE)

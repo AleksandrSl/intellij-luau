@@ -8,6 +8,4 @@ import kotlinx.coroutines.CoroutineScope
 class LuauCliService(
     private val project: Project,
     val coroutineScope: CoroutineScope
-) {
-
-}
+)

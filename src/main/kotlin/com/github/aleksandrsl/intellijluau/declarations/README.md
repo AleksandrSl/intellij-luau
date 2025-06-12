@@ -1,10 +1,12 @@
 # Luau Parser
 
-A Kotlin parser for Luau declaration files (`.d.luau`), specifically designed to parse the `globalTypes.RobloxScriptSecurity.d.luau` file.
+A Kotlin parser for Luau declaration files (`.d.luau`), specifically designed to parse the
+`globalTypes.RobloxScriptSecurity.d.luau` file.
 
 ## Overview
 
-This parser reads a Luau declaration file and converts it into a structured map representation. It can handle various types of declarations:
+This parser reads a Luau declaration file and converts it into a structured map representation. It can handle various
+types of declarations:
 
 - Type aliases (e.g., `type Content = string`)
 - Global objects (e.g., `declare debug: {...}`)
@@ -34,7 +36,8 @@ println("debug declaration data: ${debugDeclaration?.get("data")}")
 
 ### Testing
 
-A test script is provided in `TestLuauParser.kt` that demonstrates how to use the parser and provides statistics about the parsed declarations.
+A test script is provided in `TestLuauParser.kt` that demonstrates how to use the parser and provides statistics about
+the parsed declarations.
 
 ## Output Format
 
@@ -45,10 +48,11 @@ Map<String, Map<String, Any>>
 ```
 
 Where:
+
 - The outer map's key is the name of the declaration
 - The inner map has two entries:
-  - `"type"`: The type of the declaration (e.g., "typeAlias", "globalObject", "function", "class", "enumClass")
-  - `"data"`: The data of the declaration, which varies depending on the type
+    - `"type"`: The type of the declaration (e.g., "typeAlias", "globalObject", "function", "class", "enumClass")
+    - `"data"`: The data of the declaration, which varies depending on the type
 
 ### Examples
 

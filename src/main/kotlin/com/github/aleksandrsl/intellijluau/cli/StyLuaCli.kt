@@ -40,7 +40,7 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         val stdin = content
         if (stdin.isNullOrEmpty()) return null
         // Consider using ExecUtil
-        val charset = Charsets.UTF_8;
+        val charset = Charsets.UTF_8
         val commandLine = GeneralCommandLine().apply {
             withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
             // Seems that it's null by default
@@ -71,7 +71,7 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
     }
 
     fun createOsProcessHandler(project: Project, file: VirtualFile): OSProcessHandler {
-        val charset = Charsets.UTF_8;
+        val charset = Charsets.UTF_8
         val commandLine = GeneralCommandLine().apply {
             withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
             // Seems that it's null by default

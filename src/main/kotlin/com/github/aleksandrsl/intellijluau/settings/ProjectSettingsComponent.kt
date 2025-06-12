@@ -26,7 +26,7 @@ private val LOG = logger<ProjectSettingsComponent>()
 class ProjectSettingsComponent(
     private val service: LuauCliService,
     private val settings: ProjectSettingsState.State,
-    private val project: Project,
+    project: Project,
     private val applyAndSaveAsDefault: () -> Unit,
 ) {
     private var styLuaVersion: String? = null

@@ -10,7 +10,7 @@ import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
 import com.intellij.psi.codeStyle.CustomCodeStyleSettings
 
 
-class LuauCodeStyleSettingsProvider: CodeStyleSettingsProvider() {
+class LuauCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
     override fun createCustomSettings(settings: CodeStyleSettings): CustomCodeStyleSettings {
         return LuauCodeStyleSettings(settings)
     }

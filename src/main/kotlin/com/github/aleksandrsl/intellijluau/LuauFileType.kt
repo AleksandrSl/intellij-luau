@@ -3,7 +3,7 @@ package com.github.aleksandrsl.intellijluau
 import com.intellij.openapi.fileTypes.LanguageFileType
 import javax.swing.Icon
 
-object LuauFileType: LanguageFileType(LuauLanguage.INSTANCE) {
+object LuauFileType : LanguageFileType(LuauLanguage.INSTANCE) {
     override fun getName(): String {
         return "Luau File"
     }

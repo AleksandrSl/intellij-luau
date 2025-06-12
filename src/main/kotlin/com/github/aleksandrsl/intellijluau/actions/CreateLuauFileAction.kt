@@ -1,4 +1,4 @@
-package com.github.aleksandrsl.intellijluau.actions;
+package com.github.aleksandrsl.intellijluau.actions
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauIcons

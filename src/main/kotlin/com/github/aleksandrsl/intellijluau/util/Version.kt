@@ -27,7 +27,7 @@ sealed class Version : Comparable<Version> {
         }
     }
 
-    object Latest : Version() {
+    data object Latest : Version() {
         override fun toString(): String = "Latest"
         override fun compareTo(other: Version): Int {
             return when (other) {

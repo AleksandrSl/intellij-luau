@@ -82,10 +82,7 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
 
     companion object {
         suspend fun canUseRojo(project: Project): Boolean {
-            val root = project.basePath
-            if (root == null) {
-                return false
-            }
+            val root = project.basePath ?: return false
             if (!Path(root).resolve(DEFAULT_ROJO_PROJECT_FILE).exists()) {
                 return false
             }

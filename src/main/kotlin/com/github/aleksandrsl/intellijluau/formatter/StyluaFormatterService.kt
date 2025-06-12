@@ -66,8 +66,8 @@ class StyluaFormatterService : AsyncDocumentFormattingService() {
                 }
             }
         } catch (e: ExecutionException) {
-            request.onError("Failed to format", e.message ?: "Unknown error");
-            return null;
+            request.onError("Failed to format", e.message ?: "Unknown error")
+            return null
         }
     }
 

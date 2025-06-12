@@ -3,8 +3,8 @@ package com.github.aleksandrsl.intellijluau.formatter
 import com.github.aleksandrsl.intellijluau.LuauLanguage
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.ADDITIVE_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.ASSIGN_OPERATORS
-import com.github.aleksandrsl.intellijluau.LuauTokenSets.EQUALITY_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.BINARY_LOGICAL_OPERATORS
+import com.github.aleksandrsl.intellijluau.LuauTokenSets.EQUALITY_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.GENERICS_HOLDERS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.MULTIPLICATIVE_OPERATORS
 import com.github.aleksandrsl.intellijluau.LuauTokenSets.RELATIONAL_OPERATORS

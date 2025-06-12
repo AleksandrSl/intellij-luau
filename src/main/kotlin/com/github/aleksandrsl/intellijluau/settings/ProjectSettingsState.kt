@@ -21,10 +21,8 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
 
     var lspVersion: Version.Semantic?
         get() {
-            val version = internalState.lspVersion
-            if (version == null) {
-                return null
-            }
+            val version = internalState.lspVersion ?: return null
+
             return try {
                 Version.Semantic.parse(version)
             } catch (e: Exception) {

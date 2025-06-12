@@ -27,7 +27,6 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
-import com.intellij.ui.layout.and
 import com.intellij.ui.layout.not
 import com.intellij.ui.layout.selected
 import com.intellij.ui.layout.selectedValueIs
@@ -103,8 +102,7 @@ class LuauLspSettings(
         val lspManager = LuauLspManager.getInstance()
         return try {
             runWithModalProgressBlocking(project, LuauBundle.message("luau.lsp.downloading")) {
-                val result = lspManager.downloadLsp(version)
-                when (result) {
+                when (val result = lspManager.downloadLsp(version)) {
                     is LuauLspManager.DownloadResult.Failed -> {
                         displayDownloadError("Failed to download $version: ${result.message}")
                         false

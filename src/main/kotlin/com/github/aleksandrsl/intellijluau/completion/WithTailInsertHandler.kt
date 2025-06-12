@@ -6,8 +6,8 @@ import com.intellij.codeInsight.lookup.LookupElement
 import com.intellij.psi.PsiDocumentManager
 
 class WithTailInsertHandler(
-    val tailText: String,
-    val spaceAfter: Boolean,
+    private val tailText: String,
+    private val spaceAfter: Boolean,
 ) : InsertHandler<LookupElement> {
     override fun handleInsert(context: InsertionContext, item: LookupElement) {
         item.handleInsert(context)
