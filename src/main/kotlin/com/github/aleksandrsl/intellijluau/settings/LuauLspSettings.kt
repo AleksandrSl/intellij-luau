@@ -408,6 +408,8 @@ class LuauLspSettings(
                             settings::lspSourcemapSupportEnabled
                         ).component
                 }.topGap(TopGap.SMALL).enabledIf(!lspDisabled.selected)
+                    // TODO (AleksandrSl 12/06/2025): Make visible when I add support for lsp settings file
+                    .visible(false)
 
                 collapsibleGroup(LuauBundle.message("luau.settings.lsp.sourcemap.title")) {
                     row("Sourcemap file:") {
@@ -455,7 +457,9 @@ class LuauLspSettings(
                                 )
                         }
                     }.visibleIf(sourcemapGenerationManulRadio.selected)
-                }.topGap(TopGap.NONE).enabledIf(sourcemapSupportCheckbox.selected.and(!lspDisabled.selected))
+                }.topGap(TopGap.NONE)
+                    // TODO (AleksandrSl 12/06/2025): Make dependant on sourcemapSupportCheckbox when I add support for lsp settings file
+                    .enabledIf(!lspDisabled.selected)
             }
         }
     }
