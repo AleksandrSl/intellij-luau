@@ -37,7 +37,7 @@ class LuauKeywordCompletionContributor : CompletionContributor(), DumbAware {
     }
 
     override fun fillCompletionVariants(parameters: CompletionParameters, result: CompletionResultSet) {
-        if (ProjectSettingsState.getInstance(parameters.position.project).isLspEnabled) return
+        if (ProjectSettingsState.getInstance(parameters.position.project).isLspEnabledAndMinimallyConfigured) return
         super.fillCompletionVariants(parameters, result)
     }
 }
