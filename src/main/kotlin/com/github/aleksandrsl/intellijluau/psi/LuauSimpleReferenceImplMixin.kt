@@ -35,7 +35,7 @@ abstract class LuauSimpleReferenceImplMixin(node: ASTNode) : PsiReference, LuauS
 
     override fun getVariants(): Array<out Any?> {
         // I wonder how expensive this call is
-        if (ProjectSettingsState.getInstance(this.project).isLspEnabled) return emptyArray()
+        if (ProjectSettingsState.getInstance(this.project).isLspEnabledAndMinimallyConfigured) return emptyArray()
 
         val processor = LuauCompletionScopeProcessor()
         PsiTreeUtil.treeWalkUp(processor, this, null, ResolveState.initial())
