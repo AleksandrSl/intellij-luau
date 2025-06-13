@@ -67,8 +67,12 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val customDefinitionsPaths
         get() = internalState.customDefinitionsPaths
 
-    val isLspEnabled
-        get() = internalState.isLspEnabled
+    /**
+     * Indicates whether the LSP support is enabled
+     * and minimally configured (at least some path or version is provided).
+     */
+    val isLspEnabledAndMinimallyConfigured
+        get() = internalState.isLspEnabledAndMinimallyConfigured
 
     val useLuauExtension
         get() = internalState.useLuauExtension
@@ -165,8 +169,8 @@ interface ShareableProjectSettingsState {
     val useLuauExtension: Boolean
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
-    val isLspEnabled: Boolean
-        get() = lspConfigurationType == LspConfigurationType.Auto && !lspVersion.isNullOrEmpty() || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+    val isLspEnabledAndMinimallyConfigured: Boolean
+        get() = lspConfigurationType == LspConfigurationType.Auto || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
 }
 
 enum class LspSourcemapGenerationType {

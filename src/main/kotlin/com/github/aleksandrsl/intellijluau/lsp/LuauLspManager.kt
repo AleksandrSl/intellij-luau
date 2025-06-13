@@ -368,6 +368,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
                 is CheckLspResult.UpdateSettings -> {
                     settings.lspVersion = checkResult.version
+                    restartLspServerAsync(project)
                 }
             }
         }
@@ -385,12 +386,16 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         ): CheckLspResult {
             if (lspUseLatest) {
                 val latestVersion = versionsAvailableForDownload.max()
+                // TODO (AleksandrSl 12/06/2025): Should I just cache the versions retrieved from the disk, and return the latest instead of relying on the settings?
                 if (latestVersion != currentVersion) {
                     // Currently used LSP version is not the latest,
                     // but maybe we have the binary and the project settings have to be updated.
                     if (installedVersions.contains(latestVersion)) {
                         return CheckLspResult.UpdateSettings(latestVersion)
                     }
+                    // currentVersion is missing in the following cases
+                    // 1. The project is open for the first time
+                    // 2. Settings are corrupted.
                     if (currentVersion == null) {
                         return CheckLspResult.BinaryMissing(latestVersion)
                     }
