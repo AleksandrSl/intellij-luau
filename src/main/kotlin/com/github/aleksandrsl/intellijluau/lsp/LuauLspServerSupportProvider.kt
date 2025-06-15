@@ -35,21 +35,21 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
 
     override fun createLspServerWidgetItem(lspServer: LspServer, currentFile: VirtualFile?): LspServerWidgetItem =
         object : LspServerWidgetItem(
-            lspServer, currentFile,
-            LuauIcons.FILE, ProjectSettingsConfigurable::class.java
+            lspServer, currentFile, LuauIcons.FILE, ProjectSettingsConfigurable::class.java
         ) {
             // The version should be available in the serverInfo > 1.49.1
             override val versionPostfix: @NlsSafe String
-                get() = lspServer.initializeResult?.serverInfo?.version ?: lspServer.project.getLspConfiguration()
-                    .let { if (it is LspConfiguration.Auto && it.version != null) " ${it.version}" else super.versionPostfix }
+                get() {
+                    val version =
+                        lspServer.initializeResult?.serverInfo?.version ?: lspServer.project.getAutoLspVersion()
+                    return if (version != null) " ${version}" else super.versionPostfix
+                }
         }
 }
 
-private class LuauLspServerDescriptor(project: Project) :
-    ProjectWideLspServerDescriptor(
-        project,
-        LuauBundle.message("luau.lsp.name")
-    ) {
+private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(
+    project, LuauBundle.message("luau.lsp.name")
+) {
     override fun isSupportedFile(file: VirtualFile) = file.fileType == LuauFileType
 
     override fun createCommandLine(): GeneralCommandLine {

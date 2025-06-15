@@ -23,6 +23,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.platform.ide.progress.withBackgroundProgress
+import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.io.HttpRequests
 import com.intellij.util.io.ZipUtil
@@ -167,7 +168,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         }
     }
 
-    fun getExecutableForVersion(version: Version.Semantic): Path? {
+    internal fun getExecutableForVersion(version: Version.Semantic): Path? {
         val executablePath = path(version).resolve(getExecutableName())
         LOG.debug("Getting executable for version: $version, $executablePath")
         if (executablePath.toFile().exists() && executablePath.toFile().canExecute()) {
@@ -176,7 +177,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         return null
     }
 
-    fun getGlobalTypesForVersion(version: Version.Semantic, securityLevel: RobloxSecurityLevel): Path {
+    internal fun getGlobalTypesForVersion(version: Version.Semantic, securityLevel: RobloxSecurityLevel): Path {
         return path(version).resolve("globalTypes.${securityLevel}.d.luau")
     }
 
@@ -238,23 +239,6 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         }
     }
 
-    fun getInstalledVersions(): List<Version.Semantic> {
-        return try {
-            basePath().toFile().list()?.mapNotNull {
-                try {
-                    dirNameToVersion(it)
-                } catch (e: IllegalArgumentException) {
-                    // Well, MacOS adds the DS_Store folder in the directory,
-                    // who knows what else we may have, let's ignore errors parsing the name
-                    null
-                }
-            }?.sorted() ?: emptyList()
-        } catch (e: Exception) {
-            LOG.error("Failed to get LSP versions from disk. Basepath: ${basePath()}. Error:", e)
-            emptyList()
-        }
-    }
-
     private fun getExecutableName(): String {
         return when {
             SystemInfo.isWindows -> "luau-lsp.exe"
@@ -273,23 +257,11 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     // Temporary path to store the downloaded files before they are moved to the target directory.
     private fun downloadPath(): Path = Paths.get(PathManager.getTempPath())
 
-    // Directory with all the LSPs
-    fun basePath(): Path = Paths.get(PathManager.getSystemPath()).resolve("intellij-luau").resolve("lsp")
-
     // Get directory where specific version of LSP lies
     private fun path(version: Version.Semantic): Path = basePath().resolve(versionToDirName(version))
 
     private fun versionToDirName(version: Version.Semantic): String =
         "${version.major}_${version.minor}_${version.patch}"
-
-    private fun dirNameToVersion(dirName: String): Version.Semantic {
-        return try {
-            val parts = dirName.split('_')
-            Version.Semantic(parts[0].toInt(), parts[1].toInt(), parts[2].toInt())
-        } catch (e: Exception) {
-            throw IllegalArgumentException("Invalid directory name: $dirName", e)
-        }
-    }
 
     sealed class DownloadResult {
         class Ok(val baseDir: Path) : DownloadResult()
@@ -405,15 +377,54 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             }
         }
 
-        var latestInstalledLspVersionCache: Version.Semantic?
+        internal var latestInstalledLspVersionCache: Version.Semantic?
             get() = PropertiesComponent.getInstance().getValue(LATEST_INSTALLED_LSP_VERSION_KEY)
                 ?.let { Version.Semantic.parse(it) }
             private set(value) {
                 PropertiesComponent.getInstance().setValue(LATEST_INSTALLED_LSP_VERSION_KEY, value.toString())
             }
+
+
+        @RequiresBackgroundThread
+        fun getInstalledVersions(): List<Version.Semantic> {
+            return try {
+                basePath().toFile().list()?.mapNotNull {
+                    try {
+                        dirNameToVersion(it)
+                    } catch (e: IllegalArgumentException) {
+                        // Well, MacOS adds the DS_Store folder in the directory,
+                        // who knows what else we may have, let's ignore errors parsing the name
+                        null
+                    }
+                }?.sorted() ?: emptyList()
+            } catch (e: Exception) {
+                LOG.error("Failed to get LSP versions from disk. Basepath: ${basePath()}. Error:", e)
+                emptyList()
+            }
+        }
+
+        @RequiresBackgroundThread
+        internal fun getLatestInstalledLspVersion(): Version.Semantic? {
+            return getInstalledVersions().maxOrNull()?.also {
+                latestInstalledLspVersionCache = it
+            }
+        }
+
+        // Directory with all the LSPs
+        fun basePath(): Path = Paths.get(PathManager.getSystemPath()).resolve("intellij-luau").resolve("lsp")
     }
 }
 
+private fun dirNameToVersion(dirName: String): Version.Semantic {
+    return try {
+        val parts = dirName.split('_')
+        Version.Semantic(parts[0].toInt(), parts[1].toInt(), parts[2].toInt())
+    } catch (e: Exception) {
+        throw IllegalArgumentException("Invalid directory name: $dirName", e)
+    }
+}
+
+@RequiresBackgroundThread
 fun Project.getLspConfiguration(): LspConfiguration {
     val settings = ProjectSettingsState.getInstance(this)
     return when (settings.lspConfigurationType) {
@@ -421,6 +432,13 @@ fun Project.getLspConfiguration(): LspConfiguration {
         LspConfigurationType.Manual -> LspConfiguration.Manual(this)
         LspConfigurationType.Disabled -> LspConfiguration.Disabled
     }
+}
+
+// Lightweight hack to get the LSP version for the Auto configuration.
+// The cache should be populated 99% of the time.
+// Can be removed when LSP versions with server info are highly adopted.
+fun Project.getAutoLspVersion(): Version.Semantic? {
+    return LuauLspManager.latestInstalledLspVersionCache
 }
 
 sealed class LspConfiguration() {
@@ -455,8 +473,8 @@ sealed class LspConfiguration() {
         // The cache should be set when LSP is downloaded the first time,
         // after that I assume that if LSP is missing, it's an error, so we should try to run it and throw.
         val version: Version.Semantic? = ProjectSettingsState.getInstance(project).lspVersion.let {
-                it as? Version.Semantic ?: LuauLspManager.latestInstalledLspVersionCache
-            }
+            it as? Version.Semantic ?: LuauLspManager.getLatestInstalledLspVersion()
+        }
 
         override val isReady: Boolean
             get() = version != null

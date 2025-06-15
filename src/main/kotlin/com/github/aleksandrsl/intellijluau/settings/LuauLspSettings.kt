@@ -310,36 +310,35 @@ class LuauLspSettings(
 
                                 // Initial version show the version we have installed,
                                 // or none if user somehow got this state.
-                                lspVersionCombobox =
-                                    cell(
-                                        LspVersionComboBox(
-                                            installedVersions = lspVersionBinding.get().let {
-                                                if (it is Version.Semantic) {
-                                                    listOf(it)
-                                                } else listOf()
-                                            },
-                                            versionsForDownload = listOf(),
-                                            selectedVersion = lspVersionBinding.get(),
-                                            download = { version, afterUpdate ->
-                                                if (download(version)) {
-                                                    afterUpdate()
-                                                }
-                                            })
-                                    ).bind(
-                                        { component -> component.getSelectedVersion() },
-                                        { component, value -> component.setSelectedVersion(value) },
-                                        lspVersionBinding
-                                    ).component.apply {
-                                        // Disabled until the versions are loaded
-                                        isEnabled = false
-                                        addItemListener {
-                                            if (it.stateChange == ItemEvent.SELECTED) {
-                                                updateLspVersionActions(
-                                                    lspVersionsForDownload.get(), lspInstalledVersions.get()
-                                                )
+                                lspVersionCombobox = cell(
+                                    LspVersionComboBox(
+                                        installedVersions = lspVersionBinding.get().let {
+                                            if (it is Version.Semantic) {
+                                                listOf(it)
+                                            } else listOf()
+                                        },
+                                        versionsForDownload = listOf(),
+                                        selectedVersion = lspVersionBinding.get(),
+                                        download = { version, afterUpdate ->
+                                            if (download(version)) {
+                                                afterUpdate()
                                             }
+                                        })
+                                ).bind(
+                                    { component -> component.getSelectedVersion() },
+                                    { component, value -> component.setSelectedVersion(value) },
+                                    lspVersionBinding
+                                ).component.apply {
+                                    // Disabled until the versions are loaded
+                                    isEnabled = false
+                                    addItemListener {
+                                        if (it.stateChange == ItemEvent.SELECTED) {
+                                            updateLspVersionActions(
+                                                lspVersionsForDownload.get(), lspInstalledVersions.get()
+                                            )
                                         }
                                     }
+                                }
                                 cell(downloadLspButton)
                                 cell(lspVersionStateLabelComponent)
                                 // I empirically learned that icon will cancel coroutine passed to it if you unload it.
@@ -351,7 +350,7 @@ class LuauLspSettings(
                                 actionButton(object :
                                     DumbAwareAction("Open LSP Storage Folder", "", AllIcons.Actions.MenuOpen) {
                                     override fun actionPerformed(e: AnActionEvent) {
-                                        val lspDir = LuauLspManager.getInstance().basePath().toFile()
+                                        val lspDir = LuauLspManager.basePath().toFile()
                                         if (lspDir.exists()) {
                                             // Could also use ShowFilePathAction
                                             RevealFileAction.openDirectory(lspDir)
@@ -456,11 +455,12 @@ class LuauLspSettings(
                     lspInstalledVersions.set(InstalledVersions.Loading)
                     lspInstalledVersions.set(
                         try {
-                            InstalledVersions.Loaded(lspManager.getInstalledVersions())
-                        } catch (err: Exception) {
-                            InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
+                        withContext(Dispatchers.IO) {
+                            InstalledVersions.Loaded(LuauLspManager.getInstalledVersions())
                         }
-                    )
+                    } catch (err: Exception) {
+                        InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
+                    })
                     lspVersionCombobox.setVersions(installedVersions = lspInstalledVersions.get().let {
                         if (it is InstalledVersions.Loaded) {
                             it.versions
