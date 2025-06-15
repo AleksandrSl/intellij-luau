@@ -2,12 +2,14 @@ package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauNotifications
+import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager.CheckLspResult.*
 import com.github.aleksandrsl.intellijluau.settings.LspConfigurationType
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.github.aleksandrsl.intellijluau.settings.RobloxSecurityLevel
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.google.gson.JsonSyntaxException
+import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.EDT
@@ -45,7 +47,9 @@ private const val LSP_GITHUB_API_URL = "https://api.github.com/repos/$LSP_REPO/r
 private const val LSP_DOWNLOAD_BASE_URL = "https://github.com/$LSP_REPO/releases/download"
 private const val LSP_RELEASE_NOTES_BASE_URL = "https://github.com/$LSP_REPO/releases/tag"
 private const val USER_AGENT = "IntelliJ Luau Plugin (https://github.com/AleksandrSl/intellij-luau)"
+private const val LATEST_INSTALLED_LSP_VERSION_KEY = "com.github.aleksandrsl.intellijluau.latestInstalledLspVersion"
 
+@Suppress("PropertyName")
 @Serializable
 data class GitHubRelease(
     val tag_name: String, val name: String, val prerelease: Boolean, val draft: Boolean, val published_at: String
@@ -261,7 +265,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     sealed class CheckLspResult {
         data class UpdateAvailable(val version: Version.Semantic) : CheckLspResult()
         data class BinaryMissing(val version: Version.Semantic) : CheckLspResult()
-        data class UpdateSettings(val version: Version.Semantic) : CheckLspResult()
+        data class UpdateCache(val version: Version.Semantic) : CheckLspResult()
         data object ReadyToUse : CheckLspResult()
         data object LspIsNotConfigured : CheckLspResult()
     }
@@ -300,12 +304,10 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         if (settings.lspConfigurationType != LspConfigurationType.Auto) return
         coroutineScope.launch(Dispatchers.IO) {
             val checkResult = withBackgroundProgress(project, LuauBundle.message("luau.lsp.check")) {
-                val currentVersion = settings.lspVersion
                 val versionsForDownload = getVersionsAvailableForDownload(project)
                 val installedVersions = getInstalledVersions()
                 return@withBackgroundProgress checkLsp(
-                    currentVersion,
-                    settings.lspUseLatest,
+                    settings.lspVersion,
                     installedVersions = installedVersions,
                     versionsAvailableForDownload = versionsForDownload
                 )
@@ -313,15 +315,15 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             LOG.debug("Check LSP result: $checkResult")
             // TODO (AleksandrSl 17/05/2025): If I open several projects and get an update notification in every one. Can I update in one and then just close the rest? Looks like it's not straightforward at all.
             when (checkResult) {
-                is CheckLspResult.BinaryMissing -> {
+                is BinaryMissing -> {
                     LuauNotifications.pluginNotifications().createNotification(
                         LuauBundle.message("luau.lsp.binary.missing.title"), NotificationType.WARNING
                     ).addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.lsp.download")) {
                         coroutineScope.launch {
                             withBackgroundProgress(project, LuauBundle.message("luau.lsp.downloading")) {
-                                downloadLspWithNotification(checkResult.version, project)
-                                settings.lspVersion = checkResult.version
-                                restartLspServerAsync(project)
+                                if (downloadLspWithNotification(checkResult.version, project) != null) {
+                                    checkLsp(project)
+                                }
                             }
                         }
                     })
@@ -331,7 +333,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                         }).notify(project)
                 }
 
-                CheckLspResult.LspIsNotConfigured -> {
+                LspIsNotConfigured -> {
                     LuauNotifications.pluginNotifications().createNotification(
                         LuauBundle.message("luau.lsp.not.configured.title"),
                         LuauBundle.message("luau.lsp.not.configured.content"),
@@ -343,10 +345,10 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                         }).notify(project)
                 }
 
-                CheckLspResult.ReadyToUse -> { // All good, maybe I want to return true or something
+                ReadyToUse -> { // All good, maybe I want to return true or something
                 }
 
-                is CheckLspResult.UpdateAvailable -> {
+                is UpdateAvailable -> {
                     LuauNotifications.pluginNotifications().createNotification(
                         LuauBundle.message("luau.lsp.update.available.title"), LuauBundle.message(
                             "luau.lsp.update.available.content",
@@ -357,19 +359,14 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                         coroutineScope.launch {
                             withBackgroundProgress(project, LuauBundle.message("luau.lsp.downloading")) {
                                 if (downloadLspWithNotification(checkResult.version, project) != null) {
-                                    // It will be good to propagate these changes to other projects.
-                                    settings.lspVersion = checkResult.version
-                                    restartLspServerAsync(project)
+                                    checkLsp(project)
                                 }
                             }
                         }
                     }).notify(project)
                 }
 
-                is CheckLspResult.UpdateSettings -> {
-                    settings.lspVersion = checkResult.version
-                    restartLspServerAsync(project)
-                }
+                is UpdateCache -> updateLatestInstalledVersionCache(project, checkResult.version)
             }
         }
     }
@@ -378,42 +375,42 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         @JvmStatic
         fun getInstance(): LuauLspManager = service()
 
+        fun updateLatestInstalledVersionCache(project: Project, version: Version.Semantic) {
+            latestInstalledLspVersionCache = version
+            restartLspServerAsync(project)
+        }
+
         fun checkLsp(
-            currentVersion: Version.Semantic?,
-            lspUseLatest: Boolean,
+            currentVersion: Version,
             installedVersions: List<Version.Semantic>,
             versionsAvailableForDownload: List<Version.Semantic>,
         ): CheckLspResult {
-            if (lspUseLatest) {
-                val latestVersion = versionsAvailableForDownload.max()
-                // TODO (AleksandrSl 12/06/2025): Should I just cache the versions retrieved from the disk, and return the latest instead of relying on the settings?
-                if (latestVersion != currentVersion) {
-                    // Currently used LSP version is not the latest,
-                    // but maybe we have the binary and the project settings have to be updated.
-                    if (installedVersions.contains(latestVersion)) {
-                        return CheckLspResult.UpdateSettings(latestVersion)
+            return when (currentVersion) {
+                is Version.Latest -> {
+                    val latestVersion = versionsAvailableForDownload.max()
+                    if (installedVersions.isEmpty()) {
+                        BinaryMissing(latestVersion)
+                    } else {
+                        val latestInstalledVersion = installedVersions.max()
+                        if (latestVersion > latestInstalledVersion) UpdateAvailable(latestVersion) else {
+                            if (latestInstalledVersion != latestInstalledLspVersionCache) UpdateCache(
+                                latestInstalledVersion
+                            ) else ReadyToUse
+                        }
                     }
-                    // currentVersion is missing in the following cases
-                    // 1. The project is open for the first time
-                    // 2. Settings are corrupted.
-                    if (currentVersion == null) {
-                        return CheckLspResult.BinaryMissing(latestVersion)
-                    }
-                    return CheckLspResult.UpdateAvailable(latestVersion)
                 }
-                // Currently selected version may be the same as the latest, but we don't have it
-                if (installedVersions.contains(currentVersion)) {
-                    return CheckLspResult.ReadyToUse
-                }
-                return CheckLspResult.BinaryMissing(latestVersion)
-            } else {
-                if (currentVersion == null) {
-                    return CheckLspResult.LspIsNotConfigured
-                }
-                return if (installedVersions.contains(currentVersion)) CheckLspResult.ReadyToUse
-                else CheckLspResult.BinaryMissing(currentVersion)
+
+                is Version.Semantic -> if (installedVersions.contains(currentVersion)) ReadyToUse
+                else BinaryMissing(currentVersion)
             }
         }
+
+        var latestInstalledLspVersionCache: Version.Semantic?
+            get() = PropertiesComponent.getInstance().getValue(LATEST_INSTALLED_LSP_VERSION_KEY)
+                ?.let { Version.Semantic.parse(it) }
+            private set(value) {
+                PropertiesComponent.getInstance().setValue(LATEST_INSTALLED_LSP_VERSION_KEY, value.toString())
+            }
     }
 }
 
@@ -455,8 +452,11 @@ sealed class LspConfiguration() {
     }
 
     class Auto(project: Project) : Enabled(project) {
-        // Will be set when LSP is downloaded the first time, after that I assume that if LSP is missing, it's an error so we should try to run it and throw.
-        val version: Version.Semantic? = ProjectSettingsState.getInstance(project).lspVersion
+        // The cache should be set when LSP is downloaded the first time,
+        // after that I assume that if LSP is missing, it's an error, so we should try to run it and throw.
+        val version: Version.Semantic? = ProjectSettingsState.getInstance(project).lspVersion.let {
+                it as? Version.Semantic ?: LuauLspManager.latestInstalledLspVersionCache
+            }
 
         override val isReady: Boolean
             get() = version != null

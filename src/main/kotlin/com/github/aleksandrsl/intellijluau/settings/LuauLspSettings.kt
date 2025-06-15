@@ -74,28 +74,12 @@ class LuauLspSettings(
     private val downloadLspButton = JButton().apply { isVisible = false }
     private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) "No binary specified" else "")
 
-    private val lspVersionBinding = object : MutableProperty<Version?> {
-        override fun get(): Version? = if (settings.lspUseLatest) Version.Latest else settings.lspVersion?.let {
-            Version.Semantic.parse(it)
-        }
+    private val lspVersionBinding = object : MutableProperty<Version> {
+        override fun get(): Version = Version.parse(settings.lspVersion)
 
-        override fun set(value: Version?) {
-            if (value == Version.Latest) {
-                settings.lspUseLatest = true
-                settings.lspVersion = getLatestInstalledVersion()?.toString() ?: Version.Latest.toString()
-            } else {
-                settings.lspUseLatest = false
-                settings.lspVersion = value?.toString()
-            }
+        override fun set(value: Version) {
+            settings.lspVersion = value.toString()
         }
-    }
-
-    private fun getLatestInstalledVersion(): Version.Semantic? {
-        val container = lspInstalledVersions.get()
-        if (container is InstalledVersions.Loaded) {
-            return container.versions.maxOrNull()
-        }
-        return null
     }
 
     private fun download(version: Version.Semantic): Boolean {
@@ -177,6 +161,7 @@ class LuauLspSettings(
         downloadLspButton.action = object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent) {
                 download(version)
+                // TODO (AleksandrSl 14/06/2025): Update last version?
                 settings.lspVersion = version.toString()
             }
         }
@@ -226,21 +211,13 @@ class LuauLspSettings(
             return
         }
 
-        val latestInstalled = getLatestInstalledVersion()
         val isLspVersionModified = lspVersionCombobox.getSelectedVersion() != lspVersionBinding.get()
         val isConfigurationTypeModified =
             lspAuto.isSelected && settings.lspConfigurationType != LspConfigurationType.Auto
         val shouldShowActions = !(isLspVersionModified || isConfigurationTypeModified)
         val selectedVersion = lspVersionCombobox.getSelectedVersion()
         when (val result = LuauLspManager.checkLsp(
-            // I don't like this but this is a trick to show the download instead of update if the current version in settings is null.
-            (if (isLspVersionModified) selectedVersion.toString() else settings.lspVersion)?.let {
-                when (val parsed = Version.parse(it)) {
-                    Version.Latest -> latestInstalled
-                    is Version.Semantic -> parsed
-                }
-            },
-            selectedVersion == Version.Latest,
+            selectedVersion,
             installedVersions = installedVersions.versions,
             versionsAvailableForDownload = versionsForDownload.versions
         )) {
@@ -273,10 +250,8 @@ class LuauLspSettings(
                 }
             }
 
-            is LuauLspManager.CheckLspResult.UpdateSettings -> {
-                // This state should not be possible in settings since I will update the settings for the latest
-                // version at the project start and maybe when download is done in a project.
-                settings.lspVersion = result.version.toString()
+            is LuauLspManager.CheckLspResult.UpdateCache -> {
+                LuauLspManager.updateLatestInstalledVersionCache(project, result.version)
                 updateLspVersionActions(versionsForDownload, lspInstalledVersions.get())
             }
         }
@@ -336,18 +311,21 @@ class LuauLspSettings(
                                 // Initial version show the version we have installed,
                                 // or none if user somehow got this state.
                                 lspVersionCombobox =
-                                    cell(LspVersionComboBox(installedVersions = lspVersionBinding.get()?.let {
-                                        if (it is Version.Semantic) {
-                                            listOf(it)
-                                        } else listOf()
-                                    } ?: listOf(),
-                                        versionsForDownload = listOf(),
-                                        selectedVersion = lspVersionBinding.get(),
-                                        download = { version, afterUpdate ->
-                                            if (download(version)) {
-                                                afterUpdate()
-                                            }
-                                        })).bind(
+                                    cell(
+                                        LspVersionComboBox(
+                                            installedVersions = lspVersionBinding.get().let {
+                                                if (it is Version.Semantic) {
+                                                    listOf(it)
+                                                } else listOf()
+                                            },
+                                            versionsForDownload = listOf(),
+                                            selectedVersion = lspVersionBinding.get(),
+                                            download = { version, afterUpdate ->
+                                                if (download(version)) {
+                                                    afterUpdate()
+                                                }
+                                            })
+                                    ).bind(
                                         { component -> component.getSelectedVersion() },
                                         { component, value -> component.setSelectedVersion(value) },
                                         lspVersionBinding

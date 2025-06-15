@@ -19,18 +19,10 @@ import com.intellij.util.xmlb.XmlSerializerUtil
 class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State> {
     private var internalState: State = State()
 
-    var lspVersion: Version.Semantic?
-        get() {
-            val version = internalState.lspVersion ?: return null
-
-            return try {
-                Version.Semantic.parse(version)
-            } catch (e: Exception) {
-                null
-            }
-        }
+    var lspVersion: Version
+        get() = Version.parse(internalState.lspVersion)
         set(value) {
-            internalState.lspVersion = value?.toString()
+            internalState.lspVersion = value.toString()
         }
 
     val lspConfigurationType: LspConfigurationType
@@ -77,9 +69,6 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val useLuauExtension
         get() = internalState.useLuauExtension
 
-    val lspUseLatest
-        get() = internalState.lspUseLatest
-
     val lspRojoProjectFile
         get() = internalState.lspRojoProjectFile
 
@@ -109,7 +98,6 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
 
     fun loadDefaultSettings() {
         val defaults = LuauDefaultSettingsState.getInstance().state
-        internalState.lspUseLatest = defaults.lspUseLatest
         internalState.lspConfigurationType = defaults.lspConfigurationType
         internalState.styLuaPath = defaults.styLuaPath
         internalState.lspPath = defaults.lspPath
@@ -123,8 +111,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     }
 
     data class State(
-        override var lspUseLatest: Boolean = true,
-        override var lspVersion: String? = null,
+        override var lspVersion: String = Version.Latest.toString(),
         override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
         override var lspPath: String = "",
         override var lspSourcemapSupportEnabled: Boolean = true,
@@ -148,9 +135,8 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
 
 interface ShareableProjectSettingsState {
     val lspConfigurationType: LspConfigurationType
-    val lspVersion: String?
+    val lspVersion: String
     val lspPath: String
-    val lspUseLatest: Boolean
     val lspSourcemapSupportEnabled: Boolean
     val lspSourcemapGenerationType: LspSourcemapGenerationType
 
