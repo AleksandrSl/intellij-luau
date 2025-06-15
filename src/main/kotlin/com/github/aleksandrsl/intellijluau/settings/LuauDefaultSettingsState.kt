@@ -1,6 +1,7 @@
 package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.lsp.DEFAULT_ROJO_PROJECT_FILE
+import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
@@ -27,7 +28,6 @@ class LuauDefaultSettingsState :
     }
 
     fun save(state: ShareableProjectSettingsState) {
-        internalState.lspUseLatest = state.lspUseLatest
         internalState.lspVersion = state.lspVersion
         internalState.lspConfigurationType = state.lspConfigurationType
         internalState.lspPath = state.lspPath
@@ -50,8 +50,7 @@ class LuauDefaultSettingsState :
 }
 
 data class DefaultState(
-    override var lspUseLatest: Boolean = true,
-    override var lspVersion: String? = null,
+    override var lspVersion: String = Version.Latest.toString(),
     override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
     override var lspPath: String = "",
     override val lspSourcemapSupportEnabled: Boolean = true,
