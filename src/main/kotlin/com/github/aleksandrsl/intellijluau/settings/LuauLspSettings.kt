@@ -59,8 +59,8 @@ class LuauLspSettings(
     private lateinit var rojoVersionLabel: JLabel
     private lateinit var rojoVersionLoader: AnimatedIcon
     private val rojoVersion = AtomicProperty("")
-    private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(VersionsForDownload.Loading)
-    private val lspInstalledVersions = AtomicProperty<InstalledVersions>(InstalledVersions.Loading)
+    private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(VersionsForDownload.Idle)
+    private val lspInstalledVersions = AtomicProperty<InstalledVersions>(InstalledVersions.Idle)
 
     private lateinit var sourcemapGenerationManulRadio: JBRadioButton
     private lateinit var sourcemapGenerationRojoRadio: JBRadioButton
@@ -344,7 +344,7 @@ class LuauLspSettings(
                                 cell(lspVersionStateLabelComponent)
                                 // I empirically learned that icon will cancel coroutine passed to it if you unload it.
                                 lspVersionsLoader =
-                                    cell(AsyncProcessIcon("Loading")).visibleIf(lspVersionsForDownload.transform { it is VersionsForDownload.Loading }).component
+                                    cell(AsyncProcessIcon("Loading")).visibleIf(lspVersionsForDownload.transform { it is VersionsForDownload.Loading }).component.apply { suspend() }
                                 contextHelp("Updates will be suggested if available as notifications when you open a project or you can check for them on this page.").visibleIf(
                                     lspVersionCombobox.selectedValueIs(LspVersionComboBox.Item.LatestVersion)
                                 )
@@ -412,7 +412,7 @@ class LuauLspSettings(
                     panel {
                         row("Rojo version:") {
                             rojoVersionLoader =
-                                cell(AsyncProcessIcon("Loading rojo version")).visibleIf(rojoVersion.transform { it.isEmpty() }).component
+                                cell(AsyncProcessIcon("Loading rojo version")).visibleIf(rojoVersion.transform { it.isEmpty() }).component.apply { suspend() }
                             rojoVersionLabel = label("").bindText(rojoVersion).component
                         }
                         row("Rojo project file:") {
@@ -444,6 +444,7 @@ class LuauLspSettings(
         if (lspAuto.isSelected) {
             coroutineScope.launch {
                 withLoader(lspVersionsLoader) {
+                    lspVersionsForDownload.set(VersionsForDownload.Loading)
                     val lspManager = LuauLspManager.getInstance()
                     lspVersionsForDownload.set(
                         try {
@@ -452,6 +453,7 @@ class LuauLspSettings(
                             VersionsForDownload.Failed(err.message ?: "Failed to load versions")
                         }
                     )
+                    lspInstalledVersions.set(InstalledVersions.Loading)
                     lspInstalledVersions.set(
                         try {
                             InstalledVersions.Loaded(lspManager.getInstalledVersions())
@@ -500,12 +502,14 @@ private fun TextFieldWithBrowseButton.onExistingFileChanged(action: (Path) -> Un
 // Yes, this could be a downloadable resource and maybe will be.
 sealed class VersionsForDownload {
     data object Loading : VersionsForDownload()
+    data object Idle : VersionsForDownload()
     data class Loaded(val versions: List<Version.Semantic>) : VersionsForDownload()
     data class Failed(val message: String) : VersionsForDownload()
 }
 
 sealed class InstalledVersions {
     data object Loading : InstalledVersions()
+    data object Idle : InstalledVersions()
     data class Loaded(val versions: List<Version.Semantic>) : InstalledVersions()
     data class Failed(val message: String) : InstalledVersions()
 }
