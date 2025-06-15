@@ -74,6 +74,9 @@ class LuauLspSettings(
     private val downloadLspButton = JButton().apply { isVisible = false }
     private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) "No binary specified" else "")
 
+    private val isLspVersionModified
+        get() = lspVersionCombobox.getSelectedVersion() != lspVersionBinding.get()
+
     private val lspVersionBinding = object : MutableProperty<Version> {
         override fun get(): Version = Version.parse(settings.lspVersion)
 
@@ -103,6 +106,9 @@ class LuauLspSettings(
                                 }
                             })
                             updateLspVersionActions(lspVersionsForDownload.get(), lspInstalledVersions.get())
+                        }
+                        // This means that we downloaded the version that we had before and were missing. The LSP should be restarted manually, since apply won't be called.
+                        if (!isLspVersionModified) {
                             restartLspServerAsync(project)
                         }
                         true
@@ -211,7 +217,6 @@ class LuauLspSettings(
             return
         }
 
-        val isLspVersionModified = lspVersionCombobox.getSelectedVersion() != lspVersionBinding.get()
         val isConfigurationTypeModified =
             lspAuto.isSelected && settings.lspConfigurationType != LspConfigurationType.Auto
         val shouldShowActions = !(isLspVersionModified || isConfigurationTypeModified)
