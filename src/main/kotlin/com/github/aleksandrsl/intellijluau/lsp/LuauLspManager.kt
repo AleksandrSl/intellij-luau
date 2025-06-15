@@ -438,7 +438,11 @@ fun Project.getLspConfiguration(): LspConfiguration {
 // The cache should be populated 99% of the time.
 // Can be removed when LSP versions with server info are highly adopted.
 fun Project.getAutoLspVersion(): Version.Semantic? {
-    return LuauLspManager.latestInstalledLspVersionCache
+    val settings = ProjectSettingsState.getInstance(this)
+    if (settings.lspConfigurationType == LspConfigurationType.Auto) {
+        return settings.lspVersion.let { it as? Version.Semantic ?: LuauLspManager.latestInstalledLspVersionCache }
+    }
+    return null
 }
 
 sealed class LspConfiguration() {

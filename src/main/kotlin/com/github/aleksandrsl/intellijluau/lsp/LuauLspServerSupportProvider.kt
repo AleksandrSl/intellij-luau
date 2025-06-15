@@ -42,7 +42,7 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
                 get() {
                     val version =
                         lspServer.initializeResult?.serverInfo?.version ?: lspServer.project.getAutoLspVersion()
-                    return if (version != null) " ${version}" else super.versionPostfix
+                    return if (version != null) " $version" else super.versionPostfix
                 }
         }
 }
