@@ -38,9 +38,9 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
             lspServer, currentFile,
             LuauIcons.FILE, ProjectSettingsConfigurable::class.java
         ) {
-            // TODO (AleksandrSl 13/06/2025): Ideally the version should come from the server itself, I asked LSP author how hard it would be to populate this info
+            // The version should be available in the serverInfo > 1.49.1
             override val versionPostfix: @NlsSafe String
-                get() = lspServer.project.getLspConfiguration()
+                get() = lspServer.initializeResult?.serverInfo?.version ?: lspServer.project.getLspConfiguration()
                     .let { if (it is LspConfiguration.Auto && it.version != null) " ${it.version}" else super.versionPostfix }
         }
 }
