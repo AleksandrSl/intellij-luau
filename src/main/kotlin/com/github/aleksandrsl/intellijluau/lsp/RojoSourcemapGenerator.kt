@@ -64,7 +64,8 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
             return false
         }
 
-        if (!Path(settings.lspRojoProjectFile).exists()) {
+        val root = project.basePath ?: return false
+        if (!Path(root).resolve(settings.lspRojoProjectFile).exists()) {
             SourcemapGenerator.notifications().showNotification(
                 LuauBundle.message("luau.sourcemap.generation.rojo.title"),
                 "Project file (${settings.lspRojoProjectFile}) doesn't exist. Please configure which file to use in the settings",
