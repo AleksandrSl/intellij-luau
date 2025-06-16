@@ -9,13 +9,11 @@ import com.github.aleksandrsl.intellijluau.cli.LspCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.execution.configurations.GeneralCommandLine
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.NlsSafe
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.lsp.api.LspServer
-import com.intellij.platform.lsp.api.LspServerManager
 import com.intellij.platform.lsp.api.LspServerSupportProvider
 import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
 import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
@@ -65,10 +63,4 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
         }
         return LspCli(project, lspConfiguration).createLspCli()
     }
-}
-
-fun restartLspServerAsync(project: Project) {
-    ApplicationManager.getApplication().invokeLater({
-        LspServerManager.getInstance(project).stopAndRestartIfNeeded(LuauLspServerSupportProvider::class.java)
-    }, project.disposed)
 }

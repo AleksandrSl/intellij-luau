@@ -6,7 +6,6 @@ import com.github.aleksandrsl.intellijluau.cli.RojoCli
 import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
-import com.github.aleksandrsl.intellijluau.lsp.restartLspServerAsync
 import com.github.aleksandrsl.intellijluau.util.PlatformCompatibility
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.icons.AllIcons
@@ -74,9 +73,6 @@ class LuauLspSettings(
     private val downloadLspButton = JButton().apply { isVisible = false }
     private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) "No binary specified" else "")
 
-    private val isLspVersionModified
-        get() = lspVersionCombobox.getSelectedVersion() != lspVersionBinding.get()
-
     private val lspVersionBinding = object : MutableProperty<Version> {
         override fun get(): Version = Version.parse(settings.lspVersion)
 
@@ -107,10 +103,6 @@ class LuauLspSettings(
                             })
                             updateLspVersionActions(lspVersionsForDownload.get(), lspInstalledVersions.get())
                         }
-                        // This means that we downloaded the version that we had before and were missing. The LSP should be restarted manually, since apply won't be called.
-                        if (!isLspVersionModified) {
-                            restartLspServerAsync(project)
-                        }
                         true
                     }
                 }
@@ -138,7 +130,7 @@ class LuauLspSettings(
             coroutineScope.launch(Dispatchers.IO) {
                 setManualLspVersion(
                     LspCli(
-                        project, LspConfiguration.ForSettings(project, it, listOf(), true)
+                        project, LspConfiguration.ForSettings(project, it, true)
                     ).queryVersion().toString()
                 )
             }
@@ -216,7 +208,7 @@ class LuauLspSettings(
         if (versionsForDownload !is VersionsForDownload.Loaded || versionsForDownload.versions.isEmpty() || installedVersions !is InstalledVersions.Loaded) {
             return
         }
-
+        val isLspVersionModified = lspVersionCombobox.getSelectedVersion() != lspVersionBinding.get()
         val isConfigurationTypeModified =
             lspAuto.isSelected && settings.lspConfigurationType != LspConfigurationType.Auto
         val shouldShowActions = !(isLspVersionModified || isConfigurationTypeModified)
@@ -256,7 +248,7 @@ class LuauLspSettings(
             }
 
             is LuauLspManager.CheckLspResult.UpdateCache -> {
-                LuauLspManager.updateLatestInstalledVersionCache(project, result.version)
+                LuauLspManager.updateLatestInstalledVersionCache(result.version)
                 updateLspVersionActions(versionsForDownload, lspInstalledVersions.get())
             }
         }
@@ -355,7 +347,7 @@ class LuauLspSettings(
                                 actionButton(object :
                                     DumbAwareAction("Open LSP Storage Folder", "", AllIcons.Actions.MenuOpen) {
                                     override fun actionPerformed(e: AnActionEvent) {
-                                        val lspDir = LuauLspManager.basePath().toFile()
+                                        val lspDir = LuauLspManager.lspStorageDirPath.toFile()
                                         if (lspDir.exists()) {
                                             // Could also use ShowFilePathAction
                                             RevealFileAction.openDirectory(lspDir)
@@ -460,12 +452,12 @@ class LuauLspSettings(
                     lspInstalledVersions.set(InstalledVersions.Loading)
                     lspInstalledVersions.set(
                         try {
-                        withContext(Dispatchers.IO) {
-                            InstalledVersions.Loaded(LuauLspManager.getInstalledVersions())
-                        }
-                    } catch (err: Exception) {
-                        InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
-                    })
+                            withContext(Dispatchers.IO) {
+                                InstalledVersions.Loaded(LuauLspManager.getInstalledVersions())
+                            }
+                        } catch (err: Exception) {
+                            InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
+                        })
                     lspVersionCombobox.setVersions(installedVersions = lspInstalledVersions.get().let {
                         if (it is InstalledVersions.Loaded) {
                             it.versions

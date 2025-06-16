@@ -31,8 +31,8 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
             ProjectSettingsConfigurable.TOPIC, object : ProjectSettingsConfigurable.SettingsChangeListener {
-                override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    updateStrategyBasedOnSettings(e)
+                override fun settingsChanged(event: ProjectSettingsConfigurable.SettingsChangedEvent) {
+                    updateStrategyBasedOnSettings(event)
                 }
             })
 

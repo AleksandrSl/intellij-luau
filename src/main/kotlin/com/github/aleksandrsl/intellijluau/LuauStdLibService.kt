@@ -3,12 +3,11 @@ package com.github.aleksandrsl.intellijluau
 import com.github.aleksandrsl.intellijluau.declarations.LuauDeclaration
 import com.github.aleksandrsl.intellijluau.declarations.LuauDeclarations
 import com.github.aleksandrsl.intellijluau.declarations.LuauDeclarationsParser
+import com.github.aleksandrsl.intellijluau.lsp.getGlobalTypesOrBuiltin
 import com.github.aleksandrsl.intellijluau.psi.LuauSimpleReference
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
-import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.codeInsight.daemon.DaemonCodeAnalyzer
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.PluginPathManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.MessageBusConnection
@@ -17,6 +16,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import java.util.concurrent.atomic.AtomicReference
+import kotlin.io.path.exists
 
 private val LOG = logger<LuauStdLibService>()
 
@@ -32,8 +32,8 @@ class LuauStdLibServiceImpl(val project: Project, private val coroutineScope: Co
         messageBusConnection?.subscribe(
             ProjectSettingsConfigurable.TOPIC,
             object : ProjectSettingsConfigurable.SettingsChangeListener {
-                override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    if (e.newState.robloxSecurityLevel != e.oldState.robloxSecurityLevel) {
+                override fun settingsChanged(event: ProjectSettingsConfigurable.SettingsChangedEvent) {
+                    if (event.newState.robloxSecurityLevel != event.oldState.robloxSecurityLevel) {
                         loadStdLibDeclarations()
                     }
                 }
@@ -43,19 +43,15 @@ class LuauStdLibServiceImpl(val project: Project, private val coroutineScope: Co
 
     private fun loadStdLibDeclarations() {
         loadingDeferred.get()?.cancel()
-        val settings = ProjectSettingsState.getInstance(project)
-
         // Calling this from coroutine scope produces garbage temporary file location
         // C:\Users\slale\.gradle\caches\8.9\transforms\2c8a365b11e772d43ecee417107d45cc\transformed\WebStorm-2024.3.4-win\typeDeclarations\globalTypes.None.d.luau
-        val file = PluginPathManager.getPluginResource(
-            javaClass, "typeDeclarations/globalTypes.${settings.robloxSecurityLevel.name}.d.luau"
-        )
+        val path = project.getGlobalTypesOrBuiltin()
 
         loadingDeferred.set(coroutineScope.async(Dispatchers.IO) {
-            if (file?.exists() == true) {
+            if (path?.exists() == true) {
                 try {
                     val parser = LuauDeclarationsParser()
-                    stdlibDeclarations = parser.parse(file.path)
+                    stdlibDeclarations = parser.parse(path.toString())
                 } catch (e: Exception) {
                     LOG.error("Failed to parse stdlib declarations", e)
                 }
