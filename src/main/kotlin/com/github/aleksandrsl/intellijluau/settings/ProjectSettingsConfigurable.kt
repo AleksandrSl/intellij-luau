@@ -2,7 +2,6 @@ package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
-import com.github.aleksandrsl.intellijluau.lsp.restartLspServerAsync
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState.State
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
@@ -41,7 +40,6 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
             settings.state
         )
         notifySettingsChanged(event)
-        restartLsp(event)
         // Controversial one,
         // but if the person didn't dismiss the default settings
         // but went and changed the actual ones, using defaults makes little sense.
@@ -60,19 +58,8 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
         _component = null
     }
 
-    private fun restartLsp(settingsChangedEvent: SettingsChangedEvent) {
-        if (settingsChangedEvent.isChanged(State::lspPath)
-            || settingsChangedEvent.isChanged(State::lspVersion)
-            || settingsChangedEvent.isChanged(State::robloxSecurityLevel)
-            || settingsChangedEvent.isChanged(State::customDefinitionsPaths)
-            || settingsChangedEvent.isChanged(State::lspConfigurationType)
-        ) {
-            restartLspServerAsync(project)
-        }
-    }
-
     interface SettingsChangeListener {
-        fun settingsChanged(e: SettingsChangedEvent)
+        fun settingsChanged(event: SettingsChangedEvent)
     }
 
     private fun notifySettingsChanged(event: SettingsChangedEvent) {
@@ -91,6 +78,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
 
     companion object {
         const val CONFIGURABLE_ID = "settings.luau"
+        @Topic.ProjectLevel
         val TOPIC = Topic.create(
             "Luau settings changes",
             SettingsChangeListener::class.java,

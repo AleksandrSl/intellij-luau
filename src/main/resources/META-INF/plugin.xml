@@ -113,5 +113,8 @@
         <action id="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
                 class="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
         />
+        <action id="com.github.aleksandrsl.intellijluau.actions.UpdateRobloxApiDefinitions"
+                class="com.github.aleksandrsl.intellijluau.actions.UpdateRobloxApiDefinitions"
+        />
     </actions>
 </idea-plugin>
