@@ -7,6 +7,11 @@ private const val GROUP_ID = "Luau sourcemap generation"
 
 interface SourcemapGenerator {
     /**
+     * Provide to show in the notifications
+     */
+    val name: String
+
+    /**
      * Starts the sourcemap generation.
      * Idempotent: calling multiple times if already started should have no effect.
      */
@@ -16,7 +21,7 @@ interface SourcemapGenerator {
      * Stops the sourcemap generation.
      * Idempotent: calling multiple times if already stopped should have no effect.
      */
-    fun stop()
+    suspend fun stop()
 
     fun isRunning(): Boolean
 
