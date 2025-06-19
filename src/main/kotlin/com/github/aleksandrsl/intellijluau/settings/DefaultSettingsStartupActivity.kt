@@ -2,7 +2,7 @@ package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauNotifications
-import com.github.aleksandrsl.intellijluau.showNotification
+import com.github.aleksandrsl.intellijluau.showProjectNotification
 import com.github.aleksandrsl.intellijluau.util.hasLuauFiles
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationAction
@@ -27,10 +27,11 @@ class DefaultSettingsStartupActivity : ProjectActivity {
             return
         }
 
-        LuauNotifications.pluginNotifications().showNotification(
+        LuauNotifications.pluginNotifications().showProjectNotification(
             LuauBundle.message("luau.notification.title.default.settings"),
             LuauBundle.message("luau.notification.content.default.settings"),
-            NotificationType.INFORMATION
+            NotificationType.INFORMATION,
+            project
         ) {
             addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.apply")) {
                 val projectSettings = ProjectSettingsState.getInstance(project)

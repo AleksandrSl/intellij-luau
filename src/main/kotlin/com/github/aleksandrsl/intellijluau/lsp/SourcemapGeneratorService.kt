@@ -3,7 +3,8 @@ package com.github.aleksandrsl.intellijluau.lsp
 import com.github.aleksandrsl.intellijluau.settings.LspSourcemapGenerationType
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
-import com.github.aleksandrsl.intellijluau.showNotification
+import com.github.aleksandrsl.intellijluau.showProjectNotification
+import com.github.aleksandrsl.intellijluau.util.capitalize
 import com.github.aleksandrsl.intellijluau.util.hasLuauFiles
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationAction
@@ -16,6 +17,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.util.messages.MessageBusConnection
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 
 private val LOG = logger<SourcemapGeneratorService>()
@@ -27,16 +29,37 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     private var messageBusConnection: MessageBusConnection? = null
     private var generator: SourcemapGenerator? = null
 
+    private val operationQueue = Channel<Operation>(Channel.UNLIMITED)
+
+
     init {
         messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
             ProjectSettingsConfigurable.TOPIC, object : ProjectSettingsConfigurable.SettingsChangeListener {
                 override fun settingsChanged(event: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    updateStrategyBasedOnSettings(event)
+                    operationQueue.trySend(Operation.UpdateStrategy(event))
                 }
             })
 
-        updateStrategyBasedOnSettings()
+        coroutineScope.launch {
+            for (op in operationQueue) {
+                try {
+                    when (op) {
+                        is Operation.UpdateStrategy -> updateGeneratorBasedOnSettings(op.change)
+                        is Operation.Stop -> stop()
+                    }
+                } catch (e: Exception) {
+                    LOG.error("Error processing operation: $op", e)
+                }
+            }
+        }
+
+        operationQueue.trySend(Operation.UpdateStrategy())
+    }
+
+    private suspend fun stop() {
+        generator?.stop()
+        generator = null
     }
 
     // TODO (AleksandrSl 19/06/2025): Allow restart if the generator is configured but missing because it died
@@ -45,46 +68,71 @@ class SourcemapGeneratorService(private val project: Project, private val corout
 
     fun restart() {
         if (!canRestart) return
-        updateStrategyBasedOnSettings()
+        operationQueue.trySend(Operation.UpdateStrategy())
     }
 
-    private fun updateStrategyBasedOnSettings(change: ProjectSettingsConfigurable.SettingsChangedEvent? = null) {
-        val settings = ProjectSettingsState.getInstance(project)
-
+    private suspend fun updateGeneratorBasedOnSettings(
+        change: ProjectSettingsConfigurable.SettingsChangedEvent? = null,
+    ) {
         val oldGenerator = generator
         // Let's be simple and stop the existing and start the new one.
-        if (oldGenerator != null) {
-            oldGenerator.stop()
-        }
+        oldGenerator?.stop()
 
-        // TODO (AleksandrSl 17/06/2025): Do not suggest rojo more than once?
-        // Also do not suggest it if the setting has been changed to disabled from rojo for example.
-        coroutineScope.launch {
-            val newGenerator = determineStrategy(settings)
-            if (newGenerator == null && !PropertiesComponent.getInstance(project)
-                    .getBoolean(ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME) && RojoSourcemapGenerator.canUseRojo(project)
-            ) {
-                suggestRojo()
+        val settings = change?.newState ?: ProjectSettingsState.getInstance(project).state
+        val newGenerator = determineStrategy(settings)
+        // If there is a change, then the settings were updated, so the user chose the value on purpose, no reason to suggest rojo
+        if (newGenerator == null && change == null && !PropertiesComponent.getInstance(project)
+                .getBoolean(ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME) && RojoSourcemapGenerator.canUseRojo(project)
+        ) {
+            suggestRojo()
+        }
+        generator = newGenerator?.apply { start() }
+
+        if (oldGenerator != null && newGenerator != null) {
+            val message = if (oldGenerator::class != newGenerator::class) {
+                "Switching from ${oldGenerator.name} to ${newGenerator.name} sourcemap generator"
+            } else {
+                "${oldGenerator.name} sourcemap generator restarted".capitalize()
             }
-            generator = newGenerator?.apply { start() }
+            SourcemapGenerator.notifications()
+                .showProjectNotification(
+                    message,
+                    NotificationType.INFORMATION,
+                    project
+                )
+        } else if (oldGenerator != null) {
+            SourcemapGenerator.notifications()
+                .showProjectNotification(
+                    "${oldGenerator.name} sourcemap generator restarted".capitalize(),
+                    NotificationType.INFORMATION,
+                    project
+                )
+        } else if (generator != null) {
+            SourcemapGenerator.notifications()
+                .showProjectNotification(
+                    "${generator?.name} sourcemap generator started".capitalize(),
+                    NotificationType.INFORMATION,
+                    project
+                )
         }
     }
 
     private fun suggestRojo() {
-        SourcemapGenerator.notifications().showNotification(
+        SourcemapGenerator.notifications().showProjectNotification(
             "Enable rojo sourcemap generation?",
             "Found rojo project file and rojo is installed",
-            NotificationType.INFORMATION
+            NotificationType.INFORMATION,
+            project
         ) {
             addAction(NotificationAction.createSimpleExpiring("Enable") {
                 ProjectSettingsState.getInstance(project).enableRojoSourcemapGeneration()
-            }).addAction(NotificationAction.createSimpleExpiring("Don't show again for this project") {
+            }).addAction(NotificationAction.createSimpleExpiring("Don't suggest again for this project") {
                 PropertiesComponent.getInstance(project).setValue(ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME, true)
             })
         }
     }
 
-    private suspend fun determineStrategy(settings: ProjectSettingsState): SourcemapGenerator? {
+    private suspend fun determineStrategy(settings: ProjectSettingsState.State): SourcemapGenerator? {
         if (!settings.lspSourcemapSupportEnabled || !settings.isLspEnabledAndMinimallyConfigured || !project.hasLuauFiles()) {
             return null
         }
@@ -115,9 +163,24 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     private fun CoroutineScope.createChildScope() = CoroutineScope(this.coroutineContext + SupervisorJob())
 
     override fun dispose() {
-        generator?.stop()
+        messageBusConnection?.disconnect()
+        messageBusConnection = null
+        // Send a final stop operation and close the queue.
+        // The processing coroutine will execute it and then terminate as the channel is closed.
+        operationQueue.trySend(Operation.Stop)
+        operationQueue.close()
         generator = null
     }
+
+    // A sealed class to represent the allowed operations
+    private sealed class Operation {
+        data class UpdateStrategy(
+            val change: ProjectSettingsConfigurable.SettingsChangedEvent? = null,
+        ) : Operation()
+
+        object Stop : Operation()
+    }
+
 
     companion object {
 
