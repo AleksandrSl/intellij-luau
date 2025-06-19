@@ -26,6 +26,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.and
 import com.intellij.ui.layout.not
 import com.intellij.ui.layout.selected
 import com.intellij.ui.layout.selectedValueIs
@@ -428,8 +429,7 @@ class LuauLspSettings(
                         }
                     }.visibleIf(sourcemapGenerationManulRadio.selected)
                 }.topGap(TopGap.NONE)
-                    // TODO (AleksandrSl 12/06/2025): Make dependant on sourcemapSupportCheckbox when I add support for lsp settings file
-                    .enabledIf(!lspDisabled.selected)
+                    .enabledIf(sourcemapSupportCheckbox.selected.and(!lspDisabled.selected))
             }
         }
     }
