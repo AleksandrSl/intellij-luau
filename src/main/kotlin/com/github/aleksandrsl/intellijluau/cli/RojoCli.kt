@@ -13,7 +13,7 @@ class RojoCli() {
         val actualRojoProjectFile = rojoProjectFile.ifBlank { DEFAULT_ROJO_PROJECT_FILE }
         val actualSourcemapFile = sourcemapFile.ifBlank { "sourcemap.json" }
 
-        return object : OSProcessHandler(
+        return OSProcessHandler.Silent(
             GeneralCommandLine(
                 listOf(
                     "rojo",
@@ -28,11 +28,7 @@ class RojoCli() {
                 withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
                 withWorkDirectory(project.basePath)
                 withCharset(Charsets.UTF_8)
-            }) {
-            override fun readerOptions(): BaseOutputReader.Options {
-                return BaseOutputReader.Options.forMostlySilentProcess()
-            }
-        }
+            })
     }
 
     companion object {
