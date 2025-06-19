@@ -27,9 +27,9 @@ object SourcemapGeneratorCli {
         }).runProcess(5000)
     }
 
-    fun createProcess(project: Project): ProcessHandler {
+    fun createProcess(project: Project): OSProcessHandler {
         val settings = ProjectSettingsState.Companion.getInstance(project)
-        return OSProcessHandler(
+        return OSProcessHandler.Silent(
             GeneralCommandLine(
                 settings.lspSourcemapGenerationCommand.split(" ")
             ).apply {
