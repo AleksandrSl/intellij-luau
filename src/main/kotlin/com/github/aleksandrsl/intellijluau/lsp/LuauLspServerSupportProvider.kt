@@ -17,6 +17,8 @@ import com.intellij.platform.lsp.api.LspServer
 import com.intellij.platform.lsp.api.LspServerSupportProvider
 import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
 import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
+import org.eclipse.lsp4j.ConfigurationItem
+import org.eclipse.lsp4j.InitializeParams
 
 private val LOG = logger<LuauLspServerSupportProvider>()
 
@@ -49,6 +51,118 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
     project, LuauBundle.message("luau.lsp.name")
 ) {
     override fun isSupportedFile(file: VirtualFile) = file.fileType == LuauFileType
+
+    override fun createInitializeParams(): InitializeParams {
+        return super.createInitializeParams().apply {
+            capabilities.workspace.configuration = true
+        }
+    }
+
+    /*
+     * See https://github.com/JohnnyMorganz/luau-lsp/blob/248ed7bd11dde2059d8fe00235776895738c5a16/src/include/LSP/ClientConfiguration.hpp for details
+     * struct ClientConfiguration
+     */
+    override fun getWorkspaceConfiguration(item: ConfigurationItem): Any? {
+        val settings = ProjectSettingsState.getInstance(project).state
+        val config: MutableMap<String?, Any?> = HashMap()
+
+        val sourcemap: MutableMap<String?, Any?> = HashMap()
+        sourcemap.put("enabled", settings.lspSourcemapSupportEnabled)
+        if (settings.lspSourcemapSupportEnabled && settings.lspSourcemapFile.isNotBlank()) {
+            sourcemap.put("sourcemapFile", settings.lspSourcemapFile)
+        }
+        config.put("sourcemap", sourcemap)
+
+        val platform: MutableMap<String?, Any?> = HashMap()
+        platform.put("type", settings.platformType.value)
+        config.put("platform", platform)
+
+        /*
+         * Settings that are used by LSP, but I do not yet support
+         *
+         * types
+         * /// Any definition files to load globally
+         * std::vector<std::filesystem::path> definitionFiles{};
+         * /// A list of globals to remove from the global scope. Accepts full libraries or particular functions (e.g., `table` or `table.clone`)
+         * std::vector<std::string> disabledGlobals{};
+         *
+         * diagnostics
+         * /// Whether to also compute diagnostics for dependents when a file changes
+         * bool includeDependents = true;
+         * /// Whether to compute diagnostics for a whole workspace
+         * bool workspace = false;
+         * /// Whether to use expressive DM types in the diagnostics typechecker
+         * bool strictDatamodelTypes = false;
+         *
+         * inlayHints
+         * InlayHintsParameterNamesConfig parameterNames = InlayHintsParameterNamesConfig::None;
+         * bool variableTypes = false;
+         * bool parameterTypes = false;
+         * bool functionReturnTypes = false;
+         * bool hideHintsForErrorTypes = false;
+         * bool hideHintsForMatchingParameterNames = true;
+         * size_t typeHintMaxLength = 50;
+         * /// Whether type inlay hints should be made insertable
+         * bool makeInsertable = true;
+         *
+         * hover
+         * bool enabled = true;
+         * bool showTableKinds = false;
+         * bool multilineFunctionDefinitions = false;
+         * bool strictDatamodelTypes = true;
+         * bool includeStringLength = true;
+         *
+         * completion
+         * bool enabled = true;
+         * /// Whether to automatically autocomplete end
+         * bool autocompleteEnd = false;
+         * /// Whether we should suggest automatic imports in completions
+         * /// DEPRECATED: USE `completion.imports.enabled` INSTEAD
+         * bool suggestImports = false;
+         * /// Automatic imports configuration
+         * ClientCompletionImportsConfiguration imports{};
+         * /// Automatically add parentheses to a function call
+         * bool addParentheses = true;
+         * /// If parentheses are added, include a $0 tabstop after the parentheses
+         * bool addTabstopAfterParentheses = true;
+         * /// If parentheses are added, fill call arguments with parameter names
+         * bool fillCallArguments = true;
+         * /// Whether to show non-function properties when performing a method call with a colon
+         * bool showPropertiesOnMethodCall = false;
+         * /// Enables the experimental fragment autocomplete system for performance improvements
+         * bool enableFragmentAutocomplete = false;
+         *
+         * /// Whether we should suggest automatic imports in completions
+         * bool enabled = false;
+         * /// Whether services should be suggested in auto-import
+         * bool suggestServices = true;
+         * /// Whether requires should be suggested in auto-import
+         * bool suggestRequires = true;
+         * /// The style of the auto-imported require
+         * ImportRequireStyle requireStyle = ImportRequireStyle::Auto;
+         * ClientCompletionImportsStringRequiresConfiguration stringRequires;
+         * /// Whether services and requires should be separated by an empty line
+         * bool separateGroupsWithLine = false;
+         * /// Files that match these globs will not be shown during auto-import
+         * std::vector<std::string> ignoreGlobs{};
+         *
+         * signatureHelp
+         * bool enabled = true;
+         *
+         * index
+         * /// Whether the whole workspace should be indexed. If disabled, only limited support is
+         * // available for features such as "Find All References" and "Rename"
+         * bool enabled = true;
+         * /// The maximum amount of files that can be indexed
+         * size_t maxFiles = 10000;
+         *
+         * fflags
+         *
+         * bytecode
+         */
+        return config
+
+    }
 
     override fun createCommandLine(): GeneralCommandLine {
         // A hacky way to check whether LSP configuration is correct and up to date and provide the feedback only once per LSP start.

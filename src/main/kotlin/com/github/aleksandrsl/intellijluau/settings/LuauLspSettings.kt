@@ -380,8 +380,6 @@ class LuauLspSettings(
                             settings::lspSourcemapSupportEnabled
                         ).component
                 }.topGap(TopGap.SMALL).enabledIf(!lspDisabled.selected)
-                    // TODO (AleksandrSl 12/06/2025): Make visible when I add support for lsp settings file
-                    .visible(false)
 
                 collapsibleGroup(LuauBundle.message("luau.settings.lsp.sourcemap.title")) {
                     row("Sourcemap file:") {

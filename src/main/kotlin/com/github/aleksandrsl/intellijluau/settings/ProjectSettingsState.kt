@@ -98,34 +98,41 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
 
     fun loadDefaultSettings() {
         val defaults = LuauDefaultSettingsState.getInstance().state
-        internalState.lspConfigurationType = defaults.lspConfigurationType
-        internalState.styLuaPath = defaults.styLuaPath
-        internalState.lspPath = defaults.lspPath
-
         internalState.lspVersion = defaults.lspVersion
+        internalState.lspConfigurationType = defaults.lspConfigurationType
+        internalState.lspPath = defaults.lspPath
+        internalState.lspSourcemapSupportEnabled = defaults.lspSourcemapSupportEnabled
+        internalState.lspSourcemapGenerationType = defaults.lspSourcemapGenerationType
+        internalState.lspSourcemapGenerationUseIdeaWatcher = defaults.lspSourcemapGenerationUseIdeaWatcher
         internalState.lspSourcemapGenerationCommand = defaults.lspSourcemapGenerationCommand
+        internalState.lspSourcemapFile = defaults.lspSourcemapFile
+        internalState.lspRojoProjectFile = defaults.lspRojoProjectFile
+
+        internalState.styLuaPath = defaults.styLuaPath
         internalState.runStyLua = defaults.runStyLua
         internalState.robloxSecurityLevel = defaults.robloxSecurityLevel
         internalState.customDefinitionsPaths = defaults.customDefinitionsPaths
         internalState.useLuauExtension = defaults.useLuauExtension
+        internalState.platformType = defaults.platformType
     }
 
     data class State(
-        override var lspVersion: String = Version.Latest.toString(),
-        override var lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto,
-        override var lspPath: String = "",
-        override var lspSourcemapSupportEnabled: Boolean = true,
-        override var lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Disabled,
-        override var lspSourcemapGenerationUseIdeaWatcher: Boolean = false,
-        override var lspSourcemapGenerationCommand: String = "",
-        override var lspSourcemapFile: String = "sourcemap.json",
-        override var lspRojoProjectFile: String = DEFAULT_ROJO_PROJECT_FILE,
+        override var lspVersion: String = ShareableProjectSettingsStateDefaults.lspVersion,
+        override var lspConfigurationType: LspConfigurationType = ShareableProjectSettingsStateDefaults.lspConfigurationType,
+        override var lspPath: String = ShareableProjectSettingsStateDefaults.lspPath,
+        override var lspSourcemapSupportEnabled: Boolean = ShareableProjectSettingsStateDefaults.lspSourcemapSupportEnabled,
+        override var lspSourcemapGenerationType: LspSourcemapGenerationType = ShareableProjectSettingsStateDefaults.lspSourcemapGenerationType,
+        override var lspSourcemapGenerationUseIdeaWatcher: Boolean = ShareableProjectSettingsStateDefaults.lspSourcemapGenerationUseIdeaWatcher,
+        override var lspSourcemapGenerationCommand: String = ShareableProjectSettingsStateDefaults.lspSourcemapGenerationCommand,
+        override var lspSourcemapFile: String = ShareableProjectSettingsStateDefaults.lspSourcemapFile,
+        override var lspRojoProjectFile: String = ShareableProjectSettingsStateDefaults.lspRojoProjectFile,
 
-        override var styLuaPath: String = "",
-        override var runStyLua: RunStyluaOption = RunStyluaOption.Disabled,
-        override var robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel,
-        override var customDefinitionsPaths: List<String> = listOf(),
-        override var useLuauExtension: Boolean = true,
+        override var styLuaPath: String = ShareableProjectSettingsStateDefaults.styLuaPath,
+        override var runStyLua: RunStyluaOption = ShareableProjectSettingsStateDefaults.runStyLua,
+        override var robloxSecurityLevel: RobloxSecurityLevel = ShareableProjectSettingsStateDefaults.robloxSecurityLevel,
+        override var customDefinitionsPaths: List<String> = ShareableProjectSettingsStateDefaults.customDefinitionsPaths,
+        override var useLuauExtension: Boolean = ShareableProjectSettingsStateDefaults.useLuauExtension,
+        override var platformType: PlatformType = ShareableProjectSettingsStateDefaults.platformType,
     ) : ShareableProjectSettingsState
 
     companion object {
@@ -143,8 +150,8 @@ interface ShareableProjectSettingsState {
     // TODO (AleksandrSl 24/05/2025): Support luau-lsp.sourcemap.includeNonScripts:
     //  Whether to include non script instances in the sourcemap.
     //  May be disabled for expensive DataModels later.
-    val lspSourcemapFile: String?
-    val lspRojoProjectFile: String?
+    val lspSourcemapFile: String
+    val lspRojoProjectFile: String
     val lspSourcemapGenerationUseIdeaWatcher: Boolean
     val lspSourcemapGenerationCommand: String
 
@@ -153,10 +160,34 @@ interface ShareableProjectSettingsState {
     val robloxSecurityLevel: RobloxSecurityLevel
     val customDefinitionsPaths: List<String>
     val useLuauExtension: Boolean
+    val platformType: PlatformType
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabledAndMinimallyConfigured: Boolean
         get() = lspConfigurationType == LspConfigurationType.Auto || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+}
+
+data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsState {
+    override val lspVersion: String = Version.Latest.toString()
+    override val lspConfigurationType: LspConfigurationType = LspConfigurationType.Auto
+    override val lspPath: String = ""
+    override val lspSourcemapSupportEnabled: Boolean = true
+    override val lspSourcemapGenerationType: LspSourcemapGenerationType = LspSourcemapGenerationType.Disabled
+    override val lspSourcemapGenerationUseIdeaWatcher: Boolean = false
+    override val lspSourcemapGenerationCommand: String = ""
+    override val lspSourcemapFile: String = "sourcemap.json"
+    override val lspRojoProjectFile: String = DEFAULT_ROJO_PROJECT_FILE
+
+    override val styLuaPath: String = ""
+    override val runStyLua: RunStyluaOption = RunStyluaOption.Disabled
+    override val robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel
+    override val customDefinitionsPaths: List<String> = listOf()
+    override val useLuauExtension: Boolean = true
+    override val platformType: PlatformType = PlatformType.Standard
+}
+
+enum class PlatformType(val value: String) {
+    Roblox("roblox"), Standard("standard")
 }
 
 enum class LspSourcemapGenerationType {
