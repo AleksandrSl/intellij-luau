@@ -2,11 +2,10 @@ package com.github.aleksandrsl.intellijluau.lsp
 
 import com.intellij.notification.NotificationGroup
 import com.intellij.notification.NotificationGroupManager
-import com.intellij.openapi.Disposable
 
 private const val GROUP_ID = "Luau sourcemap generation"
 
-interface SourcemapGenerator : Disposable {
+interface SourcemapGenerator {
     /**
      * Starts the sourcemap generation.
      * Idempotent: calling multiple times if already started should have no effect.
