@@ -57,6 +57,8 @@ class SourcemapGeneratorService(private val project: Project, private val corout
             oldGenerator.dispose()
         }
 
+        // TODO (AleksandrSl 17/06/2025): Do not suggest rojo more than once?
+        // Also do not suggest it if the setting has been changed to disabled from rojo for example.
         coroutineScope.launch {
             val newGenerator = determineStrategy(settings)
             if (newGenerator == null && !PropertiesComponent.getInstance(project)

@@ -100,6 +100,14 @@
                                 order="first"/>
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
     </extensions>
+    <projectListeners>
+        <listener
+                class="LuauLspManagerLspRestartListener"
+                topic="com.github.aleksandrsl.intellijluau.lsp.LuauLspManager$LspManagerChangeListener"/>
+        <listener
+                class="LuauSettingsLspRestartListener"
+                topic="com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable$SettingsChangeListener"/>
+    </projectListeners>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
                 class="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"

@@ -16,7 +16,9 @@ import com.intellij.ui.DocumentAdapter
 import com.intellij.ui.ToolbarDecorator
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.layout.selected
 import kotlinx.coroutines.launch
 import javax.swing.JComponent
 import kotlin.io.path.exists
@@ -32,6 +34,7 @@ class ProjectSettingsComponent(
     private var styLuaVersion: String? = null
     val panel: DialogPanel
     private val lspSettings = LuauLspSettings(project, settings, service.coroutineScope)
+    private lateinit var isRobloxRadioButton: JBRadioButton
 
     private val styLuaPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
@@ -67,18 +70,13 @@ class ProjectSettingsComponent(
                         radioButton(".lua", false)
                     }
                 }.bind(settings::useLuauExtension)
-            }
-            group("Roblox") {
-                row("Roblox Security Level:") {
-                    comboBox(
-                        listOf(
-                            RobloxSecurityLevel.None,
-                            RobloxSecurityLevel.PluginSecurity,
-                            RobloxSecurityLevel.LocalUserSecurity,
-                            RobloxSecurityLevel.RobloxScriptSecurity,
-                        )
-                    ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
-                }
+
+                buttonsGroup {
+                    row("Platform:") {
+                        isRobloxRadioButton = radioButton(PlatformType.Roblox.name, PlatformType.Roblox).component
+                        radioButton(PlatformType.Standard.name, PlatformType.Standard)
+                    }
+                }.bind(settings::platformType)
                 collapsibleGroup("Custom Definitions") {
                     row {
                         cell(customDefinitionsToolbar.panel).resizableColumn().align(AlignX.FILL).bind(
@@ -91,6 +89,18 @@ class ProjectSettingsComponent(
                     }
                 }
             }
+            group("Roblox") {
+                row("Roblox Security Level:") {
+                    comboBox(
+                        listOf(
+                            RobloxSecurityLevel.None,
+                            RobloxSecurityLevel.PluginSecurity,
+                            RobloxSecurityLevel.LocalUserSecurity,
+                            RobloxSecurityLevel.RobloxScriptSecurity,
+                        )
+                    ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
+                }
+            }.visibleIf(isRobloxRadioButton.selected)
             lspSettings.render(this)
             group("StyLua") {
                 row("Path to StyLua:") {
