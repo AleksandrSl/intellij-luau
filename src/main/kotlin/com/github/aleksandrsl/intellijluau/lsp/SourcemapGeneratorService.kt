@@ -39,6 +39,7 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         updateStrategyBasedOnSettings()
     }
 
+    // TODO (AleksandrSl 19/06/2025): Allow restart if the generator is configured but missing because it died
     val canRestart: Boolean
         get() = generator != null
 
@@ -54,7 +55,6 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         // Let's be simple and stop the existing and start the new one.
         if (oldGenerator != null) {
             oldGenerator.stop()
-            oldGenerator.dispose()
         }
 
         // TODO (AleksandrSl 17/06/2025): Do not suggest rojo more than once?
@@ -116,7 +116,6 @@ class SourcemapGeneratorService(private val project: Project, private val corout
 
     override fun dispose() {
         generator?.stop()
-        generator?.dispose()
         generator = null
     }
 

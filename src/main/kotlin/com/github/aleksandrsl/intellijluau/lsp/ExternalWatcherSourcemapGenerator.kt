@@ -3,8 +3,8 @@ package com.github.aleksandrsl.intellijluau.lsp
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.showNotification
+import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessEvent
-import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessListener
 import com.intellij.execution.process.ProcessOutputTypes
 import com.intellij.notification.NotificationAction
@@ -18,7 +18,7 @@ import kotlinx.coroutines.launch
 open class ExternalWatcherSourcemapGenerator(private val project: Project, private val coroutineScope: CoroutineScope) :
     SourcemapGenerator {
 
-    private var processHandler: ProcessHandler? = null
+    private var processHandler: OSProcessHandler? = null
     open val name: String = ""
 
     override fun start() {
@@ -31,7 +31,7 @@ open class ExternalWatcherSourcemapGenerator(private val project: Project, priva
         return processHandler != null && !processHandler!!.isProcessTerminated
     }
 
-    protected open fun createProcess(): ProcessHandler {
+    protected open fun createProcess(): OSProcessHandler {
         return SourcemapGeneratorCli.createProcess(project)
     }
 
@@ -93,10 +93,6 @@ open class ExternalWatcherSourcemapGenerator(private val project: Project, priva
                 )
             }
         }
-    }
-
-    override fun dispose() {
-        stop()
     }
 }
 

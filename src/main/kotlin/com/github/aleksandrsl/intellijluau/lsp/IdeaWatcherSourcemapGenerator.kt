@@ -148,8 +148,4 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
             ShowSettingsUtil.getInstance().showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
         }).notify(project)
     }
-
-    override fun dispose() {
-        stop()
-    }
 }
