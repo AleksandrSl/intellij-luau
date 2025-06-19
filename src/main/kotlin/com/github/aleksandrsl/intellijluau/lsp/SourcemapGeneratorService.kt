@@ -31,8 +31,8 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         messageBusConnection = project.messageBus.connect(this)
         messageBusConnection?.subscribe(
             ProjectSettingsConfigurable.TOPIC, object : ProjectSettingsConfigurable.SettingsChangeListener {
-                override fun settingsChanged(e: ProjectSettingsConfigurable.SettingsChangedEvent) {
-                    updateStrategyBasedOnSettings(e)
+                override fun settingsChanged(event: ProjectSettingsConfigurable.SettingsChangedEvent) {
+                    updateStrategyBasedOnSettings(event)
                 }
             })
 
@@ -57,6 +57,8 @@ class SourcemapGeneratorService(private val project: Project, private val corout
             oldGenerator.dispose()
         }
 
+        // TODO (AleksandrSl 17/06/2025): Do not suggest rojo more than once?
+        // Also do not suggest it if the setting has been changed to disabled from rojo for example.
         coroutineScope.launch {
             val newGenerator = determineStrategy(settings)
             if (newGenerator == null && !PropertiesComponent.getInstance(project)
@@ -83,7 +85,7 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     }
 
     private suspend fun determineStrategy(settings: ProjectSettingsState): SourcemapGenerator? {
-        if (!settings.lspSourcemapSupportEnabled || !settings.isLspEnabled || !project.hasLuauFiles()) {
+        if (!settings.lspSourcemapSupportEnabled || !settings.isLspEnabledAndMinimallyConfigured || !project.hasLuauFiles()) {
             return null
         }
 

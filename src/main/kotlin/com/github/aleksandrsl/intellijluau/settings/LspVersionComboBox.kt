@@ -15,7 +15,7 @@ import com.intellij.ui.MutableCollectionComboBoxModel
 class LspVersionComboBox(
     installedVersions: List<Version.Semantic>,
     versionsForDownload: List<Version.Semantic>,
-    selectedVersion: Version?,
+    selectedVersion: Version,
     val download: (version: Version.Semantic, afterUpdate: () -> Unit) -> Unit
 ) :
     ComboBox<Item>() {
@@ -50,7 +50,7 @@ class LspVersionComboBox(
         installedVersions: List<Version.Semantic>,
         versionsForDownload: List<Version.Semantic> = listOf()
     ) {
-        val selectedVersion = getSelectedVersion()
+        val selectedVersion = (selectedItem as? Item.VersionItem<*>)?.version
         _model.replaceAll(
             listOf(Item.LatestVersion).plus(
                 installedVersions.sortedDescending()
@@ -64,24 +64,14 @@ class LspVersionComboBox(
                         })
         )
 
-        if (selectedVersion != null) {
-            val itemToSelect = _model.items
-                .filterIsInstance<Item.VersionItem<Version>>()
-                .find { it.version == selectedVersion }
-
-            if (itemToSelect != null) {
-                selectedItem = itemToSelect
-            } else if (model.size > 0) {
-                selectedIndex = 0
-            }
-        }
+        val itemToSelect = _model.items
+            .filterIsInstance<Item.VersionItem<Version>>()
+            .find { it.version == selectedVersion }
+        selectedItem = itemToSelect ?: _model.items.first()
     }
 
     // Helper to set the initial version (I don't want to create an Item manually)
-    fun setSelectedVersion(version: Version?) {
-        if (version == null) {
-            selectedItem = null
-        }
+    fun setSelectedVersion(version: Version) {
         val itemToSelect = _model.items
             .filterIsInstance<Item.VersionItem<Version>>()
             .find { it.version == version }
@@ -99,8 +89,8 @@ class LspVersionComboBox(
     /**
      * Get the currently selected version or null if no version is selected
      */
-    fun getSelectedVersion(): Version? {
-        return (selectedItem as? Item.VersionItem<*>)?.version
+    fun getSelectedVersion(): Version {
+        return (selectedItem as? Item.VersionItem<*>)!!.version
     }
 
     sealed class Item {

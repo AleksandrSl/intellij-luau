@@ -46,7 +46,7 @@ open class ExternalWatcherSourcemapGenerator(private val project: Project, priva
             processHandler?.startNotify()
             SourcemapGenerator.notifications()
                 // TODO (AleksandrSl 10/06/2025): Capitalize
-                .showNotification("$name sourcemap watcher started", NotificationType.INFORMATION, project)
+                .showNotification("$name sourcemap generator started", NotificationType.INFORMATION, project)
         } catch (e: Exception) {
             SourcemapGenerator.notifications().showNotification(
                 LuauBundle.message("luau.sourcemap.generation.failed"),
@@ -63,7 +63,7 @@ open class ExternalWatcherSourcemapGenerator(private val project: Project, priva
             if (!it.isProcessTerminated) {
                 it.destroyProcess() // Or detachProcess() + terminate gracefully
                 SourcemapGenerator.notifications().showNotification(
-                    "$name sourcemap watcher stopped", NotificationType.INFORMATION, project
+                    "$name sourcemap generator stopped", NotificationType.INFORMATION, project
                 )
             }
         }
@@ -89,7 +89,7 @@ open class ExternalWatcherSourcemapGenerator(private val project: Project, priva
                 }
             } else {
                 SourcemapGenerator.notifications().showNotification(
-                    "$name sourcemap watcher finished", NotificationType.INFORMATION, project
+                    "$name sourcemap generator finished", NotificationType.INFORMATION, project
                 )
             }
         }
