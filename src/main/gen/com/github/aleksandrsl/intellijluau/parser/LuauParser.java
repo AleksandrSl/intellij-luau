@@ -3394,7 +3394,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end')
+  // !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | 'end' | 'until' | 'elseif' | 'else' | last_statement_first)
   static boolean type_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_recover")) return false;
     boolean r;
@@ -3404,7 +3404,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     return r;
   }
 
-  // ')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end'
+  // ')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | 'end' | 'until' | 'elseif' | 'else' | last_statement_first
   private static boolean type_recover_0(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_recover_0")) return false;
     boolean r;
@@ -3417,8 +3417,11 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeTokenFast(b, ASSIGN);
     if (!r) r = type_first(b, l + 1);
     if (!r) r = statement_first(b, l + 1);
-    if (!r) r = last_statement_first(b, l + 1);
     if (!r) r = consumeTokenFast(b, END);
+    if (!r) r = consumeTokenFast(b, UNTIL);
+    if (!r) r = consumeTokenFast(b, ELSEIF);
+    if (!r) r = consumeTokenFast(b, ELSE);
+    if (!r) r = last_statement_first(b, l + 1);
     return r;
   }
 
