@@ -82,7 +82,9 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         val newGenerator = determineStrategy(settings)
         // If there is a change, then the settings were updated, so the user chose the value on purpose, no reason to suggest rojo
         if (newGenerator == null && change == null && !PropertiesComponent.getInstance(project)
-                .getBoolean(ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME) && RojoSourcemapGenerator.canUseRojo(project)
+                .getBoolean(ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME) && doesSourcemapGenerationMakeSense(settings) && RojoSourcemapGenerator.canUseRojo(
+                project
+            )
         ) {
             suggestRojo()
         }
@@ -133,7 +135,7 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     }
 
     private suspend fun determineStrategy(settings: ProjectSettingsState.State): SourcemapGenerator? {
-        if (!settings.lspSourcemapSupportEnabled || !settings.isLspEnabledAndMinimallyConfigured || !project.hasLuauFiles()) {
+        if (!doesSourcemapGenerationMakeSense(settings)) {
             return null
         }
 
@@ -161,6 +163,10 @@ class SourcemapGeneratorService(private val project: Project, private val corout
 
     // TODO (AleksandrSl 27/05/2025): Do I really need this?
     private fun CoroutineScope.createChildScope() = CoroutineScope(this.coroutineContext + SupervisorJob())
+
+    private suspend fun doesSourcemapGenerationMakeSense(settings: ProjectSettingsState.State): Boolean {
+        return settings.isLspEnabledAndMinimallyConfigured && settings.lspSourcemapSupportEnabled && project.hasLuauFiles()
+    }
 
     override fun dispose() {
         messageBusConnection?.disconnect()
