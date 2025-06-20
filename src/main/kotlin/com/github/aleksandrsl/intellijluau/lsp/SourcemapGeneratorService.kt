@@ -103,7 +103,7 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         } else if (oldGenerator != null) {
             SourcemapGenerator.notifications()
                 .showProjectNotification(
-                    "${oldGenerator.name} sourcemap generator restarted".capitalize(),
+                    "${oldGenerator.name} sourcemap generator stopped".capitalize(),
                     NotificationType.INFORMATION,
                     project
                 )
