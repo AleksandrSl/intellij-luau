@@ -53,6 +53,8 @@ private const val LSP_DOWNLOAD_BASE_URL = "https://github.com/$LSP_REPO/releases
 private const val LSP_RELEASE_NOTES_BASE_URL = "https://github.com/$LSP_REPO/releases/tag"
 private const val USER_AGENT = "IntelliJ Luau Plugin (https://github.com/AleksandrSl/intellij-luau)"
 private const val LATEST_INSTALLED_LSP_VERSION_KEY = "com.github.aleksandrsl.intellijluau.latestInstalledLspVersion"
+private const val API_DOCS = "https://luau-lsp.pages.dev/api-docs/en-us.json"
+private const val API_DOCS_JSON = "api-docs.json"
 
 @Suppress("PropertyName")
 @Serializable
@@ -192,18 +194,14 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         return robloxGlobalTypesPath.resolve("globalTypes.${securityLevel}.d.luau")
     }
 
-    // TODO (AleksandrSl 16/06/2025):
-    //  1. Check how reliable file creation date is. If it's that bad
-    //  2. Save the time when the last update of apis was in the properties service or use @Storage(StoragePathMacros.CACHE_FILE)
-    //  3. Trigger api update check every time lsp is started.
-    fun downloadRobloxApiDefinitions(project: Project) {
+    fun downloadRobloxApiDefinitionsAndDocs(project: Project) {
         // Looks funky that I run things using project in the Application scope. But I don't have project scope anywhere near.
         coroutineScope.launch {
-            internalDownloadRobloxApiDefinitions(project)
+            internalDownloadRobloxApiDefinitionsAndDocs(project)
         }
     }
 
-    private suspend fun internalDownloadRobloxApiDefinitions(project: Project): DownloadResult {
+    private suspend fun internalDownloadRobloxApiDefinitionsAndDocs(project: Project): DownloadResult {
         return withBackgroundProgress(project, LuauBundle.message("luau.roblox.api.definitions.downloading")) {
             withContext(Dispatchers.IO) {
                 try {
@@ -213,7 +211,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                         service.createFileDescription(
                             "https://luau-lsp.pages.dev/type-definitions/$name", name
                         )
-                    }
+                    }.toMutableList().plus(service.createFileDescription(API_DOCS, API_DOCS_JSON))
 
                     val downloader = service.createDownloader(descriptions, LuauBundle.message("luau.lsp.downloading"))
                     val downloadDirectory = downloadPath().toFile()
@@ -236,15 +234,15 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         }
     }
 
-
     /**
      * Check for updates once a day or if the files are missing
      */
-    private fun checkAndUpdateRobloxApiDefinitionsIfNeeded(project: Project) {
+    private fun checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(project: Project) {
         val missingDeclarations =
             !getGlobalTypes(ProjectSettingsState.getInstance(project).robloxSecurityLevel).exists()
-        if (missingDeclarations || System.currentTimeMillis() - LuauConfigurationCacheService.getInstance().state.lastApiDefinitionsUpdateTime > API_DEFINITIONS_UPDATE_INTERVAL_MS) {
-            downloadRobloxApiDefinitions(project)
+        val missingDocs = !robloxApiDocsPath.exists()
+        if (missingDeclarations || missingDocs || System.currentTimeMillis() - LuauConfigurationCacheService.getInstance().state.lastApiDefinitionsUpdateTime > API_DEFINITIONS_UPDATE_INTERVAL_MS) {
+            downloadRobloxApiDefinitionsAndDocs(project)
         }
     }
 
@@ -310,8 +308,6 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
     // Temporary path to store the downloaded files before they are moved to the target directory.
     private fun downloadPath(): Path = Paths.get(PathManager.getTempPath())
-    private val robloxGlobalTypesPath
-        get(): Path = basePath.resolve("roblox").resolve("globalTypes")
 
     // Get a directory where a specific version of LSP lies
     private fun path(version: Version.Semantic): Path = lspStorageDirPath.resolve(versionToDirName(version))
@@ -328,7 +324,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     // I want to check that LSP binary is downloaded according to the settings. If the binary is not there, I want to show the notification.
     // I want to check it only once before the LSP is started the first time or a project is open (in this case, it would be good to know it's a luau project).
     fun checkLsp(project: Project) {
-        checkAndUpdateRobloxApiDefinitionsIfNeeded(project)
+        checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(project)
         val settings = ProjectSettingsState.getInstance(project)
         if (settings.lspConfigurationType != LspConfigurationType.Auto) return
         coroutineScope.launch(Dispatchers.IO) {
@@ -483,12 +479,18 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             }
         }
 
-        val basePath
+        val basePath: Path
             get() = Paths.get(PathManager.getSystemPath()).resolve("intellij-luau")
 
         // Directory with all the LSPs
-        val lspStorageDirPath
-            get() = Paths.get(PathManager.getSystemPath()).resolve("intellij-luau").resolve("lsp")
+        val lspStorageDirPath: Path
+            get() = basePath.resolve("lsp")
+
+        val robloxApiDocsPath: Path
+            get() = robloxGlobalTypesPath.resolve(API_DOCS_JSON)
+
+        private val robloxGlobalTypesPath: Path
+            get() = basePath.resolve("roblox").resolve("globalTypes")
     }
 }
 
