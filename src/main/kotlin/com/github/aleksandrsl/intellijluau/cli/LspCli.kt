@@ -1,11 +1,13 @@
 package com.github.aleksandrsl.intellijluau.cli
 
 import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
+import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager.Companion.robloxApiDocsPath
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+import kotlin.io.path.exists
 
 private val LOG = logger<LspCli>()
 
@@ -23,6 +25,10 @@ class LspCli(private val project: Project, private val lspConfiguration: LspConf
             addParameter("lsp")
             lspConfiguration.definitions.forEach {
                 addParameter("--definitions")
+                addParameter(it.toString())
+            }
+            robloxApiDocsPath.takeIf { it.exists() }?.let {
+                addParameter("--docs")
                 addParameter(it.toString())
             }
         }
