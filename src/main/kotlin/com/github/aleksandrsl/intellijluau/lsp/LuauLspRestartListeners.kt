@@ -20,7 +20,7 @@ class LuauLspManagerLspRestartListener(val project: Project) : LuauLspManager.Ls
     override fun settingsChanged(event: LuauLspManager.LspManagerChangedEvent) {
         when (event) {
             is LuauLspManager.LspManagerChangedEvent.ApiDefinitionsUpdated -> {
-                project.restartLspServerAsync("Roblox api definitions were updated")
+                project.restartLspServerAsyncIfNeeded("Roblox api definitions were updated")
             }
 
             is LuauLspManager.LspManagerChangedEvent.NewLspVersionDownloaded -> {
@@ -31,12 +31,12 @@ class LuauLspManagerLspRestartListener(val project: Project) : LuauLspManager.Ls
                 if (settings.lspVersion == Version.Latest) {
                     val latest = LuauLspManager.getLatestInstalledLspVersion()
                     if (latest == null || event.version >= latest) {
-                        project.restartLspServerAsync("LSP is updated to ${event.version}")
+                        project.restartLspServerAsyncIfNeeded("LSP is updated to ${event.version}")
                     }
                     return
                 }
                 if (settings.lspVersion == event.version) {
-                    project.restartLspServerAsync("LSP binary is downloaded")
+                    project.restartLspServerAsyncIfNeeded("LSP binary is downloaded")
                 }
             }
         }
@@ -54,17 +54,29 @@ class LuauSettingsLspRestartListener(val project: Project) : ProjectSettingsConf
             || event.isChanged(ProjectSettingsState.State::lspSourcemapSupportEnabled)
             || event.isChanged(ProjectSettingsState.State::lspSourcemapFile)
         ) {
-            project.restartLspServerAsync("Project settings changed")
+            project.restartLspServerAsyncIfNeeded("Project settings changed")
         }
     }
 }
 
-private fun Project.restartLspServerAsync(reason: String?) {
-    if (reason != null) {
-        LuauNotifications.pluginNotifications()
-            .showProjectNotification("Luau LSP is restarted", reason, NotificationType.INFORMATION, this)
-    }
+private fun Project.restartLspServerAsyncIfNeeded(reason: String?) {
     ApplicationManager.getApplication().invokeLater({
+        if (reason != null) {
+            val hasServer =
+                LspServerManager.getInstance(this).getServersForProvider(LuauLspServerSupportProvider::class.java)
+                    .isNotEmpty()
+
+            // This doesn't mean that the server will actually start, but the intention was to start it.
+            val message: String? = if (ProjectSettingsState.getInstance(this).isLspEnabledAndMinimallyConfigured) {
+                if (hasServer) "Luau LSP is restarted" else "Luau LSP is started"
+            } else {
+                if (hasServer) "Luau LSP is stopped" else null
+            }
+            if (message != null) {
+                LuauNotifications.pluginNotifications()
+                    .showProjectNotification(message, "Reason: $reason", NotificationType.INFORMATION, this)
+            }
+        }
         LspServerManager.getInstance(this).stopAndRestartIfNeeded(LuauLspServerSupportProvider::class.java)
     }, this.disposed)
 }
