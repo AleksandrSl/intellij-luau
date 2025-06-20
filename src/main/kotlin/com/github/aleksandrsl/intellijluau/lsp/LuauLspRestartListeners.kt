@@ -1,11 +1,14 @@
 @file:Suppress("UnstableApiUsage")
 
+import com.github.aleksandrsl.intellijluau.LuauNotifications
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspServerSupportProvider
 import com.github.aleksandrsl.intellijluau.settings.LspConfigurationType
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.showProjectNotification
 import com.github.aleksandrsl.intellijluau.util.Version
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -17,7 +20,7 @@ class LuauLspManagerLspRestartListener(val project: Project) : LuauLspManager.Ls
     override fun settingsChanged(event: LuauLspManager.LspManagerChangedEvent) {
         when (event) {
             is LuauLspManager.LspManagerChangedEvent.ApiDefinitionsUpdated -> {
-                project.restartIfNeeded("Roblox api definitions were updated")
+                project.restartLspServerAsync("Roblox api definitions were updated")
             }
 
             is LuauLspManager.LspManagerChangedEvent.NewLspVersionDownloaded -> {
@@ -28,12 +31,12 @@ class LuauLspManagerLspRestartListener(val project: Project) : LuauLspManager.Ls
                 if (settings.lspVersion == Version.Latest) {
                     val latest = LuauLspManager.getLatestInstalledLspVersion()
                     if (latest == null || event.version >= latest) {
-                        project.restartIfNeeded("LSP is updated")
+                        project.restartLspServerAsync("LSP is updated to ${event.version}")
                     }
                     return
                 }
                 if (settings.lspVersion == event.version) {
-                    project.restartIfNeeded("LSP is downloaded")
+                    project.restartLspServerAsync("LSP binary is downloaded")
                 }
             }
         }
@@ -41,7 +44,6 @@ class LuauLspManagerLspRestartListener(val project: Project) : LuauLspManager.Ls
 }
 
 class LuauSettingsLspRestartListener(val project: Project) : ProjectSettingsConfigurable.SettingsChangeListener {
-    // TODO (AleksandrSl 19/06/2025): Unless I implement runtime update of settings in LSP I need to restart it on couple more property changes
     override fun settingsChanged(event: ProjectSettingsConfigurable.SettingsChangedEvent) {
         if (event.isChanged(ProjectSettingsState.State::lspPath)
             || event.isChanged(ProjectSettingsState.State::lspVersion)
@@ -49,25 +51,20 @@ class LuauSettingsLspRestartListener(val project: Project) : ProjectSettingsConf
             || event.isChanged(ProjectSettingsState.State::customDefinitionsPaths)
             || event.isChanged(ProjectSettingsState.State::lspConfigurationType)
             || event.isChanged(ProjectSettingsState.State::platformType)
+            || event.isChanged(ProjectSettingsState.State::lspSourcemapSupportEnabled)
+            || event.isChanged(ProjectSettingsState.State::lspSourcemapFile)
         ) {
-            project.restartIfNeeded("Project settings changed")
+            project.restartLspServerAsync("Project settings changed")
         }
     }
 }
 
-private fun Project.restartLspServerAsync() {
+private fun Project.restartLspServerAsync(reason: String?) {
+    if (reason != null) {
+        LuauNotifications.pluginNotifications()
+            .showProjectNotification("Luau LSP is restarted", reason, NotificationType.INFORMATION, this)
+    }
     ApplicationManager.getApplication().invokeLater({
         LspServerManager.getInstance(this).stopAndRestartIfNeeded(LuauLspServerSupportProvider::class.java)
     }, this.disposed)
-}
-
-private fun Project.restartIfNeeded(reason: String) {
-    val settings = ProjectSettingsState.getInstance(this)
-
-    if (settings.isLspEnabledAndMinimallyConfigured) {
-        LOG.info("Restarting LSP for project ${this.name}: $reason")
-        restartLspServerAsync()
-    } else {
-        LOG.debug("LSP restart skipped for project ${this.name}: LSP not properly configured")
-    }
 }
