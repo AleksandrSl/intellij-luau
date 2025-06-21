@@ -9,8 +9,7 @@ import com.intellij.openapi.project.DumbAwareAction
 import com.intellij.openapi.project.Project
 
 class UpdateRobloxApiDefinitionsAndDocsAction :
-// TODO (AleksandrSl 16/06/2025): Get roblox icon
-    DumbAwareAction(LuauBundle.message("luau.action.update.roblox.api.definitions"), null, LuauIcons.FILE) {
+    DumbAwareAction(LuauBundle.message("luau.action.update.roblox.api.definitions"), null, LuauIcons.ROBLOX) {
     override fun actionPerformed(event: AnActionEvent) {
         val project: Project = event.project ?: return
         LuauLspManager.getInstance().downloadRobloxApiDefinitionsAndDocs(project)
