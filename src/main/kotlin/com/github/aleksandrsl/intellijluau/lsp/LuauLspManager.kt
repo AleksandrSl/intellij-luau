@@ -3,10 +3,8 @@ package com.github.aleksandrsl.intellijluau.lsp
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauNotifications
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager.CheckLspResult.*
-import com.github.aleksandrsl.intellijluau.settings.LspConfigurationType
-import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
-import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
-import com.github.aleksandrsl.intellijluau.settings.RobloxSecurityLevel
+import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager.Companion.robloxApiDocsPath
+import com.github.aleksandrsl.intellijluau.settings.*
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.google.gson.JsonSyntaxException
 import com.intellij.ide.util.PropertiesComponent
@@ -541,7 +539,7 @@ sealed class LspConfiguration() {
     class Manual(project: Project) : Enabled(project) {
         override val executablePath: Path?
             get() {
-                return ProjectSettingsState.getInstance(project).lspPath.toNioPathOrNull()
+                return settings.lspPath.toNioPathOrNull()
             }
         override val isReady: Boolean = true
     }
@@ -549,7 +547,7 @@ sealed class LspConfiguration() {
     class Auto(project: Project) : Enabled(project) {
         // The cache should be set when LSP is downloaded the first time,
         // after that I assume that if LSP is missing, it's an error, so we should try to run it and throw.
-        val version: Version.Semantic? = ProjectSettingsState.getInstance(project).lspVersion.let {
+        val version: Version.Semantic? = settings.lspVersion.let {
             it as? Version.Semantic ?: LuauLspManager.getLatestInstalledLspVersion()
         }
 
@@ -562,16 +560,20 @@ sealed class LspConfiguration() {
     sealed class Enabled(val project: Project) : LspConfiguration() {
         abstract val executablePath: Path?
         val definitions: List<Path>
-            get() {
-                val typesPath = project.getGlobalTypesOrBuiltin()
-                if (typesPath == null) {
-                    return customDeclarations
+            get() = customDeclarations.toMutableList().apply {
+                if (settings.state.platformType == PlatformType.Roblox) {
+                    project.getGlobalTypesOrBuiltin()?.also {
+                        add(it)
+                    }
                 }
-                return customDeclarations.plusElement(typesPath)
             }
+        val docs: List<Path>
+            get() = if (settings.state.platformType == PlatformType.Roblox) listOf(robloxApiDocsPath) else emptyList()
         abstract val isReady: Boolean
-        internal val customDeclarations: List<Path>
-            get() = ProjectSettingsState.getInstance(project).customDefinitionsPaths.mapNotNull { it.toNioPathOrNull() }
+        private val customDeclarations: List<Path>
+            get() = settings.customDefinitionsPaths.mapNotNull { it.toNioPathOrNull() }
+        protected val settings
+            get() = ProjectSettingsState.getInstance(project)
     }
 
     data object Disabled : LspConfiguration()
