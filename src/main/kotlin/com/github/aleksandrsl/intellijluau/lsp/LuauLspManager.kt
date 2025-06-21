@@ -322,8 +322,10 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     // I want to check that LSP binary is downloaded according to the settings. If the binary is not there, I want to show the notification.
     // I want to check it only once before the LSP is started the first time or a project is open (in this case, it would be good to know it's a luau project).
     fun checkLsp(project: Project) {
-        checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(project)
         val settings = ProjectSettingsState.getInstance(project)
+        if (settings.state.platformType == PlatformType.Roblox) {
+            checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(project)
+        }
         if (settings.lspConfigurationType != LspConfigurationType.Auto) return
         coroutineScope.launch(Dispatchers.IO) {
             val checkResult = withBackgroundProgress(project, LuauBundle.message("luau.lsp.check")) {
