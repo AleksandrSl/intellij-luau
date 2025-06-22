@@ -1,6 +1,7 @@
 package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.lsp.DEFAULT_ROJO_PROJECT_FILE
+import com.github.aleksandrsl.intellijluau.lsp.LuauLspPlatformSupportChecker
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
@@ -164,7 +165,7 @@ interface ShareableProjectSettingsState {
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabledAndMinimallyConfigured: Boolean
-        get() = lspConfigurationType == LspConfigurationType.Auto || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+        get() = LuauLspPlatformSupportChecker.isLspSupported &&  lspConfigurationType == LspConfigurationType.Auto || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
 }
 
 data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsState {
