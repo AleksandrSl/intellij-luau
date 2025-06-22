@@ -3,7 +3,7 @@ package com.github.aleksandrsl.intellijluau.settings
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
-import com.github.aleksandrsl.intellijluau.lsp.LspPlatformCompatibility
+import com.github.aleksandrsl.intellijluau.lsp.LuauLspPlatformSupportChecker
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -34,7 +34,7 @@ class ProjectSettingsComponent(
 ) {
     private var styLuaVersion: String? = null
     val panel: DialogPanel
-    private val lspSettings = if (LspPlatformCompatibility.isLspSupported) LuauLspSettings(
+    private val lspSettings = if (LuauLspPlatformSupportChecker.isLspSupported) LuauLspSettings(
         project,
         settings,
         service.coroutineScope
