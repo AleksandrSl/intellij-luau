@@ -45,6 +45,8 @@ abstract class LuauBlockImplMixin(node: ASTNode) : ASTWrapperPsiElement(node), L
                     is LuauFuncDefStatement -> yield(child as LuauNamedElement)
 
                     // TODO (AleksandrSl 22/04/2025): I don't believe I correctly implemented name for this one.
+                    // I implemented name, but declarations of methods should be scoped,
+                    // and I don't know yet how to process them correctly.
                     is LuauMethodDefStatement -> null
 
                     else -> null
