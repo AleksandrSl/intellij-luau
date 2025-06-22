@@ -99,6 +99,7 @@
                                 implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"
                                 order="first"/>
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
+        <breadcrumbsInfoProvider implementation="com.github.aleksandrsl.intellijluau.codeInsight.LuauBreadcrumbsProvider"/>
     </extensions>
     <projectListeners>
         <listener
