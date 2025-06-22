@@ -1,6 +1,6 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
-object LspPlatformCompatibility {
+object LuauLspPlatformSupportChecker {
     val isLspSupported: Boolean by lazy {
         try {
             Class.forName("com.intellij.platform.lsp.api.LspServerSupportProvider")
