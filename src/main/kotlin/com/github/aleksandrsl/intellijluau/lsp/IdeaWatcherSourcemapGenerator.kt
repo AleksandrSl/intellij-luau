@@ -44,7 +44,7 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
 
     override fun start() {
         if (projectDir == null) {
-            LuauNotifications.pluginNotifications().showProjectNotification(
+            SourcemapGenerator.notifications().showProjectNotification(
                 "Cannot guess the project root. You're unlucky", NotificationType.ERROR, project
             )
             return
