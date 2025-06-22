@@ -51,4 +51,8 @@ public class LuauMethodDefStatementImpl extends LuauNamedElementImpl implements 
     return LuauPsiImplUtilKt.getPresentation(this);
   }
 
+  @Override
+  public @Nullable PsiElement getNameIdentifier() {
+    return LuauPsiImplUtilKt.getNameIdentifier(this);
+  }
 }

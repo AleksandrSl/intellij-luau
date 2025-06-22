@@ -21,7 +21,11 @@ open class LuauNamedElementImpl(node: ASTNode) : ASTWrapperPsiElement(node), Lua
         if (keyNode != null) {
             // We use this for things other than local variable, but the psi element is the same
             val property = createIdentifier(node.psi.project, name)
-            node.replaceChild(keyNode.node, property.node)
+            // Using just node doesn't work if nameIdentifier is nested.
+            // (There is an assert replaceChild that the new parent is this)
+            // Could be solved by override for method, or by getting an exact parent.
+            // Since getting a parent should be a cheap operation I think that's better choice.
+            keyNode.parent.node.replaceChild(keyNode.node, property.node)
         }
         return node.psi
     }

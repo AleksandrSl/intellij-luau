@@ -281,7 +281,7 @@ local_func_def_statement ::= attributes? 'local' 'function' ID func_body {
 // TODO (AleksandrSl 22/04/2025): Fix the fact that the first ID probably considered the name, but it should be the last one
 method_def_statement ::= attributes? 'function' method_name func_body {
   pin = 3;
-  methods=[getPresentation];
+  methods=[getPresentation getNameIdentifier];
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
   implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
 }
