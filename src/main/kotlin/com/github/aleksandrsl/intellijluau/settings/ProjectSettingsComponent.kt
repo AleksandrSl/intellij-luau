@@ -3,6 +3,7 @@ package com.github.aleksandrsl.intellijluau.settings
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.LuauCliService
 import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
+import com.github.aleksandrsl.intellijluau.lsp.LspPlatformCompatibility
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -33,7 +34,11 @@ class ProjectSettingsComponent(
 ) {
     private var styLuaVersion: String? = null
     val panel: DialogPanel
-    private val lspSettings = LuauLspSettings(project, settings, service.coroutineScope)
+    private val lspSettings = if (LspPlatformCompatibility.isLspSupported) LuauLspSettings(
+        project,
+        settings,
+        service.coroutineScope
+    ) else null
     private lateinit var isRobloxRadioButton: JBRadioButton
 
     private val styLuaPathComponent = TextFieldWithBrowseButton().apply {
@@ -101,7 +106,7 @@ class ProjectSettingsComponent(
                     ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
                 }
             }.visibleIf(isRobloxRadioButton.selected)
-            lspSettings.render(this)
+            lspSettings?.render(this)
             group("StyLua") {
                 row("Path to StyLua:") {
                     cell(styLuaPathComponent).align(AlignX.FILL).resizableColumn().bindText(settings::styLuaPath)

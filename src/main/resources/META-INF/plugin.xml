@@ -69,14 +69,8 @@
         <notificationGroup id="Luau notifications"
                            displayType="BALLOON"
                            key="luau.notification.group.name"/>
-        <notificationGroup id="Luau sourcemap generation"
-                           displayType="BALLOON"
-                           key="luau.notification.group.sourcemap.name"/>
-        <backgroundPostStartupActivity
-                implementation="com.github.aleksandrsl.intellijluau.lsp.SourcemapGeneratorStartupActivity"/>
         <postStartupActivity
                 implementation="com.github.aleksandrsl.intellijluau.settings.DefaultSettingsStartupActivity"/>
-
         <actionOnSaveInfoProvider
                 id="LuauOnSaveActionInfoProvider"
                 order="after FormatOnSaveInfoProvider"
@@ -91,6 +85,9 @@
         <additionalTextAttributes
                 scheme="Darcula"
                 file="colorSchemes/luauDarcula.xml"/>
+        <additionalTextAttributes
+                scheme="Dark"
+                file="colorSchemes/luauDarcula.xml"/>
         <projectService serviceImplementation="com.github.aleksandrsl.intellijluau.LuauStdLibServiceImpl"
                         testServiceImplementation="com.github.aleksandrsl.intellijluau.LuauStdLibServiceTestImpl"
                         serviceInterface="com.github.aleksandrsl.intellijluau.LuauStdLibService"
@@ -101,14 +98,6 @@
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
         <breadcrumbsInfoProvider implementation="com.github.aleksandrsl.intellijluau.codeInsight.LuauBreadcrumbsProvider"/>
     </extensions>
-    <projectListeners>
-        <listener
-                class="LuauLspManagerLspRestartListener"
-                topic="com.github.aleksandrsl.intellijluau.lsp.LuauLspManager$LspManagerChangeListener"/>
-        <listener
-                class="LuauSettingsLspRestartListener"
-                topic="com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable$SettingsChangeListener"/>
-    </projectListeners>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
                 class="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
@@ -119,11 +108,5 @@
                 id="luau.newFile">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
-        <action id="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
-                class="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
-        />
-        <action id="com.github.aleksandrsl.intellijluau.actions.UpdateRobloxApiDefinitionsAndDocsAction"
-                class="com.github.aleksandrsl.intellijluau.actions.UpdateRobloxApiDefinitionsAndDocsAction"
-        />
     </actions>
 </idea-plugin>
