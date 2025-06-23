@@ -97,6 +97,10 @@
                                 order="first"/>
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
         <breadcrumbsInfoProvider implementation="com.github.aleksandrsl.intellijluau.codeInsight.LuauBreadcrumbsProvider"/>
+        <defaultLiveTemplates file="/liveTemplates/luau.xml"/>
+        <liveTemplateContext
+                contextId="LUAU"
+                implementation="com.github.aleksandrsl.intellijluau.codeInsight.template.LuauTemplateContext"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
