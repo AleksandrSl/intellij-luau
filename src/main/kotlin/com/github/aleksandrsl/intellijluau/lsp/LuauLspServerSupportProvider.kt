@@ -17,8 +17,8 @@ import com.intellij.platform.lsp.api.LspServer
 import com.intellij.platform.lsp.api.LspServerSupportProvider
 import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
 import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
+import org.eclipse.lsp4j.ClientCapabilities
 import org.eclipse.lsp4j.ConfigurationItem
-import org.eclipse.lsp4j.InitializeParams
 
 private val LOG = logger<LuauLspServerSupportProvider>()
 
@@ -52,11 +52,14 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
 ) {
     override fun isSupportedFile(file: VirtualFile) = file.fileType == LuauFileType
 
-    override fun createInitializeParams(): InitializeParams {
-        return super.createInitializeParams().apply {
-            capabilities.workspace.configuration = true
+    override val clientCapabilities: ClientCapabilities
+        get() = super.clientCapabilities.apply {
+            workspace.configuration = true
+            // In 2025.1 there was added the `"diagnostic":{"dynamicRegistration":true}` config, which turns off the legacy publishDiagnostics
+            // https://platform.jetbrains.com/t/lsp-diagnostics-change-in-2025-1/2124
+            // So I remove this config to have the old way of showing errors, until I figure out what the new one is.
+            textDocument.diagnostic = null
         }
-    }
 
     /*
      * See https://github.com/JohnnyMorganz/luau-lsp/blob/248ed7bd11dde2059d8fe00235776895738c5a16/src/include/LSP/ClientConfiguration.hpp for details
@@ -161,7 +164,6 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
          * bytecode
          */
         return config
-
     }
 
     override fun createCommandLine(): GeneralCommandLine {
