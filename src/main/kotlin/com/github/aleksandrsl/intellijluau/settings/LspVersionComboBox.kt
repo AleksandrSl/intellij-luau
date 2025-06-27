@@ -42,15 +42,14 @@ class LspVersionComboBox(
                 return item.text
             }
         }
-        setVersions(installedVersions, versionsForDownload)
-        setSelectedVersion(selectedVersion)
+        setVersions(selectedVersion, installedVersions, versionsForDownload)
     }
 
-    fun setVersions(
+    private fun setVersions(
+        selectedVersion: Version?,
         installedVersions: List<Version.Semantic>,
-        versionsForDownload: List<Version.Semantic> = listOf()
+        versionsForDownload: List<Version.Semantic> = listOf(),
     ) {
-        val selectedVersion = (selectedItem as? Item.VersionItem<*>)?.version
         _model.replaceAll(
             listOf(Item.LatestVersion).plus(
                 installedVersions.sortedDescending()
@@ -63,19 +62,23 @@ class LspVersionComboBox(
                             Item.VersionForDownload(version, index)
                         })
         )
+        setSelectedVersion(selectedVersion)
+    }
 
-        val itemToSelect = _model.items
-            .filterIsInstance<Item.VersionItem<Version>>()
-            .find { it.version == selectedVersion }
-        selectedItem = itemToSelect ?: _model.items.first()
+    fun setVersions(
+        installedVersions: List<Version.Semantic>,
+        versionsForDownload: List<Version.Semantic> = listOf()
+    ) {
+        val selectedVersion = (selectedItem as? Item.VersionItem<*>)?.version
+        setVersions(selectedVersion, installedVersions, versionsForDownload)
     }
 
     // Helper to set the initial version (I don't want to create an Item manually)
-    fun setSelectedVersion(version: Version) {
+    fun setSelectedVersion(version: Version?) {
         val itemToSelect = _model.items
             .filterIsInstance<Item.VersionItem<Version>>()
             .find { it.version == version }
-        selectedItem = itemToSelect
+        selectedItem = itemToSelect ?: _model.items.first()
     }
 
     override fun setSelectedItem(anObject: Any?) {
