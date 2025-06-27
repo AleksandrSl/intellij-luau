@@ -80,6 +80,7 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
         platform.put("type", settings.platformType.value)
         config.put("platform", platform)
 
+        config.put("ignoreGlobs", listOf("**/_Index/**"))
         /*
          * Settings that are used by LSP, but I do not yet support
          *
