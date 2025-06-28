@@ -14,9 +14,10 @@ private val LOG = logger<LspVersionComboBox>()
 /**
  * A specialized ComboBox for selecting LSP versions
  */
+@Suppress("UnstableApiUsage")
 class LspVersionComboBox(
-    installedVersions: List<Version.Semantic>,
-    versionsForDownload: List<Version.Semantic>,
+    installedVersions: InstalledLspVersions = InstalledLspVersions(listOf()),
+    versionsForDownload: DownloadableLspVersions = DownloadableLspVersions(listOf()),
     selectedVersion: Version,
     val download: (version: Version.Semantic, afterUpdate: () -> Unit) -> Unit
 ) : ComboBox<Item>() {
@@ -60,11 +61,11 @@ class LspVersionComboBox(
 
     private fun setVersions(
         selectedVersion: Version?,
-        installedVersions: List<Version.Semantic>,
-        versionsForDownload: List<Version.Semantic> = listOf(),
+        installedVersions: InstalledLspVersions,
+        versionsForDownload: DownloadableLspVersions = DownloadableLspVersions(listOf()),
     ) {
-        val installedAndSelected = installedVersions.run {
-            if (selectedVersion != null && selectedVersion is Version.Semantic && !installedVersions.contains(
+        val installedAndSelected = installedVersions.versions.run {
+            if (selectedVersion != null && selectedVersion is Version.Semantic && !installedVersions.versions.contains(
                     selectedVersion
                 )
             ) {
@@ -84,14 +85,15 @@ class LspVersionComboBox(
             listOf(Item.LatestVersion).plus(
                 installedAndSelected.sortedDescending()
                     .mapIndexed { index, version -> Item.InstalledVersion(version, index) }).plus(
-                versionsForDownload.filterNot { installedAndSelected.contains(it) }.sortedDescending()
+                versionsForDownload.versions.filterNot { installedAndSelected.contains(it) }.sortedDescending()
                     .mapIndexed { index, version -> Item.VersionForDownload(version, index) })
         )
         setSelectedVersion(selectedVersion)
     }
 
     fun setVersions(
-        installedVersions: List<Version.Semantic>, versionsForDownload: List<Version.Semantic> = listOf()
+        installedVersions: InstalledLspVersions,
+        versionsForDownload: DownloadableLspVersions = DownloadableLspVersions(listOf())
     ) {
         val selectedVersion = (selectedItem as? Item.VersionItem<*>)?.version
         setVersions(selectedVersion, installedVersions, versionsForDownload)
