@@ -94,14 +94,14 @@ class LuauLspSettings(
 
                     is LuauLspManager.DownloadResult.AlreadyExists, is LuauLspManager.DownloadResult.Ok -> {
                         withContext(Dispatchers.EDT) {
-                            lspInstalledVersions.set(lspInstalledVersions.get().let {
+                            lspInstalledVersions.updateAndGet {
                                 // Consider getting versions anew?
                                 if (it is InstalledVersions.Loaded) {
                                     InstalledVersions.Loaded(it.versions + version)
                                 } else {
                                     InstalledVersions.Loaded(listOf(version))
                                 }
-                            })
+                            }
                             updateLspVersionActions(lspVersionsForDownload.get(), lspInstalledVersions.get())
                         }
                         true
@@ -209,11 +209,11 @@ class LuauLspSettings(
         if (versionsForDownload !is VersionsForDownload.Loaded || versionsForDownload.versions.isEmpty() || installedVersions !is InstalledVersions.Loaded) {
             return
         }
-        val isLspVersionModified = lspVersionCombobox.getSelectedVersion() != lspVersionBinding.get()
+        val selectedVersion = lspVersionCombobox.getSelectedVersion()
+        val isLspVersionModified = selectedVersion != lspVersionBinding.get()
         val isConfigurationTypeModified =
             lspAuto.isSelected && settings.lspConfigurationType != LspConfigurationType.Auto
         val shouldShowActions = !(isLspVersionModified || isConfigurationTypeModified)
-        val selectedVersion = lspVersionCombobox.getSelectedVersion()
         when (val result = LuauLspManager.checkLsp(
             selectedVersion,
             installedVersions = installedVersions.versions,
@@ -221,7 +221,7 @@ class LuauLspSettings(
         )) {
             LuauLspManager.CheckLspResult.LspIsNotConfigured -> showLspMessage("Please select a version")
             is LuauLspManager.CheckLspResult.BinaryMissing -> {
-                // TODO (AleksandrSl 15/05/2025):  Show error around the combobox
+                // TODO (AleksandrSl 28/06/2025): CHeck if I still need the shouldShowActions
                 // Show download button if the settings are not modified,
                 // otherwise lsp will be downloaded upon settings application.
                 if (shouldShowActions) {
