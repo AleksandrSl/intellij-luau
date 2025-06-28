@@ -112,14 +112,13 @@ class LuauLspSettings(
         }
     }
 
-    private fun download(version: Version.Semantic): Boolean {
+    private fun download(version: Version.Semantic, afterSuccessfulDownload: () -> Unit = {}) {
         val lspManager = LuauLspManager.getInstance()
         return try {
             runWithModalProgressBlocking(project, LuauBundle.message("luau.lsp.downloading")) {
                 when (val result = lspManager.downloadLsp(version)) {
                     is LuauLspManager.DownloadResult.Failed -> {
                         displayDownloadError("Failed to download $version: ${result.message}")
-                        false
                     }
 
                     is LuauLspManager.DownloadResult.AlreadyExists, is LuauLspManager.DownloadResult.Ok -> {
@@ -133,14 +132,13 @@ class LuauLspSettings(
                                 installedVersions = updatedInstalledLspVersions.getOrEmpty(),
                                 versionsForDownload = lspVersionsForDownload.get().getOrEmpty()
                             )
+                            afterSuccessfulDownload()
                         }
-                        true
                     }
                 }
             }
         } catch (err: Exception) {
             displayDownloadError("Failed to download $version: ${err.message}")
-            false
         }
     }
 
@@ -330,11 +328,8 @@ class LuauLspSettings(
                                                 } else listOf()
                                             }),
                                         selectedVersion = lspVersionBinding.get(),
-                                        download = { version, afterUpdate ->
-                                            if (download(version)) {
-                                                afterUpdate()
-                                            }
-                                        })
+                                        download = ::download
+                                    )
                                 ).bind(
                                     { component -> component.getSelectedVersion() },
                                     { component, value -> component.setSelectedVersion(value) },
