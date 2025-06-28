@@ -412,7 +412,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
         private val API_DEFINITIONS_UPDATE_INTERVAL_MS = 1.days.inWholeMilliseconds
 
-        fun updateLatestInstalledVersionCache(version: Version.Semantic) {
+        internal fun updateLatestInstalledVersionCache(version: Version.Semantic) {
             latestInstalledLspVersionCache = version
         }
 
