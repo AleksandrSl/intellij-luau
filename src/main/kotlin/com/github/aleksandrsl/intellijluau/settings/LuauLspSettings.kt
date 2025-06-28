@@ -64,10 +64,12 @@ sealed class Loadable<out T> {
         get() = (this as? Loaded<T>)?.value
 }
 
+@JvmName("getInstalledOrEmpty")
 fun Loadable<InstalledLspVersions>.getOrEmpty(): InstalledLspVersions {
     return loadedOrNull ?: InstalledLspVersions(emptyList())
 }
 
+@JvmName("getDownloadableOrEmpty")
 fun Loadable<DownloadableLspVersions>.getOrEmpty(): DownloadableLspVersions {
     return loadedOrNull ?: DownloadableLspVersions(emptyList())
 }
@@ -122,11 +124,15 @@ class LuauLspSettings(
 
                     is LuauLspManager.DownloadResult.AlreadyExists, is LuauLspManager.DownloadResult.Ok -> {
                         withContext(Dispatchers.EDT) {
-                            lspInstalledVersions.updateAndGet {
+                            val updatedInstalledLspVersions = lspInstalledVersions.updateAndGet {
                                 // Consider getting versions anew?
                                 Loadable.Loaded(InstalledLspVersions(it.getOrEmpty().versions + version))
                             }
-                            updateLspVersionActions(lspVersionsForDownload.get(), lspInstalledVersions.get())
+                            updateLspVersionActions(lspVersionsForDownload.get(), updatedInstalledLspVersions)
+                            lspVersionCombobox.setVersions(
+                                installedVersions = updatedInstalledLspVersions.getOrEmpty(),
+                                versionsForDownload = lspVersionsForDownload.get().getOrEmpty()
+                            )
                         }
                         true
                     }
