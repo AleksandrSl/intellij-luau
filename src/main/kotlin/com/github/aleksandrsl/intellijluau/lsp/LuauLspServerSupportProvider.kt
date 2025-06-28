@@ -16,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.platform.lsp.api.LspServer
 import com.intellij.platform.lsp.api.LspServerSupportProvider
 import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
+import com.intellij.platform.lsp.api.customization.LspDiagnosticsSupport
 import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
 import org.eclipse.lsp4j.ClientCapabilities
 import org.eclipse.lsp4j.ConfigurationItem
@@ -165,6 +166,11 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
          * bytecode
          */
         return config
+    }
+
+    // TODO (AleksandrSl 29/06/2025): Can be enabled post 2025.1 where the support for pull diagnostics is added.
+    override val lspDiagnosticsSupport: LspDiagnosticsSupport = object : LspDiagnosticsSupport() {
+        override fun shouldAskServerForDiagnostics(file: VirtualFile): Boolean = true
     }
 
     override fun createCommandLine(): GeneralCommandLine {
