@@ -19,7 +19,7 @@ class LspVersionComboBox(
     installedVersions: InstalledLspVersions = InstalledLspVersions(listOf()),
     versionsForDownload: DownloadableLspVersions = DownloadableLspVersions(listOf()),
     selectedVersion: Version,
-    val download: (version: Version.Semantic, afterUpdate: () -> Unit) -> Unit
+    val download: (version: Version.Semantic, afterSuccessfulDownload: () -> Unit) -> Unit
 ) : ComboBox<Item>() {
 
     // Dumb way not to make casts everywhere, trying to override the get/set methods with the type I want didn't work
@@ -102,12 +102,14 @@ class LspVersionComboBox(
     // Helper to set the initial version (I don't want to create an Item manually)
     fun setSelectedVersion(version: Version?) {
         val itemToSelect = _model.items.filterIsInstance<Item.VersionItem<Version>>().find { it.version == version }
-        selectedItem = itemToSelect ?: _model.items.first()
+        selectedItem = itemToSelect ?: _model.items.firstOrNull()
     }
 
     override fun setSelectedItem(anObject: Any?) {
         if (anObject is Item.VersionForDownload) {
-            download(anObject.version) { super.setSelectedItem(anObject) }
+            download(anObject.version) {
+                setSelectedVersion(anObject.version)
+            }
         } else {
             super.setSelectedItem(anObject)
         }
