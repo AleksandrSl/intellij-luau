@@ -282,7 +282,8 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             }
 
             LOG.info("Successfully downloaded LSP to $destination")
-            LspManagerChangedEvent.NewLspVersionDownloaded(version)
+            ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)
+                .settingsChanged(LspManagerChangedEvent.NewLspVersionDownloaded(version))
             return DownloadResult.Ok(destination)
         } catch (e: Exception) {
             return DownloadResult.Failed(e.message)
