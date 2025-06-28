@@ -48,6 +48,34 @@ import kotlin.io.path.exists
 
 private val LOG = logger<LuauLspSettings>()
 
+@JvmInline
+value class InstalledLspVersions(val versions: List<Version.Semantic>)
+
+@JvmInline
+value class DownloadableLspVersions(val versions: List<Version.Semantic>)
+
+sealed class Loadable<out T> {
+    data object Idle : Loadable<Nothing>()
+    data object Loading : Loadable<Nothing>()
+    data class Loaded<T>(val value: T) : Loadable<T>()
+    data class Failed(val message: String) : Loadable<Nothing>()
+
+    val loadedOrNull: T?
+        get() = (this as? Loaded<T>)?.value
+}
+
+fun Loadable<InstalledLspVersions>.getOrEmpty(): InstalledLspVersions {
+    return loadedOrNull ?: InstalledLspVersions(emptyList())
+}
+
+fun Loadable<DownloadableLspVersions>.getOrEmpty(): DownloadableLspVersions {
+    return loadedOrNull ?: DownloadableLspVersions(emptyList())
+}
+
+typealias VersionsForDownload = Loadable<DownloadableLspVersions>
+typealias InstalledVersions = Loadable<InstalledLspVersions>
+
+
 // Important learning, when parent becomes visible it makes all the children visible as well, even if they were explicitly hidden.
 // The only escape is to use a predicate or observable
 // TODO (AleksandrSl 27/05/2025): Try to use AtomicActions more, since I've switched to them for versions. Now I use it only for the loader.
@@ -59,8 +87,8 @@ class LuauLspSettings(
     private lateinit var rojoVersionLabel: JLabel
     private lateinit var rojoVersionLoader: AnimatedIcon
     private val rojoVersion = AtomicProperty("")
-    private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(VersionsForDownload.Idle)
-    private val lspInstalledVersions = AtomicProperty<InstalledVersions>(InstalledVersions.Idle)
+    private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(Loadable.Idle)
+    private val lspInstalledVersions = AtomicProperty<InstalledVersions>(Loadable.Idle)
 
     private lateinit var sourcemapGenerationManulRadio: JBRadioButton
     private lateinit var sourcemapGenerationRojoRadio: JBRadioButton
@@ -96,11 +124,7 @@ class LuauLspSettings(
                         withContext(Dispatchers.EDT) {
                             lspInstalledVersions.updateAndGet {
                                 // Consider getting versions anew?
-                                if (it is InstalledVersions.Loaded) {
-                                    InstalledVersions.Loaded(it.versions + version)
-                                } else {
-                                    InstalledVersions.Loaded(listOf(version))
-                                }
+                                Loadable.Loaded(InstalledLspVersions(it.getOrEmpty().versions + version))
                             }
                             updateLspVersionActions(lspVersionsForDownload.get(), lspInstalledVersions.get())
                         }
@@ -160,8 +184,6 @@ class LuauLspSettings(
         downloadLspButton.action = object : AbstractAction() {
             override fun actionPerformed(e: ActionEvent) {
                 download(version)
-                // TODO (AleksandrSl 14/06/2025): Update last version?
-                settings.lspVersion = version.toString()
             }
         }
         downloadLspButton.text = if (isUpdate) "Update to $version" else "Download: $version"
@@ -195,40 +217,29 @@ class LuauLspSettings(
         if (!lspAuto.isSelected) {
             return
         }
-        if (versionsForDownload is VersionsForDownload.Loading || installedVersions is InstalledVersions.Loading) {
+        if (versionsForDownload is Loadable.Loading || installedVersions is Loadable.Loading) {
             return
         }
-        if (versionsForDownload is VersionsForDownload.Failed) {
+        if (versionsForDownload is Loadable.Failed) {
             showLspMessage(versionsForDownload.message, isError = true)
             return
         }
-        if (installedVersions is InstalledVersions.Failed) {
+        if (installedVersions is Loadable.Failed) {
             showLspMessage(installedVersions.message, isError = true)
             return
         }
-        if (versionsForDownload !is VersionsForDownload.Loaded || versionsForDownload.versions.isEmpty() || installedVersions !is InstalledVersions.Loaded) {
+        if (versionsForDownload.getOrEmpty().versions.isEmpty() || installedVersions !is Loadable.Loaded) {
             return
         }
         val selectedVersion = lspVersionCombobox.getSelectedVersion()
-        val isLspVersionModified = selectedVersion != lspVersionBinding.get()
-        val isConfigurationTypeModified =
-            lspAuto.isSelected && settings.lspConfigurationType != LspConfigurationType.Auto
-        val shouldShowActions = !(isLspVersionModified || isConfigurationTypeModified)
         when (val result = LuauLspManager.checkLsp(
             selectedVersion,
-            installedVersions = installedVersions.versions,
-            versionsAvailableForDownload = versionsForDownload.versions
+            installedVersions = installedVersions.value.versions,
+            versionsAvailableForDownload = versionsForDownload.getOrEmpty().versions,
         )) {
             LuauLspManager.CheckLspResult.LspIsNotConfigured -> showLspMessage("Please select a version")
             is LuauLspManager.CheckLspResult.BinaryMissing -> {
-                // TODO (AleksandrSl 28/06/2025): CHeck if I still need the shouldShowActions
-                // Show download button if the settings are not modified,
-                // otherwise lsp will be downloaded upon settings application.
-                if (shouldShowActions) {
-                    showLspDownloadButton(result.version, isUpdate = false)
-                } else {
-                    hideLspRelatedActions()
-                }
+                showLspDownloadButton(result.version, isUpdate = false)
             }
 
             LuauLspManager.CheckLspResult.ReadyToUse -> {
@@ -241,16 +252,11 @@ class LuauLspSettings(
             }
 
             is LuauLspManager.CheckLspResult.UpdateAvailable -> {
-                if (isLspVersionModified) {
-                    showLspDownloadButton(result.version, isUpdate = true)
-                } else {
-                    hideLspRelatedActions()
-                }
+                showLspDownloadButton(result.version, isUpdate = true)
             }
 
             is LuauLspManager.CheckLspResult.UpdateCache -> {
                 LuauLspManager.updateLatestInstalledVersionCache(result.version)
-                updateLspVersionActions(versionsForDownload, lspInstalledVersions.get())
             }
         }
     }
@@ -310,12 +316,13 @@ class LuauLspSettings(
                                 // or none if user somehow got this state.
                                 lspVersionCombobox = cell(
                                     LspVersionComboBox(
-                                        installedVersions = lspVersionBinding.get().let {
-                                            if (it is Version.Semantic) {
-                                                listOf(it)
-                                            } else listOf()
-                                        },
-                                        versionsForDownload = listOf(),
+                                        installedVersions = InstalledLspVersions(
+//                                            Add the currently selected version as though it's actually installed. If it's not, it will be marked as an error later.
+                                            lspVersionBinding.get().let {
+                                                if (it is Version.Semantic) {
+                                                    listOf(it)
+                                                } else listOf()
+                                            }),
                                         selectedVersion = lspVersionBinding.get(),
                                         download = { version, afterUpdate ->
                                             if (download(version)) {
@@ -341,7 +348,7 @@ class LuauLspSettings(
                                 cell(lspVersionStateLabelComponent)
                                 // I empirically learned that icon will cancel coroutine passed to it if you unload it.
                                 lspVersionsLoader =
-                                    cell(AsyncProcessIcon("Loading")).visibleIf(lspVersionsForDownload.transform { it is VersionsForDownload.Loading }).component.apply { suspend() }
+                                    cell(AsyncProcessIcon("Loading")).visibleIf(lspVersionsForDownload.transform { it is Loadable.Loading }).component.apply { suspend() }
                                 contextHelp("Updates will be suggested if available as notifications when you open a project or you can check for them on this page.").visibleIf(
                                     lspVersionCombobox.selectedValueIs(LspVersionComboBox.Item.LatestVersion)
                                 )
@@ -428,8 +435,7 @@ class LuauLspSettings(
                                 )
                         }
                     }.visibleIf(sourcemapGenerationManulRadio.selected)
-                }.topGap(TopGap.NONE)
-                    .enabledIf(sourcemapSupportCheckbox.selected.and(!lspDisabled.selected))
+                }.topGap(TopGap.NONE).enabledIf(sourcemapSupportCheckbox.selected.and(!lspDisabled.selected))
             }
         }
     }
@@ -438,37 +444,28 @@ class LuauLspSettings(
         if (lspAuto.isSelected) {
             coroutineScope.launch {
                 withLoader(lspVersionsLoader) {
-                    lspVersionsForDownload.set(VersionsForDownload.Loading)
+                    lspVersionsForDownload.set(Loadable.Loading)
                     val lspManager = LuauLspManager.getInstance()
                     lspVersionsForDownload.set(
                         try {
-                            VersionsForDownload.Loaded(lspManager.getVersionsAvailableForDownload(project))
+                            Loadable.Loaded(DownloadableLspVersions(lspManager.getVersionsAvailableForDownload(project)))
                         } catch (err: Exception) {
-                            VersionsForDownload.Failed(err.message ?: "Failed to load versions")
+                            Loadable.Failed(err.message ?: "Failed to load versions")
                         }
                     )
-                    lspInstalledVersions.set(InstalledVersions.Loading)
+                    lspInstalledVersions.set(Loadable.Loading)
                     lspInstalledVersions.set(
                         try {
                             withContext(Dispatchers.IO) {
-                                InstalledVersions.Loaded(LuauLspManager.getInstalledVersions())
+                                Loadable.Loaded(InstalledLspVersions(LuauLspManager.getInstalledVersions()))
                             }
                         } catch (err: Exception) {
-                            InstalledVersions.Failed(err.message ?: "Failed to get installed versions")
+                            Loadable.Failed(err.message ?: "Failed to get installed versions")
                         })
-                    lspVersionCombobox.setVersions(installedVersions = lspInstalledVersions.get().let {
-                        if (it is InstalledVersions.Loaded) {
-                            it.versions
-                        } else {
-                            listOf()
-                        }
-                    }, versionsForDownload = lspVersionsForDownload.get().let {
-                        if (it is VersionsForDownload.Loaded) {
-                            it.versions
-                        } else {
-                            listOf()
-                        }
-                    })
+                    lspVersionCombobox.setVersions(
+                        installedVersions = lspInstalledVersions.get().getOrEmpty(),
+                        versionsForDownload = lspVersionsForDownload.get().getOrEmpty()
+                    )
                     updateLspVersionActions(
                         versionsForDownload = lspVersionsForDownload.get(),
                         installedVersions = lspInstalledVersions.get()
@@ -492,21 +489,6 @@ private fun TextFieldWithBrowseButton.onExistingFileChanged(action: (Path) -> Un
             action(maybePath)
         }
     })
-}
-
-// Yes, this could be a downloadable resource and maybe will be.
-sealed class VersionsForDownload {
-    data object Loading : VersionsForDownload()
-    data object Idle : VersionsForDownload()
-    data class Loaded(val versions: List<Version.Semantic>) : VersionsForDownload()
-    data class Failed(val message: String) : VersionsForDownload()
-}
-
-sealed class InstalledVersions {
-    data object Loading : InstalledVersions()
-    data object Idle : InstalledVersions()
-    data class Loaded(val versions: List<Version.Semantic>) : InstalledVersions()
-    data class Failed(val message: String) : InstalledVersions()
 }
 
 sealed class LspSettingsUpdate {
