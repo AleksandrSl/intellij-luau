@@ -93,7 +93,7 @@ class LspVersionComboBox(
 
     fun setVersions(
         installedVersions: InstalledLspVersions,
-        versionsForDownload: DownloadableLspVersions = DownloadableLspVersions(listOf())
+        versionsForDownload: DownloadableLspVersions
     ) {
         val selectedVersion = (selectedItem as? Item.VersionItem<*>)?.version
         setVersions(selectedVersion, installedVersions, versionsForDownload)
