@@ -3,11 +3,13 @@ package com.github.aleksandrsl.intellijluau.settings
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.settings.LspVersionComboBox.Item
 import com.github.aleksandrsl.intellijluau.util.Version
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.popup.ListSeparator
-import com.intellij.openapi.util.NlsContexts
-import com.intellij.ui.GroupedComboBoxRenderer
 import com.intellij.ui.MutableCollectionComboBoxModel
+import com.intellij.ui.dsl.listCellRenderer.listCellRenderer
+import com.intellij.util.ui.UIUtil
+
+private val LOG = logger<LspVersionComboBox>()
 
 /**
  * A specialized ComboBox for selecting LSP versions
@@ -17,30 +19,41 @@ class LspVersionComboBox(
     versionsForDownload: List<Version.Semantic>,
     selectedVersion: Version,
     val download: (version: Version.Semantic, afterUpdate: () -> Unit) -> Unit
-) :
-    ComboBox<Item>() {
+) : ComboBox<Item>() {
 
     // Dumb way not to make casts everywhere, trying to override the get/set methods with the type I want didn't work
     private val _model
         get() = model as MutableCollectionComboBoxModel<Item>
 
+    private var missingVersion: Version.Semantic? = null
+
     init {
         isSwingPopup = false // Use JBPopup instead of default SwingPopup
         model = MutableCollectionComboBoxModel()
-        renderer = object : GroupedComboBoxRenderer<Item>() {
-            override fun separatorFor(value: Item): ListSeparator? {
-                if (value is Item.InstalledVersion && value.index == 0) {
-                    return ListSeparator(LuauBundle.message("luau.settings.lsp.version.combobox.installed"))
+        renderer = listCellRenderer {
+            val isErrorValue = (value as? Item.InstalledVersion)?.version == missingVersion
+
+            value.let {
+                if (it is Item.InstalledVersion && it.index == 0) {
+                    separator({
+                        text = LuauBundle.message("luau.settings.lsp.version.combobox.installed")
+                    })
+                } else if (it is Item.VersionForDownload && it.index == 0) {
+                    separator({
+                        text = LuauBundle.message("luau.settings.lsp.version.combobox.download")
+                    })
                 }
-                if (value is Item.VersionForDownload && value.index == 0) {
-                    return ListSeparator(LuauBundle.message("luau.settings.lsp.version.combobox.download"))
+            }
+            text(value.text) {
+                if (isErrorValue) {
+                    foreground = UIUtil.getErrorForeground()
                 }
-                return null
             }
 
-            override fun getText(item: Item): @NlsContexts.ListItem String {
-                return item.text
-            }
+            // There seems to be a bug in the tooltip that shows them on every row
+//            if (isErrorValue) {
+//                toolTipText = LuauBundle.message("luau.settings.lsp.version.combobox.missing")
+//            }
         }
         setVersions(selectedVersion, installedVersions, versionsForDownload)
     }
@@ -50,24 +63,35 @@ class LspVersionComboBox(
         installedVersions: List<Version.Semantic>,
         versionsForDownload: List<Version.Semantic> = listOf(),
     ) {
+        val installedAndSelected = installedVersions.run {
+            if (selectedVersion != null && selectedVersion is Version.Semantic && !installedVersions.contains(
+                    selectedVersion
+                )
+            ) {
+                missingVersion = selectedVersion
+                // Always keep selected version in the list of installed.
+                // Most of the time it's installed.
+                // Sometimes it's not, it's an error state, and we must show a download button near.
+                // I'm yet to find the way to show the error state
+                plus(selectedVersion)
+            } else {
+                missingVersion = null
+                this
+            }
+        }
+
         _model.replaceAll(
             listOf(Item.LatestVersion).plus(
-                installedVersions.sortedDescending()
-                    .mapIndexed { index, version ->
-                        Item.InstalledVersion(version, index)
-                    })
-                .plus(
-                    versionsForDownload.filterNot { installedVersions.contains(it) }.sortedDescending()
-                        .mapIndexed { index, version ->
-                            Item.VersionForDownload(version, index)
-                        })
+                installedAndSelected.sortedDescending()
+                    .mapIndexed { index, version -> Item.InstalledVersion(version, index) }).plus(
+                versionsForDownload.filterNot { installedAndSelected.contains(it) }.sortedDescending()
+                    .mapIndexed { index, version -> Item.VersionForDownload(version, index) })
         )
         setSelectedVersion(selectedVersion)
     }
 
     fun setVersions(
-        installedVersions: List<Version.Semantic>,
-        versionsForDownload: List<Version.Semantic> = listOf()
+        installedVersions: List<Version.Semantic>, versionsForDownload: List<Version.Semantic> = listOf()
     ) {
         val selectedVersion = (selectedItem as? Item.VersionItem<*>)?.version
         setVersions(selectedVersion, installedVersions, versionsForDownload)
@@ -75,9 +99,7 @@ class LspVersionComboBox(
 
     // Helper to set the initial version (I don't want to create an Item manually)
     fun setSelectedVersion(version: Version?) {
-        val itemToSelect = _model.items
-            .filterIsInstance<Item.VersionItem<Version>>()
-            .find { it.version == version }
+        val itemToSelect = _model.items.filterIsInstance<Item.VersionItem<Version>>().find { it.version == version }
         selectedItem = itemToSelect ?: _model.items.first()
     }
 
@@ -90,7 +112,7 @@ class LspVersionComboBox(
     }
 
     /**
-     * Get the currently selected version or null if no version is selected
+     * Get the currently selected version
      */
     fun getSelectedVersion(): Version {
         return (selectedItem as? Item.VersionItem<*>)!!.version
