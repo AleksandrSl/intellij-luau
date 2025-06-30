@@ -11,8 +11,7 @@ import com.intellij.openapi.project.Project
 class UpdateRobloxApiDefinitionsAndDocsAction :
     DumbAwareAction(LuauBundle.message("luau.action.update.roblox.api.definitions"), null, LuauIcons.ROBLOX) {
     override fun actionPerformed(event: AnActionEvent) {
-        val project: Project = event.project ?: return
-        LuauLspManager.getInstance().downloadRobloxApiDefinitionsAndDocs(project)
+        LuauLspManager.getInstance().downloadRobloxApiDefinitionsAndDocs()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread {
