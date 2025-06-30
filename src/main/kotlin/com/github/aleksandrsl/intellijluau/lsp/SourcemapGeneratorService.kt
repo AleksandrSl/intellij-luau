@@ -24,6 +24,24 @@ private val LOG = logger<SourcemapGeneratorService>()
 
 private const val ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME = "luau.lsp.sourcemap.generation.rojo.suggest"
 
+private data class SourcemapRelevantSettings(
+    val lspSourcemapSupportEnabled: Boolean,
+    val lspSourcemapGenerationType: LspSourcemapGenerationType,
+    val lspSourcemapGenerationUseIdeaWatcher: Boolean,
+    val lspSourcemapGenerationCommand: String,
+    val lspRojoProjectFile: String,
+    val isLspEnabledAndMinimallyConfigured: Boolean
+)
+
+private fun ProjectSettingsState.State.toSourcemapRelevantSettings() = SourcemapRelevantSettings(
+    lspSourcemapSupportEnabled = this.lspSourcemapSupportEnabled,
+    lspSourcemapGenerationType = this.lspSourcemapGenerationType,
+    lspSourcemapGenerationUseIdeaWatcher = this.lspSourcemapGenerationUseIdeaWatcher,
+    lspSourcemapGenerationCommand = this.lspSourcemapGenerationCommand,
+    lspRojoProjectFile = this.lspRojoProjectFile,
+    isLspEnabledAndMinimallyConfigured = this.isLspEnabledAndMinimallyConfigured
+)
+
 @Service(Service.Level.PROJECT)
 class SourcemapGeneratorService(private val project: Project, private val coroutineScope: CoroutineScope) : Disposable {
     private var messageBusConnection: MessageBusConnection? = null
@@ -74,15 +92,27 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     private suspend fun updateGeneratorBasedOnSettings(
         change: ProjectSettingsConfigurable.SettingsChangedEvent? = null,
     ) {
+        val newSettingsState = change?.newState ?: ProjectSettingsState.getInstance(project).state
+        val sourcemapSettings = newSettingsState.toSourcemapRelevantSettings()
+
+        // If there's a change, check if the relevant settings have actually changed.
+        if (change != null) {
+            val oldSourcemapSettings = change.oldState.toSourcemapRelevantSettings()
+            if (oldSourcemapSettings == sourcemapSettings) {
+                // No relevant settings changed, no need to restart the generator
+                return
+            }
+        }
+
         val oldGenerator = generator
         // Let's be simple and stop the existing and start the new one.
         oldGenerator?.stop()
 
-        val settings = change?.newState ?: ProjectSettingsState.getInstance(project).state
-        val newGenerator = determineStrategy(settings)
-        // If there is a change, then the settings were updated, so the user chose the value on purpose, no reason to suggest rojo
+        val newGenerator = determineStrategy(sourcemapSettings)
         if (newGenerator == null && change == null && !PropertiesComponent.getInstance(project)
-                .getBoolean(ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME) && doesSourcemapGenerationMakeSense(settings) && RojoSourcemapGenerator.canUseRojo(
+                .getBoolean(ROJO_SUGGESTION_DISMISSED_PROPERTY_NAME) && doesSourcemapGenerationMakeSense(
+                sourcemapSettings
+            ) && RojoSourcemapGenerator.canUseRojo(
                 project
             )
         ) {
@@ -134,8 +164,8 @@ class SourcemapGeneratorService(private val project: Project, private val corout
         }
     }
 
-    private suspend fun determineStrategy(settings: ProjectSettingsState.State): SourcemapGenerator? {
-        if (!doesSourcemapGenerationMakeSense(settings)) {
+    private suspend fun determineStrategy(settings: SourcemapRelevantSettings): SourcemapGenerator? {
+        if (!settings.lspSourcemapSupportEnabled || !project.hasLuauFiles()) {
             return null
         }
 
@@ -164,7 +194,7 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     // TODO (AleksandrSl 27/05/2025): Do I really need this?
     private fun CoroutineScope.createChildScope() = CoroutineScope(this.coroutineContext + SupervisorJob())
 
-    private suspend fun doesSourcemapGenerationMakeSense(settings: ProjectSettingsState.State): Boolean {
+    private suspend fun doesSourcemapGenerationMakeSense(settings: SourcemapRelevantSettings): Boolean {
         return settings.isLspEnabledAndMinimallyConfigured && settings.lspSourcemapSupportEnabled && project.hasLuauFiles()
     }
 
@@ -186,7 +216,6 @@ class SourcemapGeneratorService(private val project: Project, private val corout
 
         object Stop : Operation()
     }
-
 
     companion object {
 
