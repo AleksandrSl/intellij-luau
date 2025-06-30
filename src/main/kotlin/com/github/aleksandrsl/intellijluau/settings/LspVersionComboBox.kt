@@ -5,9 +5,12 @@ import com.github.aleksandrsl.intellijluau.settings.LspVersionComboBox.Item
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.popup.ListSeparator
+import com.intellij.openapi.util.NlsContexts
+import com.intellij.ui.GroupedComboBoxRenderer
 import com.intellij.ui.MutableCollectionComboBoxModel
-import com.intellij.ui.dsl.listCellRenderer.listCellRenderer
-import com.intellij.util.ui.UIUtil
+import com.intellij.ui.SimpleColoredComponent
+import com.intellij.ui.SimpleTextAttributes
 
 private val LOG = logger<LspVersionComboBox>()
 
@@ -31,30 +34,65 @@ class LspVersionComboBox(
     init {
         isSwingPopup = false // Use JBPopup instead of default SwingPopup
         model = MutableCollectionComboBoxModel()
-        renderer = listCellRenderer {
-            val isErrorValue = missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
 
-            value.let {
-                if (it is Item.InstalledVersion && it.index == 0) {
-                    separator({
-                        text = LuauBundle.message("luau.settings.lsp.version.combobox.installed")
-                    })
-                } else if (it is Item.VersionForDownload && it.index == 0) {
-                    separator({
-                        text = LuauBundle.message("luau.settings.lsp.version.combobox.download")
-                    })
+        // TODO (AleksandrSl 29/06/2025): When I drop support for 242 version I can use the listCellRenderer
+        //  Unfortunately I need the separator and it was only added in 243.
+        //          return listCellRenderer {
+        //                val isErrorValue =
+        //                    missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
+        //
+        //                value.let {
+        //                    if (it is Item.InstalledVersion && it.index == 0) {
+        //                        separator {
+        //                            text = LuauBundle.message("luau.settings.lsp.version.combobox.installed")
+        //                        }
+        //                    } else if (it is Item.VersionForDownload && it.index == 0) {
+        //                        separator {
+        //                            text = LuauBundle.message("luau.settings.lsp.version.combobox.download")
+        //                        }
+        //                    }
+        //                }
+        //                text(value.text) {
+        //                    if (isErrorValue) {
+        //                        foreground = UIUtil.getErrorForeground()
+        //                    }
+        //                }
+        //
+        //                // There seems to be a bug in the tooltip that shows them on every row
+        ////            if (isErrorValue) {
+        ////                toolTipText = LuauBundle.message("luau.settings.lsp.version.combobox.missing")
+        ////            }
+        //            }
+        renderer = object : GroupedComboBoxRenderer<Item>() {
+            override fun separatorFor(value: Item): ListSeparator? {
+                if (value is Item.InstalledVersion && value.index == 0) {
+                    return ListSeparator(LuauBundle.message("luau.settings.lsp.version.combobox.installed"))
                 }
+                if (value is Item.VersionForDownload && value.index == 0) {
+                    return ListSeparator(LuauBundle.message("luau.settings.lsp.version.combobox.download"))
+                }
+                return null
             }
-            text(value.text) {
+
+            override fun getText(item: Item): @NlsContexts.ListItem String {
+                return item.text
+            }
+
+            override fun customize(
+                item: SimpleColoredComponent,
+                value: Item,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ) {
+                super.customize(item, value, index, isSelected, cellHasFocus)
+                val isErrorValue =
+                    missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
                 if (isErrorValue) {
-                    foreground = UIUtil.getErrorForeground()
+                    item.clear()
+                    item.append(getText(value), SimpleTextAttributes.ERROR_ATTRIBUTES)
                 }
             }
-
-            // There seems to be a bug in the tooltip that shows them on every row
-//            if (isErrorValue) {
-//                toolTipText = LuauBundle.message("luau.settings.lsp.version.combobox.missing")
-//            }
         }
         setVersions(selectedVersion, installedVersions, versionsForDownload)
     }
