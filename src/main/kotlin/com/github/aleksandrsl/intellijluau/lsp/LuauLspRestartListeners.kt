@@ -13,6 +13,7 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.lsp.api.LspServerManager
+import com.intellij.platform.lsp.api.LspServerState
 
 private val LOG = logger<LspServerManager>()
 
@@ -20,7 +21,7 @@ class LuauLspManagerLspRestartListener(val project: Project) : LuauLspManager.Ls
     override fun settingsChanged(event: LuauLspManager.LspManagerChangedEvent) {
         when (event) {
             is LuauLspManager.LspManagerChangedEvent.ApiDefinitionsUpdated -> {
-                project.restartLspServerAsyncIfNeeded("Roblox api definitions were updated")
+                project.restartLspServerAsyncIfNeeded("Roblox api definitions were updated", onlyIfRunning = true)
             }
 
             is LuauLspManager.LspManagerChangedEvent.NewLspVersionDownloaded -> {
@@ -59,24 +60,27 @@ class LuauSettingsLspRestartListener(val project: Project) : ProjectSettingsConf
     }
 }
 
-private fun Project.restartLspServerAsyncIfNeeded(reason: String?) {
+private fun Project.restartLspServerAsyncIfNeeded(reason: String?, onlyIfRunning: Boolean = false) {
     ApplicationManager.getApplication().invokeLater({
-        if (reason != null) {
-            val hasServer =
-                LspServerManager.getInstance(this).getServersForProvider(LuauLspServerSupportProvider::class.java)
-                    .isNotEmpty()
-
-            // This doesn't mean that the server will actually start, but the intention was to start it.
-            val message: String? = if (ProjectSettingsState.getInstance(this).isLspEnabledAndMinimallyConfigured) {
-                if (hasServer) "Luau LSP is restarted" else "Luau LSP is started"
-            } else {
-                if (hasServer) "Luau LSP is stopped" else null
+        val server =
+            LspServerManager.getInstance(this).getServersForProvider(LuauLspServerSupportProvider::class.java)
+                .firstOrNull()
+        val serverIsRunning =
+            server !== null && (server.state == LspServerState.Running || server.state == LspServerState.Initializing)
+        if (!onlyIfRunning || serverIsRunning) {
+            if (reason != null) {
+                // This doesn't mean that the server will actually start, but the intention was to start it.
+                val message: String? = if (ProjectSettingsState.getInstance(this).isLspEnabledAndMinimallyConfigured) {
+                    if (server !== null) "Luau LSP is restarted" else "Luau LSP is started"
+                } else {
+                    if (serverIsRunning) "Luau LSP is stopped" else null
+                }
+                if (message != null) {
+                    LuauNotifications.pluginNotifications()
+                        .showProjectNotification(message, "Reason: $reason", NotificationType.INFORMATION, this)
+                }
             }
-            if (message != null) {
-                LuauNotifications.pluginNotifications()
-                    .showProjectNotification(message, "Reason: $reason", NotificationType.INFORMATION, this)
-            }
+            LspServerManager.getInstance(this).stopAndRestartIfNeeded(LuauLspServerSupportProvider::class.java)
         }
-        LspServerManager.getInstance(this).stopAndRestartIfNeeded(LuauLspServerSupportProvider::class.java)
     }, this.disposed)
 }
