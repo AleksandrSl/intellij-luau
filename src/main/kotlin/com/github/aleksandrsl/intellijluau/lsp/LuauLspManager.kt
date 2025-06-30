@@ -30,6 +30,7 @@ import com.intellij.util.messages.Topic
 import com.intellij.util.system.CpuArch
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -73,6 +74,19 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     // TODO (AleksandrSl 05/06/2025): Check, do I block request if they start concurrently?
     private val cacheMutex = Mutex() // To ensure thread-safe access to cache variables
     private val cacheDurationMs = 25.minutes.inWholeMilliseconds
+    private val robloxApiUpdateChannel = Channel<Unit>(Channel.UNLIMITED)
+
+    init {
+        coroutineScope.launch {
+            for (_request in robloxApiUpdateChannel) {
+                try {
+                    internalDownloadRobloxApiDefinitionsAndDocs()
+                } catch (e: Error) {
+                    LOG.error("Failed to update Roblox API definitions and docs", e)
+                }
+            }
+        }
+    }
 
     private suspend fun getVersionsAvailableForDownloadFromApi(project: Project?): List<Version.Semantic> {
         return try {
@@ -192,55 +206,51 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         return robloxGlobalTypesPath.resolve("globalTypes.${securityLevel}.d.luau")
     }
 
-    fun downloadRobloxApiDefinitionsAndDocs(project: Project) {
-        // Looks funky that I run things using project in the Application scope. But I don't have project scope anywhere near.
-        coroutineScope.launch {
-            internalDownloadRobloxApiDefinitionsAndDocs(project)
-        }
+    fun downloadRobloxApiDefinitionsAndDocs() {
+        robloxApiUpdateChannel.trySend(Unit)
     }
 
-    private suspend fun internalDownloadRobloxApiDefinitionsAndDocs(project: Project): DownloadResult {
-        return withBackgroundProgress(project, LuauBundle.message("luau.roblox.api.definitions.downloading")) {
+    private suspend fun internalDownloadRobloxApiDefinitionsAndDocs(): DownloadResult {
+        try {
+            val service = DownloadableFileService.getInstance()
+            val descriptions = RobloxSecurityLevel.entries.map {
+                val name = "globalTypes.$it.d.luau"
+                service.createFileDescription(
+                    "https://luau-lsp.pages.dev/type-definitions/$name", name
+                )
+            }.toMutableList().plus(service.createFileDescription(API_DOCS, API_DOCS_JSON))
+
+            val downloader = service.createDownloader(descriptions, LuauBundle.message("luau.lsp.downloading"))
+            val downloadDirectory = downloadPath().toFile()
             withContext(Dispatchers.IO) {
-                try {
-                    val service = DownloadableFileService.getInstance()
-                    val descriptions = RobloxSecurityLevel.entries.map {
-                        val name = "globalTypes.$it.d.luau"
-                        service.createFileDescription(
-                            "https://luau-lsp.pages.dev/type-definitions/$name", name
-                        )
-                    }.toMutableList().plus(service.createFileDescription(API_DOCS, API_DOCS_JSON))
+                val downloadResults = downloader.download(downloadDirectory)
+                val destination = robloxGlobalTypesPath
 
-                    val downloader = service.createDownloader(descriptions, LuauBundle.message("luau.lsp.downloading"))
-                    val downloadDirectory = downloadPath().toFile()
-                    val downloadResults = downloader.download(downloadDirectory)
-                    val destination = robloxGlobalTypesPath
-
-                    for (result in downloadResults) {
-                        val file = result.first
-                        file.copyTo(destination.resolve(file.name).toFile(), overwrite = true)
-                        file.delete()
-                    }
-                    LuauConfigurationCacheService.getInstance().updateLastApiDefinitionsUpdateTime()
-                    ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)
-                        .settingsChanged(LspManagerChangedEvent.ApiDefinitionsUpdated)
-                    return@withContext DownloadResult.Ok(robloxGlobalTypesPath)
-                } catch (e: Exception) {
-                    return@withContext DownloadResult.Failed(e.message)
+                for (result in downloadResults) {
+                    val file = result.first
+                    file.copyTo(destination.resolve(file.name).toFile(), overwrite = true)
+                    file.delete()
                 }
             }
+            LuauConfigurationCacheService.getInstance().updateLastApiDefinitionsUpdateTime()
+            ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)
+                .settingsChanged(LspManagerChangedEvent.ApiDefinitionsUpdated)
+            return DownloadResult.Ok(robloxGlobalTypesPath)
+        } catch (e: Exception) {
+            return DownloadResult.Failed(e.message)
         }
     }
 
     /**
      * Check for updates once a day or if the files are missing
      */
-    private fun checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(project: Project) {
+    private fun checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(securityLevel: RobloxSecurityLevel) {
+        val lastUpdateTime = LuauConfigurationCacheService.getInstance().state.lastApiDefinitionsUpdateTime
         val missingDeclarations =
-            !getGlobalTypes(ProjectSettingsState.getInstance(project).robloxSecurityLevel).exists()
+            !getGlobalTypes(securityLevel).exists()
         val missingDocs = !robloxApiDocsPath.exists()
-        if (missingDeclarations || missingDocs || System.currentTimeMillis() - LuauConfigurationCacheService.getInstance().state.lastApiDefinitionsUpdateTime > API_DEFINITIONS_UPDATE_INTERVAL_MS) {
-            downloadRobloxApiDefinitionsAndDocs(project)
+        if (missingDeclarations || missingDocs || System.currentTimeMillis() - lastUpdateTime > API_DEFINITIONS_UPDATE_INTERVAL_MS) {
+            downloadRobloxApiDefinitionsAndDocs()
         }
     }
 
@@ -321,11 +331,13 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     }
 
     // I want to check that LSP binary is downloaded according to the settings. If the binary is not there, I want to show the notification.
-    // I want to check it only once before the LSP is started the first time or a project is open (in this case, it would be good to know it's a luau project).
+// I want to check it only once before the LSP is started the first time or a project is open (in this case, it would be good to know it's a luau project).
     fun checkLsp(project: Project) {
         val settings = ProjectSettingsState.getInstance(project)
         if (settings.state.platformType == PlatformType.Roblox) {
-            checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(project)
+            coroutineScope.launch {
+                checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(ProjectSettingsState.getInstance(project).robloxSecurityLevel)
+            }
         }
         if (settings.lspConfigurationType != LspConfigurationType.Auto) return
         coroutineScope.launch(Dispatchers.IO) {
