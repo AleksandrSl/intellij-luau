@@ -493,7 +493,8 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         }
 
         val basePath: Path
-            get() = Paths.get(PathManager.getSystemPath()).resolve("intellij-luau")
+            // As per https://platform.jetbrains.com/t/is-there-a-special-place-where-plugin-can-store-binaries-that-are-shared-between-different-ides/2120 the config dir should be copied when the IDE is updated.
+            get() = PathManager.getConfigDir().resolve("intellij-luau")
 
         // Directory with all the LSPs
         val lspStorageDirPath: Path

@@ -403,7 +403,7 @@ private add_group ::= plus_expr | minus_expr
 // But it does
 // if (!r) r = value_expr(b, l + 1);
 // if (!r) r = as_expr(b, l + 1);
-// So as_expr is parse only if the previous ones are not parsed
+// So as_expr is parsed only if the previous ones are not parsed
 // I tried a lot of combinations. The idea is to wrap all these into a cast if it's there. But if the primary_group stays private
 // it doesn't work like this and instead tries to parse cast as one more union option. (most probably it's a bug)
 // If you make primary_group_expr non private (and you have to make it an expr then) then everything is good.
