@@ -467,6 +467,7 @@ computed_key ::= '[' expression ']' { pin = 1 }
 keyed_field ::= computed_key '=' expression { pin = 1; }
 string_keyed_field ::= ID '=' expression { pin = 2; }
 indexed_field ::= expression
+// TODO (AleksandrSl 06/07/2025): Do I need statement here? Ideally the field is in between the {} and there is a little chance there will be a statement start inside.
 private field_recover ::= !('}' | '[' | exp_first | statement_first | 'end' | last_statement_first)
 // Why the hell they allow two separators
 private field_sep ::= ',' | ';'
