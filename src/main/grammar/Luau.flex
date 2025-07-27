@@ -299,7 +299,7 @@ TEMPLATE_STRING_PART=([^`\\{\r\n]|{COMMON_STRING_ESCAPES})+
   "`"                         { popState(); return TEMPLATE_STRING_EQUOTE; }
   {TEMPLATE_STRING_PART}      { return STRING; }
   // End the template string on the line end if there were no escapes.
-  // Either escapes were forgotter, or the ` is missing
+  // Either escapes were forgotten, or the ` is missing
   \R                          { resetState(); return TokenType.WHITE_SPACE; }
   [^]                         { return TokenType.BAD_CHARACTER; }
 }
