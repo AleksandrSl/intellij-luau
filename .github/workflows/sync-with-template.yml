@@ -1,3 +1,5 @@
+name: Sync with template
+
 on:
   workflow_dispatch:
     inputs:
