@@ -13,11 +13,21 @@ object LuauNotifications {
     }
 }
 
-fun NotificationGroup.showNotification(content: String, type: NotificationType, project: Project? = null) {
+fun NotificationGroup.showProjectNotification(content: String, type: NotificationType, project: Project) {
     createNotification(content, type).notify(project)
 }
 
-fun NotificationGroup.showNotification(
+fun NotificationGroup.showProjectNotification(
+    title: String,
+    content: String,
+    type: NotificationType,
+    project: Project,
+    additionalConfiguration: (Notification.() -> Notification) = { this },
+) {
+    showNotification(title, content, type, project, additionalConfiguration)
+}
+
+private fun NotificationGroup.showNotification(
     title: String,
     content: String,
     type: NotificationType,

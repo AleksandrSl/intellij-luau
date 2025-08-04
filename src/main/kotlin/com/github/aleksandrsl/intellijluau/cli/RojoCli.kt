@@ -5,6 +5,7 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.openapi.project.Project
+import com.intellij.util.io.BaseOutputReader
 
 // Use only global Rojo for now
 class RojoCli() {
@@ -12,7 +13,7 @@ class RojoCli() {
         val actualRojoProjectFile = rojoProjectFile.ifBlank { DEFAULT_ROJO_PROJECT_FILE }
         val actualSourcemapFile = sourcemapFile.ifBlank { "sourcemap.json" }
 
-        return OSProcessHandler(
+        return OSProcessHandler.Silent(
             GeneralCommandLine(
                 listOf(
                     "rojo",
