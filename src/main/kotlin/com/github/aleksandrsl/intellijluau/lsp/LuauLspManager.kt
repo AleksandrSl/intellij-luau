@@ -7,6 +7,7 @@ import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager.Companion.robloxAp
 import com.github.aleksandrsl.intellijluau.settings.*
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.google.gson.JsonSyntaxException
+import com.intellij.ide.BrowserUtil
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
@@ -196,10 +197,9 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     }
 
     internal fun getGlobalTypesOrBuiltin(securityLevel: RobloxSecurityLevel): Path? {
-        return getGlobalTypes(securityLevel).takeIf { it.exists() }
-            ?: PluginPathManager.getPluginResource(
-                javaClass, "typeDeclarations/globalTypes.${securityLevel.name}.d.luau"
-            )?.toPath()
+        return getGlobalTypes(securityLevel).takeIf { it.exists() } ?: PluginPathManager.getPluginResource(
+            javaClass, "typeDeclarations/globalTypes.${securityLevel.name}.d.luau"
+        )?.toPath()
     }
 
     internal fun getGlobalTypes(securityLevel: RobloxSecurityLevel): Path {
@@ -246,8 +246,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
      */
     private fun checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(securityLevel: RobloxSecurityLevel) {
         val lastUpdateTime = LuauConfigurationCacheService.getInstance().state.lastApiDefinitionsUpdateTime
-        val missingDeclarations =
-            !getGlobalTypes(securityLevel).exists()
+        val missingDeclarations = !getGlobalTypes(securityLevel).exists()
         val missingDocs = !robloxApiDocsPath.exists()
         if (missingDeclarations || missingDocs || System.currentTimeMillis() - lastUpdateTime > API_DEFINITIONS_UPDATE_INTERVAL_MS) {
             downloadRobloxApiDefinitionsAndDocs()
@@ -388,11 +387,8 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
                 is UpdateAvailable -> {
                     LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.lsp.update.available.title"), LuauBundle.message(
-                            "luau.lsp.update.available.content",
-                            checkResult.version.toString(),
-                            "$LSP_RELEASE_NOTES_BASE_URL/${checkResult.version}"
-                        ), NotificationType.INFORMATION
+                        LuauBundle.message("luau.lsp.update.available.title", checkResult.version.toString()),
+                        NotificationType.INFORMATION
                     ).addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.lsp.update")) {
                         coroutineScope.launch {
                             withBackgroundProgress(project, LuauBundle.message("luau.lsp.downloading")) {
@@ -401,7 +397,11 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                                 }
                             }
                         }
-                    }).notify(project)
+                    })
+//                        There is also BrowseNotificationAction, not sure if it's the same
+                        .addAction(NotificationAction.createSimple(LuauBundle.message("luau.lsp.update.available.release.notes")) {
+                            BrowserUtil.browse("$LSP_RELEASE_NOTES_BASE_URL/${checkResult.version}")
+                        }).notify(project)
                 }
 
                 is UpdateCache -> updateLatestInstalledVersionCache(checkResult.version)
@@ -430,8 +430,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 
         @Topic.AppLevel
         val TOPIC = Topic.create(
-            "LSP manager updates",
-            LspManagerChangeListener::class.java
+            "LSP manager updates", LspManagerChangeListener::class.java
         )
 
         fun checkLsp(
@@ -547,9 +546,7 @@ fun Project.getGlobalTypesOrBuiltin(): Path? {
 sealed class LspConfiguration() {
     // Escape hatch to run LspCli for a non-saved setting.
     class ForSettings(
-        project: Project,
-        override val executablePath: Path?,
-        override val isReady: Boolean
+        project: Project, override val executablePath: Path?, override val isReady: Boolean
     ) : Enabled(project)
 
     class Manual(project: Project) : Enabled(project) {
