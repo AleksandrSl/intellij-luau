@@ -1,0 +1,26 @@
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Tag of the release to sync with'
+        required: true
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+
+      - name: actions-template-sync
+        uses: AndreasAugustin/actions-template-sync@v2.5.2
+        with:
+          source_repo_path: JetBrains/intellij-platform-plugin-template
+          upstream_branch: tags/${{ inputs.release_tag }}
