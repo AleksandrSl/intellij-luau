@@ -367,7 +367,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                         .addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
                             ShowSettingsUtil.getInstance()
                                 .showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
-                        }).notify(project)
+                        }).apply { isSuggestionType = true }.notify(project)
                 }
 
                 LspIsNotConfigured -> {
@@ -401,7 +401,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
 //                        There is also BrowseNotificationAction, not sure if it's the same
                         .addAction(NotificationAction.createSimple(LuauBundle.message("luau.lsp.update.available.release.notes")) {
                             BrowserUtil.browse("$LSP_RELEASE_NOTES_BASE_URL/${checkResult.version}")
-                        }).notify(project)
+                        }).apply { isSuggestionType = true }.notify(project)
                 }
 
                 is UpdateCache -> updateLatestInstalledVersionCache(checkResult.version)
