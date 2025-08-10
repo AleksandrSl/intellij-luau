@@ -1,6 +1,7 @@
 package com.github.aleksandrsl.intellijluau.parser
 
 import com.github.aleksandrsl.intellijluau.psi.LuauListArgs
+import com.github.aleksandrsl.intellijluau.psi.LuauParList
 import com.github.aleksandrsl.intellijluau.psi.LuauTableConstructor
 import com.github.aleksandrsl.intellijluau.psi.LuauTemplateStringExpr
 import com.intellij.psi.PsiElement
@@ -18,6 +19,7 @@ class LuauParserRecoveryTest : LuauParsingBaseTestCase("recovery") {
     fun testStringTemplate() = doTest(LuauTemplateStringExpr::class.java)
     fun testStringTemplate2() = doTest(LuauTemplateStringExpr::class.java)
     fun testStringTemplate3() = doTest(LuauTemplateStringExpr::class.java)
+    fun testFunctionDeclaration() = doTest(LuauParList::class.java)
 
     private fun doTest(target: Class<out PsiElement>) {
         val name = testName
