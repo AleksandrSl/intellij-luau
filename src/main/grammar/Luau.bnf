@@ -501,7 +501,7 @@ singleton_type ::= STRING | 'true' | 'false' | 'nil'
 generic_type_pack ::= ID '...'
 variadic_type_pack ::= '...' type { pin = 1 }
 type_pack ::= '(' type_list? ')'
-type_list ::= <<list type>> (',' variadic_type_pack)? | variadic_type_pack
+type_list ::= generic_type_pack | <<list type>> (',' variadic_type_pack)? | variadic_type_pack
 
 /* The order of types here is fragile, and I'm not 100% sure the finally correct one.
  * If you put type first it boggles the generic type packs by parsing the Type first without ...

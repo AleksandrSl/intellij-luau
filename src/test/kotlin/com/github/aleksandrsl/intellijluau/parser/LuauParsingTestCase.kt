@@ -25,6 +25,7 @@ class LuauParsingTestCase : LuauParsingBaseTestCase() {
     fun testTypeFunctions() = doTest(true)
     fun testStringTemplateEscapes() = doTest(true)
     fun testTypeWithRecovery() = doTest(true)
+    fun testGenericTypePackReturn() = doTest(true)
 
     override fun checkResult(targetDataName: String, file: PsiFile) {
         // I took a peek at how they do the tests in rust https://github.com/search?q=repo%3Aintellij-rust/intellij-rust%20hasError&type=code,
