@@ -7,6 +7,9 @@ import com.intellij.psi.PsiElement;
 
 public interface LuauTypeList extends LuauElement {
 
+  @Nullable
+  LuauGenericTypePack getGenericTypePack();
+
   @NotNull
   List<LuauType> getTypeList();
 

@@ -3269,38 +3269,39 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<list type>> (',' variadic_type_pack)? | variadic_type_pack
+  // generic_type_pack | <<list type>> (',' variadic_type_pack)? | variadic_type_pack
   public static boolean type_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_list")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, TYPE_LIST, "<type list>");
-    r = type_list_0(b, l + 1);
+    r = generic_type_pack(b, l + 1);
+    if (!r) r = type_list_1(b, l + 1);
     if (!r) r = variadic_type_pack(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
   // <<list type>> (',' variadic_type_pack)?
-  private static boolean type_list_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_0")) return false;
+  private static boolean type_list_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = list(b, l + 1, LuauParser::type);
-    r = r && type_list_0_1(b, l + 1);
+    r = r && type_list_1_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // (',' variadic_type_pack)?
-  private static boolean type_list_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_0_1")) return false;
-    type_list_0_1_0(b, l + 1);
+  private static boolean type_list_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_1_1")) return false;
+    type_list_1_1_0(b, l + 1);
     return true;
   }
 
   // ',' variadic_type_pack
-  private static boolean type_list_0_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_0_1_0")) return false;
+  private static boolean type_list_1_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_1_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
