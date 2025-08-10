@@ -1589,13 +1589,13 @@ public class LuauParser implements PsiParser, LightPsiParser {
   // '&' simple_type
   public static boolean intersection_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "intersection_type")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _UPPER_, INTERSECTION_TYPE, "<intersection type>");
+    if (!nextTokenIs(b, INTERSECTION)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _UPPER_, INTERSECTION_TYPE, null);
     r = consumeToken(b, INTERSECTION);
-    p = r; // pin = 1
     r = r && simple_type(b, l + 1);
-    exit_section_(b, l, m, r, p, LuauParser::type_recover);
-    return r || p;
+    exit_section_(b, l, m, r, false, null);
+    return r;
   }
 
   /* ********************************************************** */
@@ -3214,24 +3214,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // ID | '(' | '|' | '&' | 'nil' | STRING | 'true' | 'false' | typeof_soft_keyword | '<'
-  static boolean type_first(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_first")) return false;
-    boolean r;
-    r = consumeTokenFast(b, ID);
-    if (!r) r = consumeTokenFast(b, LPAREN);
-    if (!r) r = consumeTokenFast(b, UNION);
-    if (!r) r = consumeTokenFast(b, INTERSECTION);
-    if (!r) r = consumeTokenFast(b, NIL);
-    if (!r) r = consumeTokenFast(b, STRING);
-    if (!r) r = consumeTokenFast(b, TRUE);
-    if (!r) r = consumeTokenFast(b, FALSE);
-    if (!r) r = typeof_soft_keyword(b, l + 1);
-    if (!r) r = consumeTokenFast(b, LT);
-    return r;
-  }
-
-  /* ********************************************************** */
   // export_soft_keyword? type_soft_keyword 'function' ID func_body
   public static boolean type_function_declaration_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_function_declaration_statement")) return false;
@@ -3391,38 +3373,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = generic_type_pack(b, l + 1);
     if (!r) r = type(b, l + 1);
     if (!r) r = type_pack(b, l + 1);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | 'end' | 'until' | 'elseif' | 'else' | last_statement_first)
-  static boolean type_recover(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_recover")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NOT_);
-    r = !type_recover_0(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // ')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | 'end' | 'until' | 'elseif' | 'else' | last_statement_first
-  private static boolean type_recover_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_recover_0")) return false;
-    boolean r;
-    r = consumeTokenFast(b, RPAREN);
-    if (!r) r = consumeTokenFast(b, RCURLY);
-    if (!r) r = consumeTokenFast(b, COMMA);
-    if (!r) r = consumeTokenFast(b, SEMI);
-    if (!r) r = consumeTokenFast(b, GT);
-    if (!r) r = consumeTokenFast(b, RBRACK);
-    if (!r) r = consumeTokenFast(b, ASSIGN);
-    if (!r) r = type_first(b, l + 1);
-    if (!r) r = statement_first(b, l + 1);
-    if (!r) r = consumeTokenFast(b, END);
-    if (!r) r = consumeTokenFast(b, UNTIL);
-    if (!r) r = consumeTokenFast(b, ELSEIF);
-    if (!r) r = consumeTokenFast(b, ELSE);
-    if (!r) r = last_statement_first(b, l + 1);
     return r;
   }
 
@@ -3599,14 +3549,14 @@ public class LuauParser implements PsiParser, LightPsiParser {
   // '|' simple_type '?'?
   public static boolean union_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "union_type")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _UPPER_, UNION_TYPE, "<union type>");
+    if (!nextTokenIs(b, UNION)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _UPPER_, UNION_TYPE, null);
     r = consumeToken(b, UNION);
-    p = r; // pin = 1
-    r = r && report_error_(b, simple_type(b, l + 1));
-    r = p && union_type_2(b, l + 1) && r;
-    exit_section_(b, l, m, r, p, LuauParser::type_recover);
-    return r || p;
+    r = r && simple_type(b, l + 1);
+    r = r && union_type_2(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
   }
 
   // '?'?

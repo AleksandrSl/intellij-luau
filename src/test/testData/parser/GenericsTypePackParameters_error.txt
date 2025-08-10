@@ -15,7 +15,7 @@ Luau file(0,207)
           LuauSimpleTypeReferenceImpl(SIMPLE_TYPE_REFERENCE)(174,175)
             PsiElement(ID)('A')(174,175)
     PsiElement(<)('<')(175,176)
-    PsiErrorElement:'>' expected, got '('(176,176)
+    PsiErrorElement:'&', '(', '...', <, <singleton type>, '>', ID, typeof, '{' or '|' expected, got '('(176,176)
       <empty list>
     PsiElement(()('(')(176,177)
     PsiErrorElement:<expression> or ID expected, got 'string'(177,177)
