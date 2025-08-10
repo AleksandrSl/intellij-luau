@@ -65,22 +65,22 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
      * See https://github.com/JohnnyMorganz/luau-lsp/blob/248ed7bd11dde2059d8fe00235776895738c5a16/src/include/LSP/ClientConfiguration.hpp for details
      * struct ClientConfiguration
      */
-    override fun getWorkspaceConfiguration(item: ConfigurationItem): Any? {
+    override fun getWorkspaceConfiguration(item: ConfigurationItem): Any {
         val settings = ProjectSettingsState.getInstance(project).state
         val config: MutableMap<String?, Any?> = HashMap()
 
         val sourcemap: MutableMap<String?, Any?> = HashMap()
-        sourcemap.put("enabled", settings.lspSourcemapSupportEnabled)
+        sourcemap["enabled"] = settings.lspSourcemapSupportEnabled
         if (settings.lspSourcemapSupportEnabled && settings.lspSourcemapFile.isNotBlank()) {
-            sourcemap.put("sourcemapFile", settings.lspSourcemapFile)
+            sourcemap["sourcemapFile"] = settings.lspSourcemapFile
         }
-        config.put("sourcemap", sourcemap)
+        config["sourcemap"] = sourcemap
 
         val platform: MutableMap<String?, Any?> = HashMap()
-        platform.put("type", settings.platformType.value)
-        config.put("platform", platform)
+        platform["type"] = settings.platformType.value
+        config["platform"] = platform
 
-        config.put("ignoreGlobs", listOf("**/_Index/**"))
+        config["ignoreGlobs"] = listOf("**/_Index/**")
         /*
          * Settings that are used by LSP, but I do not yet support
          *
@@ -157,7 +157,7 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
          * /// Whether the whole workspace should be indexed. If disabled, only limited support is
          * // available for features such as "Find All References" and "Rename"
          * bool enabled = true;
-         * /// The maximum amount of files that can be indexed
+         * /// The maximum number of files that can be indexed
          * size_t maxFiles = 10000;
          *
          * fflags
