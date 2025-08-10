@@ -13,7 +13,7 @@ class LuauBreadcrumbsProvider : BreadcrumbsProvider {
     override fun getLanguages(): Array<Language> = LANGUAGES
 
     // I was thinking whether I should do this for conditions,
-    // and there is even an issue to remove this feature from python because other languages don't do that
+    // and there is even an issue to remove this feature from python because other languages don't do that,
     // So I also won't, at least by default.
     // Though it definitely looks useful for React objects creation, but that's probably a separate "plugin"
     // if I ever come to that
@@ -52,7 +52,7 @@ class LuauBreadcrumbsProvider : BreadcrumbsProvider {
             return "${element.methodName.text}"
         }
 
-        override fun elementIcon(element: LuauMethodDefStatement): Icon? {
+        override fun elementIcon(element: LuauMethodDefStatement): Icon {
             return AllIcons.Nodes.Method
         }
     }
@@ -62,13 +62,13 @@ class LuauBreadcrumbsProvider : BreadcrumbsProvider {
             return element.name ?: "unnamed"
         }
 
-        override fun elementIcon(element: T): Icon? {
+        override fun elementIcon(element: T): Icon {
             return icon
         }
     }
 
     private object ClosureHelper : Helper<LuauClosureExpr>(LuauClosureExpr::class.java) {
-        override fun elementIcon(element: LuauClosureExpr): Icon? {
+        override fun elementIcon(element: LuauClosureExpr): Icon {
             return AllIcons.Nodes.Lambda
         }
 

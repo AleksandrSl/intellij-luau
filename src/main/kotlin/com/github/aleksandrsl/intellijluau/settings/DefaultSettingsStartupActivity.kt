@@ -18,7 +18,7 @@ class DefaultSettingsStartupActivity : ProjectActivity {
 
     override suspend fun execute(project: Project) {
         val defaultSettings = LuauDefaultSettingsState.getInstance()
-        // Once the default settings are applied DEFAULT_SETTINGS_DISMISSED_PROPERTY will be set,
+        // Once the default settings are applied, DEFAULT_SETTINGS_DISMISSED_PROPERTY will be set,
         // so we won't be spamming with this suggestion
         // even though I don't check that current settings are the same as the default.
         if (PropertiesComponent.getInstance(project)

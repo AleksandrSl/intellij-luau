@@ -35,7 +35,8 @@ open class LuauFormatterBlock(
             LuauFormatterBlock(
                 it,
                 Wrap.createWrap(WrapType.NONE, false),
-                // This little fucker break aligment of function block aligning it to the direct parent + indent. No idea why, but I don't need it anyway.
+                // This little fucker breaks alignment of function block aligning it to the direct parent + indent.
+                // No idea why, but I don't need it anyway.
                 null, //Alignment.createAlignment(),
                 spacingBuilder
             )

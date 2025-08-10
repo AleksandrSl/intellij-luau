@@ -154,7 +154,7 @@ class LuauLspSettings(
     private val lspPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
         onExistingFileChanged {
-            // I guess this will launch in project scope, so the coroutine will finish even if I close the settings.
+            // I guess this will launch in the project scope, so the coroutine will finish even if I close the settings.
             // Not sure if I should about it or not.
             coroutineScope.launch(Dispatchers.IO) {
                 setManualLspVersion(
@@ -250,7 +250,7 @@ class LuauLspSettings(
                 if (selectedVersion == Version.Latest) {
                     showLspMessage("Up to date")
                 } else {
-                    // Do nothing if not using latest; there is no valuable info I can give
+                    // Do nothing if not using the latest; there is no valuable info I can give
                     hideLspRelatedActions()
                 }
             }
@@ -317,7 +317,7 @@ class LuauLspSettings(
                             row {
 
                                 // Initial version show the version we have installed,
-                                // or none if user somehow got this state.
+                                // or none if the user somehow got this state.
                                 lspVersionCombobox = cell(
                                     LspVersionComboBox(
                                         installedVersions = InstalledLspVersions(

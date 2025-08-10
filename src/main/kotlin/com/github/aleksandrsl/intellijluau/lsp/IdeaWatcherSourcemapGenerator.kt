@@ -52,7 +52,7 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
         if (isActive) return
         processQueue = Channel(Channel.CONFLATED)
         fileListenerDisposable =
-            Disposer.newDisposable(LuauPluginDisposable.Companion.getInstance(project), "FileListenerDisposable")
+            Disposer.newDisposable(LuauPluginDisposable.getInstance(project), "FileListenerDisposable")
         // Regenerate sourcemap on the first start
         queueSourcemapRegeneration()
 

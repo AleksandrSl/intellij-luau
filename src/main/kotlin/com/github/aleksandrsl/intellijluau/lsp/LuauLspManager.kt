@@ -473,7 +473,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                     try {
                         dirNameToVersion(it)
                     } catch (e: IllegalArgumentException) {
-                        // Well, MacOS adds the DS_Store folder in the directory,
+                        // Well, macOS adds the DS_Store folder in the directory,
                         // who knows what else we may have, let's ignore errors parsing the name
                         null
                     }

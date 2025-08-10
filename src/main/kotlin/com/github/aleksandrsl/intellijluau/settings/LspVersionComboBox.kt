@@ -108,7 +108,7 @@ class LspVersionComboBox(
                 )
             ) {
                 missingVersion = selectedVersion
-                // Always keep selected version in the list of installed.
+                // Always keep a selected version in the list of installed.
                 // Most of the time it's installed.
                 // Sometimes it's not, it's an error state, and we must show a download button near.
                 // I'm yet to find the way to show the error state

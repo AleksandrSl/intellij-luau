@@ -6,7 +6,6 @@ import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.DumbAwareAction
-import com.intellij.openapi.project.Project
 
 class UpdateRobloxApiDefinitionsAndDocsAction :
     DumbAwareAction(LuauBundle.message("luau.action.update.roblox.api.definitions"), null, LuauIcons.ROBLOX) {
