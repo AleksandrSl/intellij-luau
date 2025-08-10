@@ -246,7 +246,7 @@ parametrized_attribute ::= ID parameters? (',' !']' | &']') { pin = 1; recoverWh
 private parametrized_attribute_recover ::= !(']' | statement_first)
 attribute ::= '@' (ID | '[' parametrized_attribute* ']') { pin = 1; recoverWhile = attribute_recover }
 attributes ::= attribute+
-private attribute_recover ::= !(statement_first | exp_first )
+private attribute_recover ::= !(statement_first | exp_first)
 
 /* Attributes End */
 
@@ -293,9 +293,18 @@ func_body ::= func_type_params? par_list (':' return_type)? block 'end' {
   implements=["com.github.aleksandrsl.intellijluau.psi.LuauGenericDeclaration"]
   methods=[getDeclaredGenerics]
 }
+private parameter_with_recover ::= !(')' | '...') binding (',' !')' | &')') {
+ pin = 1
+ recoverWhile = parameter_recover
+}
+// I have a feeling that I may have less elements here, but I'm not sure.
+private parameter_recover ::= !(ID | '...' | ')' | statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | last_statement_first)
+
+// I can't do a simple recoverWhile in the par_list, because I generally want recovery to end before ')' so the par_list is closed successfully whenever it has a pair of ().
+// This makes me move parameters to a separate rule. I did it in a way similar to rust and how I do it for the function call.
 // binding_list is not used here on purpose to flatter the parameters into one list for better formatting and less PSI
-par_list ::= '(' (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)? ')'
-private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
+par_list ::= '(' parameter_with_recover* type_pack_parameter? ')' { pin = 1 }
+private type_pack_parameter ::= '...' (':' (generic_type_pack | type))? { pin = 1 }
 
 exp_list ::= <<list expression>> { name = "expression list" }
 
