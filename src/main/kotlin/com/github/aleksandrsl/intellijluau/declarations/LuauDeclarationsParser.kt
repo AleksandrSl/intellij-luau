@@ -111,7 +111,7 @@ class LuauDeclarationsParser {
     /**
      * Parse a Luau declaration file into a map of declarations
      * @param filePath Path to the Luau declaration file
-     * @return Map of declaration name to declaration object
+     * @return Map of declaration name to a declaration object
      */
     fun parse(filePath: String): LuauDeclarations {
         val file = File(filePath)
@@ -126,7 +126,7 @@ class LuauDeclarationsParser {
     /**
      * Parse the content of a Luau declaration file
      * @param content Content of the Luau declaration file
-     * @return Map of declaration name to declaration object
+     * @return Map of declaration name to a declaration object
      */
     fun parseContent(content: String): LuauDeclarations {
         val typeAliases = mutableMapOf<String, LuauDeclaration.TypeAlias>()
@@ -186,7 +186,7 @@ class LuauDeclarationsParser {
                     i += linesConsumed
                 }
 
-                // The less specific should go last. why AI don't know this
+                // The less specific should go last. why AI doesn't know this
                 // Global object declaration
                 line.startsWith("declare ") -> {
                     val (objectDeclaration, linesConsumed) = parseGlobalObject(lines.subList(i, lines.size))
@@ -199,7 +199,7 @@ class LuauDeclarationsParser {
         }
 
         // Resolve inheritance to mark classes inheriting from Instance
-        // I don't know why, I had a reason before, that these classes cannot be instantiated,
+        // I don't know why, I had a reason before that these classes cannot be instantiated,
         // but now I think that all classes are not instantiable
         classes.values.forEach { declaration ->
             declaration.extends?.let {
@@ -232,7 +232,7 @@ class LuauDeclarationsParser {
         // Remove single-line comments
         val withoutSingleLineComments = content.lines().joinToString("\n") { line ->
             val commentIndex = line.indexOf("--")
-            if (commentIndex >= 0) line.substring(0, commentIndex) else line
+            if (commentIndex >= 0) line.take(commentIndex) else line
         }
 
         // TODO: Handle multi-line comments if needed
@@ -487,7 +487,7 @@ class LuauDeclarationsParser {
                 properties,
                 methods,
                 // These are not accessible as references in code. You can't write local a = Plugin.
-                // Plugin doesn't exist. Probably they are to receive as a service, or only as type.
+                // Plugin doesn't exist. Probably they are to receive as a service or only as a type.
                 isInstance = extends == "Instance" || name == "Instance"
             ),
             i
@@ -508,7 +508,7 @@ class LuauDeclarationsParser {
 
         val (name, extends) = matchResult.destructured
 
-        // Ignore the simple one line declarations since I don't understand their purpose
+        // Ignore the simple one-line declarations since I don't understand their purpose
 //        // If this is a simple enum class declaration (ends with "end" on the same line)
 //        if (firstLine.endsWith(" end")) {
 //            return Pair(

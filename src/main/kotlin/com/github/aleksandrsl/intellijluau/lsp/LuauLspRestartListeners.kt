@@ -1,8 +1,8 @@
 @file:Suppress("UnstableApiUsage")
 
+package com.github.aleksandrsl.intellijluau.lsp
+
 import com.github.aleksandrsl.intellijluau.LuauNotifications
-import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
-import com.github.aleksandrsl.intellijluau.lsp.LuauLspServerSupportProvider
 import com.github.aleksandrsl.intellijluau.settings.LspConfigurationType
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState

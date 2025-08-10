@@ -19,6 +19,6 @@ public interface LuauMethodDefStatement extends LuauNamedElement, LuauStatement 
 
   @NotNull ItemPresentation getPresentation();
 
-  @Nullable PsiElement getNameIdentifier();
+  @NotNull PsiElement getNameIdentifier();
 
 }

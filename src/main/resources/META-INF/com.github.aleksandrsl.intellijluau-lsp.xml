@@ -11,10 +11,10 @@
     </extensions>
     <projectListeners>
         <listener
-                class="LuauLspManagerLspRestartListener"
+                class="com.github.aleksandrsl.intellijluau.lsp.LuauLspManagerLspRestartListener"
                 topic="com.github.aleksandrsl.intellijluau.lsp.LuauLspManager$LspManagerChangeListener"/>
         <listener
-                class="LuauSettingsLspRestartListener"
+                class="com.github.aleksandrsl.intellijluau.lsp.LuauSettingsLspRestartListener"
                 topic="com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable$SettingsChangeListener"/>
     </projectListeners>
     <actions>

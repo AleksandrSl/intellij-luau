@@ -11,7 +11,7 @@ class LuauInternalTypeReference(element: LuauSimpleTypeReference) : PsiReference
     val id = myElement.id
 
     // What do I want, to simplify finding generic types declared.
-    // Maybe even mark the PSI as GenericDeclarationHolder search for it and get it's types.
+    // Maybe even mark the PSI as GenericDeclarationHolder search for it and get its types.
     override fun resolve(): LuauElement? {
         // (╯°□°)╯︵ ┻━┻ getChildrenOfType is not recursive.
         (myElement.parent as LuauTypeReference).let { typeReference ->
@@ -38,7 +38,7 @@ class LuauInternalTypeReference(element: LuauSimpleTypeReference) : PsiReference
 
 
             // In rust they avoid sequences
-            // > Instead of Kotlin `Sequence`'s, a callback (`RsResolveProcessor`) is used, because
+            // > Instead of Kotlin `Sequence`'s, a callback (`RsResolveProcessor`) is used because
             //   it gives **much** nicer stacktraces (we used to have `Sequence` here some time ago).
             // But maybe the stacktraces are better now?
             return typeReference.parentsOfType<LuauGenericDeclaration>()

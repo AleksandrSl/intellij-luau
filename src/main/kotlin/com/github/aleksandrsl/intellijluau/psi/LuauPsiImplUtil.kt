@@ -89,6 +89,6 @@ fun getTy(element: LuauBinding): LuauTy? {
 }
 
 // Override for a default getNameIdentifier since methods are build different.
-fun getNameIdentifier(element: LuauMethodDefStatement): PsiElement? {
+fun getNameIdentifier(element: LuauMethodDefStatement): PsiElement {
     return element.methodName.getId()
 }

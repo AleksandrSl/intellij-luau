@@ -27,7 +27,7 @@ class LuauIndentProcessor(private val settings: CommonCodeStyleSettings?) {
         }
 
         if (parentType == LuauTypes.IFELSE_EXPR) {
-            // I have no idea, which indent do I need let's try this one.
+            // I have no idea which indent I need, let's try this one.
             return Indent.getSmartIndent(Indent.Type.CONTINUATION)
         }
 

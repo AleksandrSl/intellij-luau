@@ -81,7 +81,7 @@ open class ExternalWatcherSourcemapGenerator(private val project: Project, priva
         processHandler = null
 
         if (wasRunning) {
-            // Killing a process is not possible on Mac it seems, so this is more UX gentle to avoid extra notifications
+            // Killing a process is not possible on macOS, it seems, so this is more UX gentle to avoid extra notifications
             if (exitCode != 0 && !(stoppedManually && exitCode == -1)) {
                 SourcemapGenerator.notifications().showProjectNotification(
                     LuauBundle.message("luau.sourcemap.generation.failed"),

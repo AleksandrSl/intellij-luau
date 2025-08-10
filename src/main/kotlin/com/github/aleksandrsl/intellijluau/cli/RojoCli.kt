@@ -5,7 +5,6 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.openapi.project.Project
-import com.intellij.util.io.BaseOutputReader
 
 // Use only global Rojo for now
 class RojoCli() {

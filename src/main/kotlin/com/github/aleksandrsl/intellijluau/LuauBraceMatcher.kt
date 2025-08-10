@@ -8,7 +8,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.tree.IElementType
 import com.intellij.psi.tree.TokenSet
 
-// Part of this adapted from Haxe plugin, so maybe I didn't delve into isPairedBracesAllowedBeforeType implementation
+// Part of this adapted from the Haxe plugin, so maybe I didn't delve into isPairedBracesAllowedBeforeType implementation
 class LuauBraceMatcher : PairedBraceMatcher {
     override fun getPairs(): Array<BracePair> {
         return PAIRS

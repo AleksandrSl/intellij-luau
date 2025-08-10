@@ -4,13 +4,12 @@ import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.OSProcessHandler
-import com.intellij.execution.process.ProcessHandler
 import com.intellij.execution.process.ProcessOutput
 import com.intellij.openapi.project.Project
 
 object SourcemapGeneratorCli {
     fun generate(project: Project): ProcessOutput {
-        val settings = ProjectSettingsState.Companion.getInstance(project)
+        val settings = ProjectSettingsState.getInstance(project)
         val parts = settings.lspSourcemapGenerationCommand.split(" ")
         val exe = parts[0]
 
@@ -28,7 +27,7 @@ object SourcemapGeneratorCli {
     }
 
     fun createProcess(project: Project): OSProcessHandler {
-        val settings = ProjectSettingsState.Companion.getInstance(project)
+        val settings = ProjectSettingsState.getInstance(project)
         return OSProcessHandler.Silent(
             GeneralCommandLine(
                 settings.lspSourcemapGenerationCommand.split(" ")
