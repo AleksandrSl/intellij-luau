@@ -183,7 +183,7 @@ compound_op_statement ::= lvalue compound_op expression { pin = 2 }
 // Alternative here is to use `external my_external_rule ::= parseMyExternalRule false 10`
 expression_statement ::= <<parseExprStatement index_or_call_expr>>
 private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
-private return_statement ::= 'return' exp_list? { pin = 1 }
+return_statement ::= 'return' exp_list? { pin = 1 }
 // Though break and continue can only be inside the cycle, I can't create a separate cycle_block.
 // Since many things can be nested inside the cycle. Though functions for example cannot have continue
 // even if they are inside the while. I don't think it's worth trying to check this on parser level.

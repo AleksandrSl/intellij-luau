@@ -11,14 +11,14 @@ import static com.github.aleksandrsl.intellijluau.psi.LuauTypes.*;
 import com.intellij.extapi.psi.ASTWrapperPsiElement;
 import com.github.aleksandrsl.intellijluau.psi.*;
 
-public class LuauLastStatementImpl extends ASTWrapperPsiElement implements LuauLastStatement {
+public class LuauReturnStatementImpl extends ASTWrapperPsiElement implements LuauReturnStatement {
 
-  public LuauLastStatementImpl(@NotNull ASTNode node) {
+  public LuauReturnStatementImpl(@NotNull ASTNode node) {
     super(node);
   }
 
   public void accept(@NotNull LuauVisitor visitor) {
-    visitor.visitLastStatement(this);
+    visitor.visitReturnStatement(this);
   }
 
   @Override
@@ -29,14 +29,8 @@ public class LuauLastStatementImpl extends ASTWrapperPsiElement implements LuauL
 
   @Override
   @Nullable
-  public LuauContinueSoftKeyword getContinueSoftKeyword() {
-    return findChildByClass(LuauContinueSoftKeyword.class);
-  }
-
-  @Override
-  @Nullable
-  public LuauReturnStatement getReturnStatement() {
-    return findChildByClass(LuauReturnStatement.class);
+  public LuauExpList getExpList() {
+    return findChildByClass(LuauExpList.class);
   }
 
 }
