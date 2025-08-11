@@ -2458,11 +2458,11 @@ public class LuauParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // 'return' exp_list?
-  static boolean return_statement(PsiBuilder b, int l) {
+  public static boolean return_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "return_statement")) return false;
     if (!nextTokenIs(b, RETURN)) return false;
     boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_);
+    Marker m = enter_section_(b, l, _NONE_, RETURN_STATEMENT, null);
     r = consumeToken(b, RETURN);
     p = r; // pin = 1
     r = r && return_statement_1(b, l + 1);

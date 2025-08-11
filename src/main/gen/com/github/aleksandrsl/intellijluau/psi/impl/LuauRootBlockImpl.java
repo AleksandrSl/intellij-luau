@@ -52,12 +52,6 @@ public class LuauRootBlockImpl extends LuauBlockImplMixin implements LuauRootBlo
   }
 
   @Override
-  @Nullable
-  public LuauExpList getExpList() {
-    return findChildByClass(LuauExpList.class);
-  }
-
-  @Override
   @NotNull
   public List<LuauExpressionStatement> getExpressionStatementList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauExpressionStatement.class);
@@ -103,6 +97,12 @@ public class LuauRootBlockImpl extends LuauBlockImplMixin implements LuauRootBlo
   @NotNull
   public List<LuauRepeatStatement> getRepeatStatementList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauRepeatStatement.class);
+  }
+
+  @Override
+  @Nullable
+  public LuauReturnStatement getReturnStatement() {
+    return findChildByClass(LuauReturnStatement.class);
   }
 
   @Override

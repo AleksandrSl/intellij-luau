@@ -79,6 +79,7 @@ public interface LuauTypes {
   IElementType PRIMARY_GROUP_EXPR = new LuauElementType("PRIMARY_GROUP_EXPR");
   IElementType READ_SOFT_KEYWORD = new LuauElementType("READ_SOFT_KEYWORD");
   IElementType REPEAT_STATEMENT = new LuauElementType("REPEAT_STATEMENT");
+  IElementType RETURN_STATEMENT = new LuauElementType("RETURN_STATEMENT");
   IElementType RETURN_TYPE = new LuauElementType("RETURN_TYPE");
   IElementType ROOT_BLOCK = new LuauElementType("ROOT_BLOCK");
   IElementType SHEBANG_LINE = new LuauElementType("SHEBANG_LINE");
@@ -397,6 +398,9 @@ public interface LuauTypes {
       }
       else if (type == REPEAT_STATEMENT) {
         return new LuauRepeatStatementImpl(node);
+      }
+      else if (type == RETURN_STATEMENT) {
+        return new LuauReturnStatementImpl(node);
       }
       else if (type == RETURN_TYPE) {
         return new LuauReturnTypeImpl(node);

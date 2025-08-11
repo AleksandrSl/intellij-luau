@@ -101,6 +101,7 @@
         <liveTemplateContext
                 contextId="LUAU"
                 implementation="com.github.aleksandrsl.intellijluau.codeInsight.template.LuauTemplateContext"/>
+        <vcs.codeVisionLanguageContext language="Luau" implementationClass="com.github.aleksandrsl.intellijluau.hints.LuauCodeVisionContext"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"

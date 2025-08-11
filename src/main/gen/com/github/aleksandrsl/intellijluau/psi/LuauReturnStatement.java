@@ -5,12 +5,9 @@ import java.util.List;
 import org.jetbrains.annotations.*;
 import com.intellij.psi.PsiElement;
 
-public interface LuauLastStatement extends LuauStatement {
+public interface LuauReturnStatement extends LuauStatement {
 
   @Nullable
-  LuauContinueSoftKeyword getContinueSoftKeyword();
-
-  @Nullable
-  LuauReturnStatement getReturnStatement();
+  LuauExpList getExpList();
 
 }
