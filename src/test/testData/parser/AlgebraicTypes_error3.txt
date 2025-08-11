@@ -16,7 +16,7 @@ Luau file(0,105)
             PsiElement(ID)('A')(86,87)
     PsiElement(<)('<')(87,88)
     PsiElement(|)('|')(88,89)
-    PsiErrorElement:'(' unexpected(89,89)
+    PsiErrorElement:'(', <, <singleton type>, ID or typeof expected, got '('(89,89)
       <empty list>
     PsiWhiteSpace(' ')(89,90)
     PsiElement(()('(')(90,91)

@@ -4,8 +4,8 @@ import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.cli.RojoCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
-import com.github.aleksandrsl.intellijluau.showNotification
-import com.intellij.execution.process.ProcessHandler
+import com.github.aleksandrsl.intellijluau.showProjectNotification
+import com.intellij.execution.process.OSProcessHandler
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.options.ShowSettingsUtil
@@ -28,12 +28,12 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
     override fun start() {
         coroutineScope.launch {
             if (checkIntegrity()) {
-                startWatch()
+                doStart()
             }
         }
     }
 
-    override fun createProcess(): ProcessHandler {
+    override fun createProcess(): OSProcessHandler {
         val settings = ProjectSettingsState.getInstance(project)
         return rojoCli.generateSourcemap(project, settings.lspRojoProjectFile, settings.lspSourcemapFile)
     }
@@ -51,10 +51,11 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
             }
         }
         if (version == null) {
-            SourcemapGenerator.notifications().showNotification(
+            SourcemapGenerator.notifications().showProjectNotification(
                 LuauBundle.message("luau.sourcemap.generation.rojo.title"),
                 "Sourcemap generation requires Rojo installed globally. Please install it or configure sourcemap generation to use a different tool.",
                 NotificationType.INFORMATION,
+                project
             ) {
                 addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
                     ShowSettingsUtil.getInstance()
@@ -64,11 +65,13 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
             return false
         }
 
-        if (!Path(settings.lspRojoProjectFile).exists()) {
-            SourcemapGenerator.notifications().showNotification(
+        val root = project.basePath ?: return false
+        if (!Path(root).resolve(settings.lspRojoProjectFile).exists()) {
+            SourcemapGenerator.notifications().showProjectNotification(
                 LuauBundle.message("luau.sourcemap.generation.rojo.title"),
                 "Project file (${settings.lspRojoProjectFile}) doesn't exist. Please configure which file to use in the settings",
                 NotificationType.INFORMATION,
+                project
             ) {
                 addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
                     ShowSettingsUtil.getInstance()

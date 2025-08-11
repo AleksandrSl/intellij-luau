@@ -69,14 +69,8 @@
         <notificationGroup id="Luau notifications"
                            displayType="BALLOON"
                            key="luau.notification.group.name"/>
-        <notificationGroup id="Luau sourcemap generation"
-                           displayType="BALLOON"
-                           key="luau.notification.group.sourcemap.name"/>
-        <backgroundPostStartupActivity
-                implementation="com.github.aleksandrsl.intellijluau.lsp.SourcemapGeneratorStartupActivity"/>
         <postStartupActivity
                 implementation="com.github.aleksandrsl.intellijluau.settings.DefaultSettingsStartupActivity"/>
-
         <actionOnSaveInfoProvider
                 id="LuauOnSaveActionInfoProvider"
                 order="after FormatOnSaveInfoProvider"
@@ -91,6 +85,9 @@
         <additionalTextAttributes
                 scheme="Darcula"
                 file="colorSchemes/luauDarcula.xml"/>
+        <additionalTextAttributes
+                scheme="Dark"
+                file="colorSchemes/luauDarcula.xml"/>
         <projectService serviceImplementation="com.github.aleksandrsl.intellijluau.LuauStdLibServiceImpl"
                         testServiceImplementation="com.github.aleksandrsl.intellijluau.LuauStdLibServiceTestImpl"
                         serviceInterface="com.github.aleksandrsl.intellijluau.LuauStdLibService"
@@ -99,6 +96,12 @@
                                 implementationClass="com.github.aleksandrsl.intellijluau.completion.LuauKeywordCompletionContributor"
                                 order="first"/>
         <errorHandler implementation="com.intellij.diagnostic.JetBrainsMarketplaceErrorReportSubmitter"/>
+        <breadcrumbsInfoProvider implementation="com.github.aleksandrsl.intellijluau.codeInsight.LuauBreadcrumbsProvider"/>
+        <defaultLiveTemplates file="/liveTemplates/luau.xml"/>
+        <liveTemplateContext
+                contextId="LUAU"
+                implementation="com.github.aleksandrsl.intellijluau.codeInsight.template.LuauTemplateContext"/>
+        <vcs.codeVisionLanguageContext language="Luau" implementationClass="com.github.aleksandrsl.intellijluau.hints.LuauCodeVisionContext"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
@@ -110,8 +113,5 @@
                 id="luau.newFile">
             <add-to-group group-id="NewGroup" anchor="before" relative-to-action="NewFromTemplate"/>
         </action>
-        <action id="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
-                class="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
-        />
     </actions>
 </idea-plugin>

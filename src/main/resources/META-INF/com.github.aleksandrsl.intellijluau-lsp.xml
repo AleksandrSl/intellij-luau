@@ -1,6 +1,28 @@
 <idea-plugin>
+    <resource-bundle>messages.LuauBundle</resource-bundle>
     <extensions defaultExtensionNs="com.intellij">
         <platform.lsp.serverSupportProvider
                 implementation="com.github.aleksandrsl.intellijluau.lsp.LuauLspServerSupportProvider"/>
+        <notificationGroup id="Luau sourcemap generation"
+                           displayType="BALLOON"
+                           key="luau.notification.group.sourcemap.name"/>
+        <backgroundPostStartupActivity
+                implementation="com.github.aleksandrsl.intellijluau.lsp.SourcemapGeneratorStartupActivity"/>
     </extensions>
+    <projectListeners>
+        <listener
+                class="com.github.aleksandrsl.intellijluau.lsp.LuauLspManagerLspRestartListener"
+                topic="com.github.aleksandrsl.intellijluau.lsp.LuauLspManager$LspManagerChangeListener"/>
+        <listener
+                class="com.github.aleksandrsl.intellijluau.lsp.LuauSettingsLspRestartListener"
+                topic="com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable$SettingsChangeListener"/>
+    </projectListeners>
+    <actions>
+        <action id="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
+                class="com.github.aleksandrsl.intellijluau.actions.RestartSourcemapGeneratorAction"
+        />
+        <action id="com.github.aleksandrsl.intellijluau.actions.UpdateRobloxApiDefinitionsAndDocsAction"
+                class="com.github.aleksandrsl.intellijluau.actions.UpdateRobloxApiDefinitionsAndDocsAction"
+        />
+    </actions>
 </idea-plugin>

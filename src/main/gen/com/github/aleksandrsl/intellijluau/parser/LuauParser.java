@@ -233,7 +233,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // !(statement_first | exp_first )
+  // !(statement_first | exp_first)
   static boolean attribute_recover(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "attribute_recover")) return false;
     boolean r;
@@ -1589,13 +1589,13 @@ public class LuauParser implements PsiParser, LightPsiParser {
   // '&' simple_type
   public static boolean intersection_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "intersection_type")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _UPPER_, INTERSECTION_TYPE, "<intersection type>");
+    if (!nextTokenIs(b, INTERSECTION)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _UPPER_, INTERSECTION_TYPE, null);
     r = consumeToken(b, INTERSECTION);
-    p = r; // pin = 1
     r = r && simple_type(b, l + 1);
-    exit_section_(b, l, m, r, p, LuauParser::type_recover);
-    return r || p;
+    exit_section_(b, l, m, r, false, null);
+    return r;
   }
 
   /* ********************************************************** */
@@ -2052,63 +2052,139 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // '(' (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)? ')'
+  // '(' parameter_with_recover* type_pack_parameter? ')'
   public static boolean par_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "par_list")) return false;
     if (!nextTokenIs(b, LPAREN)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, PAR_LIST, null);
     r = consumeToken(b, LPAREN);
-    r = r && par_list_1(b, l + 1);
-    r = r && consumeToken(b, RPAREN);
-    exit_section_(b, m, PAR_LIST, r);
-    return r;
+    p = r; // pin = 1
+    r = r && report_error_(b, par_list_1(b, l + 1));
+    r = p && report_error_(b, par_list_2(b, l + 1)) && r;
+    r = p && consumeToken(b, RPAREN) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
   }
 
-  // (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)?
+  // parameter_with_recover*
   private static boolean par_list_1(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "par_list_1")) return false;
-    par_list_1_0(b, l + 1);
+    while (true) {
+      int c = current_position_(b);
+      if (!parameter_with_recover(b, l + 1)) break;
+      if (!empty_element_parsed_guard_(b, "par_list_1", c)) break;
+    }
     return true;
   }
 
-  // <<list binding>> (',' type_pack_parameter)? | type_pack_parameter
-  private static boolean par_list_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "par_list_1_0")) return false;
+  // type_pack_parameter?
+  private static boolean par_list_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "par_list_2")) return false;
+    type_pack_parameter(b, l + 1);
+    return true;
+  }
+
+  /* ********************************************************** */
+  // !(ID | '...' | ')' | statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | last_statement_first)
+  static boolean parameter_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_recover")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !parameter_recover_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // ID | '...' | ')' | statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | last_statement_first
+  private static boolean parameter_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_recover_0")) return false;
+    boolean r;
+    r = consumeTokenFast(b, ID);
+    if (!r) r = consumeTokenFast(b, ELLIPSIS);
+    if (!r) r = consumeTokenFast(b, RPAREN);
+    if (!r) r = statement_first(b, l + 1);
+    if (!r) r = consumeTokenFast(b, SEMI);
+    if (!r) r = consumeTokenFast(b, END);
+    if (!r) r = consumeTokenFast(b, UNTIL);
+    if (!r) r = consumeTokenFast(b, ELSEIF);
+    if (!r) r = consumeTokenFast(b, ELSE);
+    if (!r) r = last_statement_first(b, l + 1);
+    return r;
+  }
+
+  /* ********************************************************** */
+  // !(')' | '...') binding (',' !')' | &')')
+  static boolean parameter_with_recover(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_with_recover")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
+    r = parameter_with_recover_0(b, l + 1);
+    p = r; // pin = 1
+    r = r && report_error_(b, binding(b, l + 1));
+    r = p && parameter_with_recover_2(b, l + 1) && r;
+    exit_section_(b, l, m, r, p, LuauParser::parameter_recover);
+    return r || p;
+  }
+
+  // !(')' | '...')
+  private static boolean parameter_with_recover_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_with_recover_0")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !parameter_with_recover_0_0(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // ')' | '...'
+  private static boolean parameter_with_recover_0_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_with_recover_0_0")) return false;
+    boolean r;
+    r = consumeToken(b, RPAREN);
+    if (!r) r = consumeToken(b, ELLIPSIS);
+    return r;
+  }
+
+  // ',' !')' | &')'
+  private static boolean parameter_with_recover_2(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_with_recover_2")) return false;
     boolean r;
     Marker m = enter_section_(b);
-    r = par_list_1_0_0(b, l + 1);
-    if (!r) r = type_pack_parameter(b, l + 1);
+    r = parameter_with_recover_2_0(b, l + 1);
+    if (!r) r = parameter_with_recover_2_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
-  // <<list binding>> (',' type_pack_parameter)?
-  private static boolean par_list_1_0_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "par_list_1_0_0")) return false;
-    boolean r;
-    Marker m = enter_section_(b);
-    r = list(b, l + 1, LuauParser::binding);
-    r = r && par_list_1_0_0_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
-  }
-
-  // (',' type_pack_parameter)?
-  private static boolean par_list_1_0_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "par_list_1_0_0_1")) return false;
-    par_list_1_0_0_1_0(b, l + 1);
-    return true;
-  }
-
-  // ',' type_pack_parameter
-  private static boolean par_list_1_0_0_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "par_list_1_0_0_1_0")) return false;
+  // ',' !')'
+  private static boolean parameter_with_recover_2_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_with_recover_2_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
-    r = r && type_pack_parameter(b, l + 1);
+    r = r && parameter_with_recover_2_0_1(b, l + 1);
     exit_section_(b, m, null, r);
+    return r;
+  }
+
+  // !')'
+  private static boolean parameter_with_recover_2_0_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_with_recover_2_0_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NOT_);
+    r = !consumeToken(b, RPAREN);
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  // &')'
+  private static boolean parameter_with_recover_2_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "parameter_with_recover_2_1")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _AND_);
+    r = consumeToken(b, RPAREN);
+    exit_section_(b, l, m, r, false, null);
     return r;
   }
 
@@ -2382,11 +2458,11 @@ public class LuauParser implements PsiParser, LightPsiParser {
 
   /* ********************************************************** */
   // 'return' exp_list?
-  static boolean return_statement(PsiBuilder b, int l) {
+  public static boolean return_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "return_statement")) return false;
     if (!nextTokenIs(b, RETURN)) return false;
     boolean r, p;
-    Marker m = enter_section_(b, l, _NONE_);
+    Marker m = enter_section_(b, l, _NONE_, RETURN_STATEMENT, null);
     r = consumeToken(b, RETURN);
     p = r; // pin = 1
     r = r && return_statement_1(b, l + 1);
@@ -3214,24 +3290,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // ID | '(' | '|' | '&' | 'nil' | STRING | 'true' | 'false' | typeof_soft_keyword | '<'
-  static boolean type_first(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_first")) return false;
-    boolean r;
-    r = consumeTokenFast(b, ID);
-    if (!r) r = consumeTokenFast(b, LPAREN);
-    if (!r) r = consumeTokenFast(b, UNION);
-    if (!r) r = consumeTokenFast(b, INTERSECTION);
-    if (!r) r = consumeTokenFast(b, NIL);
-    if (!r) r = consumeTokenFast(b, STRING);
-    if (!r) r = consumeTokenFast(b, TRUE);
-    if (!r) r = consumeTokenFast(b, FALSE);
-    if (!r) r = typeof_soft_keyword(b, l + 1);
-    if (!r) r = consumeTokenFast(b, LT);
-    return r;
-  }
-
-  /* ********************************************************** */
   // export_soft_keyword? type_soft_keyword 'function' ID func_body
   public static boolean type_function_declaration_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_function_declaration_statement")) return false;
@@ -3269,38 +3327,39 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // <<list type>> (',' variadic_type_pack)? | variadic_type_pack
+  // generic_type_pack | <<list type>> (',' variadic_type_pack)? | variadic_type_pack
   public static boolean type_list(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_list")) return false;
     boolean r;
     Marker m = enter_section_(b, l, _NONE_, TYPE_LIST, "<type list>");
-    r = type_list_0(b, l + 1);
+    r = generic_type_pack(b, l + 1);
+    if (!r) r = type_list_1(b, l + 1);
     if (!r) r = variadic_type_pack(b, l + 1);
     exit_section_(b, l, m, r, false, null);
     return r;
   }
 
   // <<list type>> (',' variadic_type_pack)?
-  private static boolean type_list_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_0")) return false;
+  private static boolean type_list_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_1")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = list(b, l + 1, LuauParser::type);
-    r = r && type_list_0_1(b, l + 1);
+    r = r && type_list_1_1(b, l + 1);
     exit_section_(b, m, null, r);
     return r;
   }
 
   // (',' variadic_type_pack)?
-  private static boolean type_list_0_1(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_0_1")) return false;
-    type_list_0_1_0(b, l + 1);
+  private static boolean type_list_1_1(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_1_1")) return false;
+    type_list_1_1_0(b, l + 1);
     return true;
   }
 
   // ',' variadic_type_pack
-  private static boolean type_list_0_1_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_list_0_1_0")) return false;
+  private static boolean type_list_1_1_0(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "type_list_1_1_0")) return false;
     boolean r;
     Marker m = enter_section_(b);
     r = consumeToken(b, COMMA);
@@ -3335,12 +3394,13 @@ public class LuauParser implements PsiParser, LightPsiParser {
   static boolean type_pack_parameter(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "type_pack_parameter")) return false;
     if (!nextTokenIs(b, ELLIPSIS)) return false;
-    boolean r;
-    Marker m = enter_section_(b);
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_);
     r = consumeToken(b, ELLIPSIS);
+    p = r; // pin = 1
     r = r && type_pack_parameter_1(b, l + 1);
-    exit_section_(b, m, null, r);
-    return r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
   }
 
   // (':' (generic_type_pack | type))?
@@ -3390,35 +3450,6 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = generic_type_pack(b, l + 1);
     if (!r) r = type(b, l + 1);
     if (!r) r = type_pack(b, l + 1);
-    return r;
-  }
-
-  /* ********************************************************** */
-  // !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end')
-  static boolean type_recover(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_recover")) return false;
-    boolean r;
-    Marker m = enter_section_(b, l, _NOT_);
-    r = !type_recover_0(b, l + 1);
-    exit_section_(b, l, m, r, false, null);
-    return r;
-  }
-
-  // ')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end'
-  private static boolean type_recover_0(PsiBuilder b, int l) {
-    if (!recursion_guard_(b, l, "type_recover_0")) return false;
-    boolean r;
-    r = consumeTokenFast(b, RPAREN);
-    if (!r) r = consumeTokenFast(b, RCURLY);
-    if (!r) r = consumeTokenFast(b, COMMA);
-    if (!r) r = consumeTokenFast(b, SEMI);
-    if (!r) r = consumeTokenFast(b, GT);
-    if (!r) r = consumeTokenFast(b, RBRACK);
-    if (!r) r = consumeTokenFast(b, ASSIGN);
-    if (!r) r = type_first(b, l + 1);
-    if (!r) r = statement_first(b, l + 1);
-    if (!r) r = last_statement_first(b, l + 1);
-    if (!r) r = consumeTokenFast(b, END);
     return r;
   }
 
@@ -3595,14 +3626,14 @@ public class LuauParser implements PsiParser, LightPsiParser {
   // '|' simple_type '?'?
   public static boolean union_type(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "union_type")) return false;
-    boolean r, p;
-    Marker m = enter_section_(b, l, _UPPER_, UNION_TYPE, "<union type>");
+    if (!nextTokenIs(b, UNION)) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _UPPER_, UNION_TYPE, null);
     r = consumeToken(b, UNION);
-    p = r; // pin = 1
-    r = r && report_error_(b, simple_type(b, l + 1));
-    r = p && union_type_2(b, l + 1) && r;
-    exit_section_(b, l, m, r, p, LuauParser::type_recover);
-    return r || p;
+    r = r && simple_type(b, l + 1);
+    r = r && union_type_2(b, l + 1);
+    exit_section_(b, l, m, r, false, null);
+    return r;
   }
 
   // '?'?

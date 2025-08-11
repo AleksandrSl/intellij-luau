@@ -19,9 +19,6 @@ public interface LuauRootBlock extends LuauElement {
   @NotNull
   List<LuauDoStatement> getDoStatementList();
 
-  @Nullable
-  LuauExpList getExpList();
-
   @NotNull
   List<LuauExpressionStatement> getExpressionStatementList();
 
@@ -45,6 +42,9 @@ public interface LuauRootBlock extends LuauElement {
 
   @NotNull
   List<LuauRepeatStatement> getRepeatStatementList();
+
+  @Nullable
+  LuauReturnStatement getReturnStatement();
 
   @NotNull
   List<LuauTypeDeclarationStatement> getTypeDeclarationStatementList();

@@ -24,7 +24,7 @@ class LuauCompletionScopeProcessor() : PsiScopeProcessor {
      * @return true since we need all the declarations
      */
     override fun execute(element: PsiElement, state: ResolveState): Boolean {
-        // Name filtration is done by the IDEA later in completion
+        // IDEA does name filtration later in completion
         if (element is LuauNamedElement) {
             // TODO (AleksandrSl 04/05/2025): I need to handle shadowing both here and in the resolve processor
             val presentation = element.presentation

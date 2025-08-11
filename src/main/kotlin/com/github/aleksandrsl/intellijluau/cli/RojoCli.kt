@@ -12,7 +12,7 @@ class RojoCli() {
         val actualRojoProjectFile = rojoProjectFile.ifBlank { DEFAULT_ROJO_PROJECT_FILE }
         val actualSourcemapFile = sourcemapFile.ifBlank { "sourcemap.json" }
 
-        return OSProcessHandler(
+        return OSProcessHandler.Silent(
             GeneralCommandLine(
                 listOf(
                     "rojo",

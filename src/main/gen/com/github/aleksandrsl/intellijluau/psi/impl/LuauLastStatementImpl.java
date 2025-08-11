@@ -35,8 +35,8 @@ public class LuauLastStatementImpl extends ASTWrapperPsiElement implements LuauL
 
   @Override
   @Nullable
-  public LuauExpList getExpList() {
-    return findChildByClass(LuauExpList.class);
+  public LuauReturnStatement getReturnStatement() {
+    return findChildByClass(LuauReturnStatement.class);
   }
 
 }

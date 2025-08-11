@@ -1,9 +1,6 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
-import com.github.aleksandrsl.intellijluau.LuauBundle
-import com.github.aleksandrsl.intellijluau.LuauFileType
-import com.github.aleksandrsl.intellijluau.LuauNotifications
-import com.github.aleksandrsl.intellijluau.LuauPluginDisposable
+import com.github.aleksandrsl.intellijluau.*
 import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.intellij.notification.NotificationAction
@@ -38,6 +35,8 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
     private lateinit var processQueue: Channel<Unit>
     private val projectDir: VirtualFile?
 
+    override val name: String = "custom"
+
     init {
         LOG.info("Initializing file watcher for project ${project.name}")
         projectDir = project.guessProjectDir()
@@ -45,15 +44,15 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
 
     override fun start() {
         if (projectDir == null) {
-            LuauNotifications.pluginNotifications().createNotification(
-                "Cannot guess the project root. You're unlucky", NotificationType.ERROR
-            ).notify(project)
+            SourcemapGenerator.notifications().showProjectNotification(
+                "Cannot guess the project root. You're unlucky", NotificationType.ERROR, project
+            )
             return
         }
         if (isActive) return
         processQueue = Channel(Channel.CONFLATED)
         fileListenerDisposable =
-            Disposer.newDisposable(LuauPluginDisposable.Companion.getInstance(project), "FileListenerDisposable")
+            Disposer.newDisposable(LuauPluginDisposable.getInstance(project), "FileListenerDisposable")
         // Regenerate sourcemap on the first start
         queueSourcemapRegeneration()
 
@@ -100,7 +99,7 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
     }
 
     // Should I make this synchronized? I think not, because service shouldn't be called in parallel.
-    override fun stop() {
+    override suspend fun stop() {
         if (!isActive) return
         isActive = false
         LOG.info("Stopping file watcher for project ${project.name}")
@@ -147,9 +146,5 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
         ).addAction(NotificationAction.createSimple("Open settings") {
             ShowSettingsUtil.getInstance().showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
         }).notify(project)
-    }
-
-    override fun dispose() {
-        stop()
     }
 }

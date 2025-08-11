@@ -1,7 +1,8 @@
 package com.github.aleksandrsl.intellijluau.completion
 
+import com.github.aleksandrsl.intellijluau.settings.LspConfigurationType
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 
 
@@ -11,6 +12,11 @@ class LuauCompletionTestCase : BasePlatformTestCase() {
 
     override fun getTestDataPath(): String {
         return baseTestDataPath
+    }
+
+    override fun setUp() {
+        super.setUp()
+        ProjectSettingsState.getInstance(project).state.lspConfigurationType = LspConfigurationType.Disabled
     }
 
     fun `test keywords completion at the beginning of a line`() {

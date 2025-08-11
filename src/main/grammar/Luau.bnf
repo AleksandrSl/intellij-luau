@@ -183,7 +183,7 @@ compound_op_statement ::= lvalue compound_op expression { pin = 2 }
 // Alternative here is to use `external my_external_rule ::= parseMyExternalRule false 10`
 expression_statement ::= <<parseExprStatement index_or_call_expr>>
 private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
-private return_statement ::= 'return' exp_list? { pin = 1 }
+return_statement ::= 'return' exp_list? { pin = 1 }
 // Though break and continue can only be inside the cycle, I can't create a separate cycle_block.
 // Since many things can be nested inside the cycle. Though functions for example cannot have continue
 // even if they are inside the while. I don't think it's worth trying to check this on parser level.
@@ -246,7 +246,7 @@ parametrized_attribute ::= ID parameters? (',' !']' | &']') { pin = 1; recoverWh
 private parametrized_attribute_recover ::= !(']' | statement_first)
 attribute ::= '@' (ID | '[' parametrized_attribute* ']') { pin = 1; recoverWhile = attribute_recover }
 attributes ::= attribute+
-private attribute_recover ::= !(statement_first | exp_first )
+private attribute_recover ::= !(statement_first | exp_first)
 
 /* Attributes End */
 
@@ -281,7 +281,7 @@ local_func_def_statement ::= attributes? 'local' 'function' ID func_body {
 // TODO (AleksandrSl 22/04/2025): Fix the fact that the first ID probably considered the name, but it should be the last one
 method_def_statement ::= attributes? 'function' method_name func_body {
   pin = 3;
-  methods=[getPresentation];
+  methods=[getPresentation getNameIdentifier];
   extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
   implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
 }
@@ -293,9 +293,18 @@ func_body ::= func_type_params? par_list (':' return_type)? block 'end' {
   implements=["com.github.aleksandrsl.intellijluau.psi.LuauGenericDeclaration"]
   methods=[getDeclaredGenerics]
 }
+private parameter_with_recover ::= !(')' | '...') binding (',' !')' | &')') {
+ pin = 1
+ recoverWhile = parameter_recover
+}
+// I have a feeling that I may have less elements here, but I'm not sure.
+private parameter_recover ::= !(ID | '...' | ')' | statement_first | ';' | 'end' | 'until' | 'elseif' | 'else' | last_statement_first)
+
+// I can't do a simple recoverWhile in the par_list, because I generally want recovery to end before ')' so the par_list is closed successfully whenever it has a pair of ().
+// This makes me move parameters to a separate rule. I did it in a way similar to rust and how I do it for the function call.
 // binding_list is not used here on purpose to flatter the parameters into one list for better formatting and less PSI
-par_list ::= '(' (<<list binding>> (',' type_pack_parameter)? | type_pack_parameter)? ')'
-private type_pack_parameter ::= '...' (':' (generic_type_pack | type))?
+par_list ::= '(' parameter_with_recover* type_pack_parameter? ')' { pin = 1 }
+private type_pack_parameter ::= '...' (':' (generic_type_pack | type))? { pin = 1 }
 
 exp_list ::= <<list expression>> { name = "expression list" }
 
@@ -403,7 +412,7 @@ private add_group ::= plus_expr | minus_expr
 // But it does
 // if (!r) r = value_expr(b, l + 1);
 // if (!r) r = as_expr(b, l + 1);
-// So as_expr is parse only if the previous ones are not parsed
+// So as_expr is parsed only if the previous ones are not parsed
 // I tried a lot of combinations. The idea is to wrap all these into a cast if it's there. But if the primary_group stays private
 // it doesn't work like this and instead tries to parse cast as one more union option. (most probably it's a bug)
 // If you make primary_group_expr non private (and you have to make it an expr then) then everything is good.
@@ -467,6 +476,7 @@ computed_key ::= '[' expression ']' { pin = 1 }
 keyed_field ::= computed_key '=' expression { pin = 1; }
 string_keyed_field ::= ID '=' expression { pin = 2; }
 indexed_field ::= expression
+// TODO (AleksandrSl 06/07/2025): Do I need statement here? Ideally the field is in between the {} and there is a little chance there will be a statement start inside.
 private field_recover ::= !('}' | '[' | exp_first | statement_first | 'end' | last_statement_first)
 // Why the hell they allow two separators
 private field_sep ::= ',' | ';'
@@ -500,7 +510,7 @@ singleton_type ::= STRING | 'true' | 'false' | 'nil'
 generic_type_pack ::= ID '...'
 variadic_type_pack ::= '...' type { pin = 1 }
 type_pack ::= '(' type_list? ')'
-type_list ::= <<list type>> (',' variadic_type_pack)? | variadic_type_pack
+type_list ::= generic_type_pack | <<list type>> (',' variadic_type_pack)? | variadic_type_pack
 
 /* The order of types here is fragile, and I'm not 100% sure the finally correct one.
  * If you put type first it boggles the generic type packs by parsing the Type first without ...
@@ -533,17 +543,11 @@ type ::=
 // After checking how types are done in TS I decided that if they don't need the nesting I don't need too.
 // So upper should work just fine, it also doesn't have weird marker problems as left does
 // See https://github.com/JetBrains/Grammar-Kit/issues/396
-upper union_type ::= '|' simple_type '?'? { recoverWhile = type_recover; pin = 1 }
-upper intersection_type ::= '&' simple_type { recoverWhile = type_recover; pin = 1 }
-
-// I'm a bit surprise I need so many values here, but types can be found in a lot of contexts indeed
-// Can consider bailing out on recover here, too much checks for little gain?
-// I also still don't understand why it tries to match the rule even if it is already successfully parsed?
-// Rust has recover mostly on the things wrapped into some parenthesis. They don't have any algebraic types in the language
-private type_recover ::= !(')' | '}' | ',' | ';' | '>' | ']' | "=" | type_first | statement_first | last_statement_first | 'end')
-
-// '<' is for the function type start
-private type_first ::= ID | '(' | '|' | '&' | 'nil' | STRING | 'true' | 'false' | typeof_soft_keyword | '<'
+upper union_type ::= '|' simple_type '?'?
+// Since types can be used in the casts inside expressions as well almost all the symbols are in recovery rule.
+// Given that writing very complex type where this recovery helps at all are rare I decided to give up on it.
+// See https://github.com/AleksandrSl/intellij-luau/issues/107
+upper intersection_type ::= '&' simple_type
 
 // Yes it looks like generic_type_pack, but maybe it's needed for something in the original grammar? Let's keep it
 generic_type_pack_parameter ::= ID '...' { extends=base_generic_type_declaration }

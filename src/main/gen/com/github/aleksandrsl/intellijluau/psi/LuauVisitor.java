@@ -297,6 +297,10 @@ public class LuauVisitor extends PsiElementVisitor {
     visitStatement(o);
   }
 
+  public void visitReturnStatement(@NotNull LuauReturnStatement o) {
+    visitStatement(o);
+  }
+
   public void visitReturnType(@NotNull LuauReturnType o) {
     visitElement(o);
   }

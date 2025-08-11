@@ -11,6 +11,6 @@ public interface LuauLastStatement extends LuauStatement {
   LuauContinueSoftKeyword getContinueSoftKeyword();
 
   @Nullable
-  LuauExpList getExpList();
+  LuauReturnStatement getReturnStatement();
 
 }
