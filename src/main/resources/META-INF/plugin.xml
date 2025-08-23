@@ -65,7 +65,15 @@
                 id="settings.luau"
                 displayName="Luau"
                 nonDefaultProject="true"
-        />
+        >
+            <configurable
+                    id="settings.luau.stylua"
+                    displayName="StyLua"
+                    nonDefaultProject="true"
+                    instance="com.github.aleksandrsl.intellijluau.settings.StyluaSettingsConfigurable"/>
+        </projectConfigurable>
+
+
         <notificationGroup id="Luau notifications"
                            displayType="BALLOON"
                            key="luau.notification.group.name"/>

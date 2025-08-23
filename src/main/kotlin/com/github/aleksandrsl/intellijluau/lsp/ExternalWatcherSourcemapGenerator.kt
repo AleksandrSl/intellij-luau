@@ -1,7 +1,7 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
-import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
+import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.showProjectNotification
 import com.github.aleksandrsl.intellijluau.util.capitalize
 import com.intellij.execution.process.OSProcessHandler

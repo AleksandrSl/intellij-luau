@@ -1,4 +1,4 @@
-package com.github.aleksandrsl.intellijluau.cli
+package com.github.aleksandrsl.intellijluau.tools
 
 import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
 import com.github.aleksandrsl.intellijluau.util.Version

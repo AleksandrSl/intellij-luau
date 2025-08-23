@@ -1,6 +1,5 @@
-package com.github.aleksandrsl.intellijluau.cli
+package com.github.aleksandrsl.intellijluau.tools
 
-import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.openapi.application.readAction
@@ -13,8 +12,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.nio.file.Path
-import kotlin.io.path.pathString
 
 
 private val LOG = logger<StyLuaCli>()
@@ -22,7 +19,7 @@ private val LOG = logger<StyLuaCli>()
 /**
  * Interact with external `StyLua` process.
  */
-class StyLuaCli(private val styLuaExecutablePath: Path) {
+class StyLuaCli(styLuaExecutablePathString: String) : ExternalToolCli(styLuaExecutablePathString) {
 
     // TODO (AleksandrSl 17/07/2024): Come up with a better name
     private suspend fun _formatFile(project: Project, file: VirtualFile): FormatResult? {
@@ -40,23 +37,14 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         val stdin = content
         if (stdin.isNullOrEmpty()) return null
         // Consider using ExecUtil
-        val charset = Charsets.UTF_8
-        val commandLine = GeneralCommandLine().apply {
-            withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-            // Seems that it's null by default
-            withWorkDirectory(project.basePath)
-            withCharset(charset)
-            withExePath(styLuaExecutablePath.pathString)
-            addParameter("--stdin-filepath")
-            addParameter(file.path)
-            addParameter("-")
-        }
+        val commandLine =
+            createBaseCommandLine(listOf("--stdin-filepath", file.path, "-"), workingDirectory = project.basePath)
 
         try {
             // TODO (AleksandrSl 27/05/2025): Ensure that I call withContext(Dispatchers.IO) as closer to the IO as possible. https://plugins.jetbrains.com/docs/intellij/coroutine-dispatchers.html#io-dispatcher
             val output = withContext(Dispatchers.IO) {
                 val handler = CapturingProcessHandler(commandLine)
-                handler.processInput.use { it.write(stdin.toByteArray(charset)) }
+                handler.processInput.use { it.write(stdin.toByteArray(commandLine.charset)) }
                 LOG.debug(commandLine.commandLineString)
                 handler.runProcess()
             }
@@ -71,19 +59,11 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
     }
 
     fun createOsProcessHandler(project: Project, file: VirtualFile): OSProcessHandler {
-        val charset = Charsets.UTF_8
-        val commandLine = GeneralCommandLine().apply {
-            withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-            // Seems that it's null by default
-            withWorkDirectory(project.basePath)
-            withCharset(charset)
-            withExePath(styLuaExecutablePath.pathString)
-            addParameter("--stdin-filepath")
-            addParameter(file.path)
-            addParameter("-")
-        }
-
-        return OSProcessHandler(commandLine)
+        return OSProcessHandler(
+            createBaseCommandLine(
+                listOf("--stdin-filepath", file.path, "-"), workingDirectory = project.basePath
+            )
+        )
     }
 
     // Move this outside of the cli, because it's not cli related?
@@ -124,14 +104,20 @@ class StyLuaCli(private val styLuaExecutablePath: Path) {
         class StyluaError(msg: String) : FormatResult("Stylua failed to run \n$msg")
     }
 
-    fun queryVersion(): String {
-        val firstLine = CapturingProcessHandler(GeneralCommandLine().apply {
-            withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
-            withCharset(Charsets.UTF_8)
-            withExePath(styLuaExecutablePath.pathString)
-            addParameter("--version")
-//                 TODO: Do lazy reading?
-        }).runProcess().stdoutLines.first()
-        return firstLine
+    fun queryVersion(project: Project): Result<String> {
+        // TODO: Do lazy reading?
+        val result =
+            CapturingProcessHandler(createBaseCommandLine(listOf("--version"), workingDirectory = project.basePath))
+                .runProcess()
+        if (result.exitCode != 0) {
+            return Result.failure(IllegalStateException("Failed to get stylua version: ${result.stderrLines}"))
+        } else {
+            val stdout = result.stdoutLines
+            val firstLine = stdout.firstOrNull()
+            if (firstLine?.matches(Regex("stylua \\d+\\.\\d+\\.\\d+")) == true) {
+                return Result.success(firstLine)
+            }
+            return Result.failure(IllegalStateException("Failed to get stylua version: $stdout"))
+        }
     }
 }

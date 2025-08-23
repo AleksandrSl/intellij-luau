@@ -44,11 +44,14 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val disableBuiltinFormatter
         get() = runStyLua == RunStyluaOption.RunOnSaveAndDisableBuiltinFormatter
 
+    val styluaConfigurationType
+        get() = internalState.styluaConfigurationType
+
     val runStyLuaInsteadOfFormatter
         get() = runStyLua == RunStyluaOption.RunInsteadOfFormatter
 
     val runStyLua
-        get() = if (internalState.styLuaPath.isNotBlank()) {
+        get() = if (internalState.styluaConfigurationType != StyluaConfigurationType.Disabled && internalState.styLuaPath.isNotBlank()) {
             internalState.runStyLua
         } else {
             RunStyluaOption.Disabled
@@ -134,6 +137,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var customDefinitionsPaths: List<String> = ShareableProjectSettingsStateDefaults.customDefinitionsPaths,
         override var useLuauExtension: Boolean = ShareableProjectSettingsStateDefaults.useLuauExtension,
         override var platformType: PlatformType = ShareableProjectSettingsStateDefaults.platformType,
+        override var styluaConfigurationType: StyluaConfigurationType = ShareableProjectSettingsStateDefaults.styluaConfigurationType,
     ) : ShareableProjectSettingsState
 
     companion object {
@@ -165,7 +169,8 @@ interface ShareableProjectSettingsState {
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabledAndMinimallyConfigured: Boolean
-        get() = LuauLspPlatformSupportChecker.isLspSupported &&  lspConfigurationType == LspConfigurationType.Auto || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+        get() = LuauLspPlatformSupportChecker.isLspSupported && lspConfigurationType == LspConfigurationType.Auto || lspConfigurationType == LspConfigurationType.Manual && !lspPath.isEmpty()
+    val styluaConfigurationType: StyluaConfigurationType
 }
 
 data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsState {
@@ -180,6 +185,7 @@ data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsStat
     override val lspRojoProjectFile: String = DEFAULT_ROJO_PROJECT_FILE
 
     override val styLuaPath: String = ""
+    override val styluaConfigurationType: StyluaConfigurationType = StyluaConfigurationType.Auto
     override val runStyLua: RunStyluaOption = RunStyluaOption.Disabled
     override val robloxSecurityLevel: RobloxSecurityLevel = defaultRobloxSecurityLevel
     override val customDefinitionsPaths: List<String> = listOf()
@@ -193,6 +199,10 @@ enum class PlatformType(val value: String) {
 
 enum class LspSourcemapGenerationType {
     Disabled, Rojo, Manual
+}
+
+enum class StyluaConfigurationType {
+    Disabled, Auto, Manual,
 }
 
 enum class LspConfigurationType {
