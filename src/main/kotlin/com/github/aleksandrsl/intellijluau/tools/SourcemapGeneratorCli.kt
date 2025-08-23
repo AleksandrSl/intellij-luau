@@ -1,4 +1,4 @@
-package com.github.aleksandrsl.intellijluau.cli
+package com.github.aleksandrsl.intellijluau.tools
 
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.execution.configurations.GeneralCommandLine

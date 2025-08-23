@@ -2,9 +2,10 @@ package com.github.aleksandrsl.intellijluau.actions
 
 import com.github.aleksandrsl.intellijluau.LuauFileType
 import com.github.aleksandrsl.intellijluau.LuauNotifications
-import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.tools.StyLuaCli
+import com.github.aleksandrsl.intellijluau.tools.ToolchainResolver
 import com.intellij.ide.actionsOnSave.impl.ActionsOnSaveFileDocumentManagerListener
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
@@ -13,7 +14,6 @@ import com.intellij.openapi.editor.Document
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
-import java.io.File
 
 private val LOG = logger<LuauExternalFormatOnSaveAction>()
 
@@ -41,9 +41,8 @@ class LuauExternalFormatOnSaveAction : ActionsOnSaveFileDocumentManagerListener.
 //            }
         if (file?.fileType != LuauFileType) return
         LOG.debug("Processing $file on save")
-        val tool = File(ProjectSettingsState.getInstance(project).styLuaPath)
-        if (!tool.exists()) return
-        val result = StyLuaCli(tool.toPath()).formatFile(project, file)
+        val stylua = ToolchainResolver.resolveStylua(project) ?: return
+        val result = stylua.formatFile(project, file)
 
         // TODO (AleksandrSl 11/04/2025): From prettier
         //       val editor = FileEditorManager.getInstance(project).selectedTextEditor ?: return@writeCommandAction

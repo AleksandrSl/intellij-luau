@@ -1,7 +1,7 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.*
-import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
+import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType

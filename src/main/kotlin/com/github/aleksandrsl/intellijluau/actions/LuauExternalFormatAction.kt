@@ -1,20 +1,21 @@
 package com.github.aleksandrsl.intellijluau.actions
 
 import com.github.aleksandrsl.intellijluau.LuauNotifications
-import com.github.aleksandrsl.intellijluau.cli.LuauCliService
-import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.tools.LuauCliService
+import com.github.aleksandrsl.intellijluau.tools.StyLuaCli
+import com.github.aleksandrsl.intellijluau.tools.ToolchainResolver
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
-import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.platform.ide.progress.withBackgroundProgress
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 private val LOG = logger<LuauExternalFormatAction>()
@@ -30,34 +31,36 @@ class LuauExternalFormatAction : AnAction() {
         event.presentation.isEnabled = tool.exists()
     }
 
-    // TODO (AleksandrSl 14/07/2024): Wouldn't it be better to use BGT?
     override fun getActionUpdateThread(): ActionUpdateThread {
-        return ActionUpdateThread.EDT
+        return ActionUpdateThread.BGT
     }
 
     override fun actionPerformed(event: AnActionEvent) {
         val project: Project = event.project ?: return
 
-        val projectService = project.service<LuauCliService>()
+        val projectService = LuauCliService.getInstance(project)
         val notificationGroupManager = LuauNotifications.pluginNotifications()
-        projectService.coroutineScope.launch(Dispatchers.EDT) {
+        projectService.coroutineScope.launch(Dispatchers.IO) {
             // Why isn't modal progress working?
             // Do I need different contexts here?
             withBackgroundProgress(project, "Stylua format current document") {
-                when (val result = StyLuaCli(getToolPath(project).toPath()).formatDocument(project)) {
-                    is StyLuaCli.FormatResult.Success -> notificationGroupManager.createNotification(
-                        "File formatted",
-                        NotificationType.INFORMATION
-                    )
-                        .notify(project)
+                val result = ToolchainResolver.resolveStylua(project)?.formatDocument(project)
+                withContext(Dispatchers.EDT) {
+                    when (result) {
+                        is StyLuaCli.FormatResult.Success -> notificationGroupManager.createNotification(
+                            "File formatted",
+                            NotificationType.INFORMATION
+                        )
+                            .notify(project)
 
-                    is StyLuaCli.FormatResult.StyluaError -> notificationGroupManager.createNotification(
-                        result.msg,
-                        NotificationType.ERROR
-                    )
-                        .notify(project)
+                        is StyLuaCli.FormatResult.StyluaError -> notificationGroupManager.createNotification(
+                            result.msg,
+                            NotificationType.ERROR
+                        )
+                            .notify(project)
 
-                    null -> null
+                        null -> null
+                    }
                 }
             }
         }

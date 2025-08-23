@@ -5,7 +5,7 @@ package com.github.aleksandrsl.intellijluau.lsp
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauFileType
 import com.github.aleksandrsl.intellijluau.LuauIcons
-import com.github.aleksandrsl.intellijluau.cli.LspCli
+import com.github.aleksandrsl.intellijluau.tools.LspCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.execution.configurations.GeneralCommandLine

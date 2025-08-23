@@ -1,7 +1,7 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
-import com.github.aleksandrsl.intellijluau.cli.RojoCli
+import com.github.aleksandrsl.intellijluau.tools.RojoCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.github.aleksandrsl.intellijluau.showProjectNotification

@@ -71,4 +71,5 @@ data class DefaultState(
     override var customDefinitionsPaths: List<String> = ShareableProjectSettingsStateDefaults.customDefinitionsPaths,
     override var useLuauExtension: Boolean = ShareableProjectSettingsStateDefaults.useLuauExtension,
     override var platformType: PlatformType = ShareableProjectSettingsStateDefaults.platformType,
+    override var styluaConfigurationType: StyluaConfigurationType = ShareableProjectSettingsStateDefaults.styluaConfigurationType,
 ) : ShareableProjectSettingsState

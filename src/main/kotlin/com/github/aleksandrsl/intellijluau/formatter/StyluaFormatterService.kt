@@ -1,9 +1,9 @@
 package com.github.aleksandrsl.intellijluau.formatter
 
 import com.github.aleksandrsl.intellijluau.LuauNotifications
-import com.github.aleksandrsl.intellijluau.cli.StyLuaCli
 import com.github.aleksandrsl.intellijluau.psi.LuauFile
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.tools.ToolchainResolver
 import com.intellij.codeInsight.actions.ReformatCodeProcessor
 import com.intellij.execution.ExecutionException
 import com.intellij.execution.process.CapturingProcessAdapter
@@ -34,10 +34,10 @@ class StyluaFormatterService : AsyncDocumentFormattingService() {
         val settings = ProjectSettingsState.getInstance(project)
         // This is a hack, maybe implementing LanguageFormattingRestriction is better,
         if (settings.disableBuiltinFormatter) return null
-        val tool = File(settings.styLuaPath)
+        val stylua = ToolchainResolver.resolveStylua(project) ?: return null
 
         try {
-            val handler = StyLuaCli(tool.toPath()).createOsProcessHandler(project, file)
+            val handler = stylua.createOsProcessHandler(project, file)
 
             return object : FormattingTask {
                 override fun run() {

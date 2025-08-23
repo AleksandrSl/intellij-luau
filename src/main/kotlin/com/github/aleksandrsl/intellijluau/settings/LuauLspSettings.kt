@@ -1,11 +1,11 @@
 package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
-import com.github.aleksandrsl.intellijluau.cli.LspCli
-import com.github.aleksandrsl.intellijluau.cli.RojoCli
-import com.github.aleksandrsl.intellijluau.cli.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
+import com.github.aleksandrsl.intellijluau.tools.LspCli
+import com.github.aleksandrsl.intellijluau.tools.RojoCli
+import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.util.PlatformCompatibility
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.icons.AllIcons
