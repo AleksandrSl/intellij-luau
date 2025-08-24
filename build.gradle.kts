@@ -53,7 +53,7 @@ dependencies {
         // Plugin Dependencies. Uses `platformPlugins` property from the gradle.properties file for plugin from JetBrains Marketplace.
         plugins(properties("platformPlugins").map { it.split(',') })
 
-        webstorm("2024.2.2")
+        webstorm("2024.3.2")
         testFramework(TestFrameworkType.Platform)
     }
 }
