@@ -11,7 +11,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import java.io.IOException
 
 
 private val LOG = logger<StyLuaCli>()
@@ -37,33 +39,56 @@ class StyLuaCli(styLuaExecutablePathString: String) : ExternalToolCli(styLuaExec
         val stdin = content
         if (stdin.isNullOrEmpty()) return null
         // Consider using ExecUtil
-        val commandLine =
-            createBaseCommandLine(listOf("--stdin-filepath", file.path, "-"), workingDirectory = project.basePath)
 
-        try {
-            // TODO (AleksandrSl 27/05/2025): Ensure that I call withContext(Dispatchers.IO) as closer to the IO as possible. https://plugins.jetbrains.com/docs/intellij/coroutine-dispatchers.html#io-dispatcher
-            val output = withContext(Dispatchers.IO) {
-                val handler = CapturingProcessHandler(commandLine)
-                handler.processInput.use { it.write(stdin.toByteArray(commandLine.charset)) }
-                LOG.debug(commandLine.commandLineString)
-                handler.runProcess()
-            }
-            LOG.debug("Test ${output.stdout}, ${output.exitCode}")
-            if (output.checkSuccess(LOG)) {
-                return FormatResult.Success(output.stdout)
-            }
-            return FormatResult.StyluaError(output.stderr)
-        } catch (e: Exception) {
-            return FormatResult.StyluaError(e.message ?: "Unknown error")
-        }
+        return runFormatProcess(project, file, stdin.toByteArray())
     }
 
-    fun createOsProcessHandler(project: Project, file: VirtualFile): OSProcessHandler {
-        return OSProcessHandler(
-            createBaseCommandLine(
-                listOf("--stdin-filepath", file.path, "-"), workingDirectory = project.basePath
-            )
-        )
+    suspend fun runFormatProcess(project: Project, file: VirtualFile, content: ByteArray): FormatResult {
+        var handler: OSProcessHandler? = null
+        try {
+            // Ensure that I call withContext(Dispatchers.IO) as closer to the IO as possible. https://plugins.jetbrains.com/docs/intellij/coroutine-dispatchers.html#io-dispatcher
+            val output = withContext(Dispatchers.IO) {
+
+                // No idea why sh formatter creates the process outside the task, but I can't do that now.
+                // I need non edt context to resolve stylua. Rust does a similar thing check if rustfmt has to be installed. So I guess it's fine to have the stuff here.
+                // Maybe they create a handler outside to be able to cancel it? I see rust uses ProgressIndicator for that, which is obsolete.
+                // Out of all plugins in the plugin repository, only terraform has something as a reference, using modern apis. Let's follow it and see.
+                // I also took a look at python, but their code is even weirder. They just return true from cancel every time not cancelling anything.
+                // Funny, it's not only me who are struggling with "Pipe has been ended" - https://youtrack.jetbrains.com/issue/PY-71048/The-pipe-has-been-ended-exception-when-formatting-with-Black
+                handler = CapturingProcessHandler(
+                    createBaseCommandLine(
+                        listOf("--stdin-filepath", file.path, "-"), workingDirectory = project.basePath
+                    )
+                )
+                try {
+                    // Seems like writing can be done both before the process starts, but it's actually performed after the start, which makes sense.
+                    // If the process fails before that, we catch only the pipe has been closed error
+                    handler.processInput.use { it.write(content) }
+                } catch (e: IOException) {
+                    if (e.message == "The pipe has been ended") {
+                        // This means that the process has already terminated and will error anyway when runProcess is called.
+                        // I tried a couple other things, like writing to processInput later and trying to check if the process is alive before that, but it didn't work.
+                        // Looks like the process is terminated a bit after since it's an async thing.
+                        // Let's just ignore it, so we can show the user the real error.
+                    } else {
+                        throw e
+                    }
+                }
+                // Timeout just in case the stuff above is not correct 100% of the time.
+                handler.runProcess(2000)
+            }
+            return if (output.exitCode == 0) {
+                FormatResult.Success(output.stdout)
+            } else {
+                FormatResult.StyluaError(output.stderr)
+            }
+        } catch (e: Exception) {
+            return FormatResult.StyluaError(e.message ?: "Unknown error")
+        } finally {
+            withContext(NonCancellable) {
+                handler?.destroyProcess()
+            }
+        }
     }
 
     // Move this outside of the cli, because it's not cli related?
@@ -101,14 +126,17 @@ class StyLuaCli(styLuaExecutablePathString: String) : ExternalToolCli(styLuaExec
 
     sealed class FormatResult(val msg: String) {
         class Success(val content: String) : FormatResult("Ok")
-        class StyluaError(msg: String) : FormatResult("Stylua failed to run \n$msg")
+        class StyluaError(msg: String) : FormatResult("Stylua failed to run. \n$msg")
     }
 
     fun queryVersion(project: Project): Result<String> {
         // TODO: Do lazy reading?
-        val result =
-            CapturingProcessHandler(createBaseCommandLine(listOf("--version"), workingDirectory = project.basePath))
-                .runProcess()
+        val result = CapturingProcessHandler(
+            createBaseCommandLine(
+                listOf("--version"),
+                workingDirectory = project.basePath
+            )
+        ).runProcess()
         if (result.exitCode != 0) {
             return Result.failure(IllegalStateException("Failed to get stylua version: ${result.stderrLines}"))
         } else {
