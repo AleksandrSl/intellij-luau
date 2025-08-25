@@ -2,25 +2,29 @@ package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.tools.LuauCliService
-import com.github.aleksandrsl.intellijluau.tools.StyLuaCli
 import com.github.aleksandrsl.intellijluau.tools.ToolchainResolver
+import com.github.aleksandrsl.intellijluau.util.withLoader
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.observable.properties.AtomicProperty
+import com.intellij.openapi.observable.util.transform
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.TextBrowseFolderListener
 import com.intellij.openapi.ui.TextFieldWithBrowseButton
 import com.intellij.openapi.util.io.toNioPathOrNull
 import com.intellij.ui.DocumentAdapter
-import com.intellij.ui.components.JBLabel
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.bind
 import com.intellij.ui.dsl.builder.bindText
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.layout.not
 import com.intellij.ui.layout.selected
+import com.intellij.util.ui.AnimatedIcon
+import com.intellij.util.ui.AsyncProcessIcon
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.awt.event.ItemEvent
 import java.nio.file.Path
 import javax.swing.JComponent
@@ -40,6 +44,8 @@ class StyluaSettingsComponent(
     private lateinit var styluaDisabled: JRadioButton
     private lateinit var styluaManual: JRadioButton
     private lateinit var styluaAuto: JRadioButton
+    private val versionLoader: AnimatedIcon = AsyncProcessIcon("Getting stylua version")
+    private val version = AtomicProperty("")
 
     private val styLuaPathComponent = TextFieldWithBrowseButton().apply {
         addBrowseFolderListener(TextBrowseFolderListener(FileChooserDescriptorFactory.createSingleFileNoJarsDescriptor()))
@@ -54,29 +60,36 @@ class StyluaSettingsComponent(
                 }
                 // I guess this will launch in project scope, so the coroutine will finish even if I close the settings.
                 // Not sure if I should about it or not.
-                service.coroutineScope.launch(Dispatchers.IO) {
-                    updateStyluaVersion(maybePath)
-                }
+                updateStyluaVersion(maybePath)
             }
         })
     }
 
-    suspend fun updateStyluaVersion(maybePath: Path? = null) {
-        try {
-            val version = if (styluaAuto.isSelected) {
-                ToolchainResolver.resolveStylua(project)?.queryVersion(project)
-            } else if (styluaManual.isSelected && maybePath != null && maybePath.exists()) {
-                StyLuaCli(maybePath.pathString).queryVersion(project)
-            } else {
-                null
+    fun updateStyluaVersion(maybePath: Path? = null) {
+        service.coroutineScope.launch {
+            withLoader(versionLoader) {
+                try {
+                    val version = withContext(Dispatchers.IO) {
+                        if (styluaAuto.isSelected) {
+                            ToolchainResolver.resolveStyluaForSettings(project, StyluaConfigurationType.Auto, null)
+                                ?.queryVersion(project)
+                        } else if (styluaManual.isSelected && maybePath != null && maybePath.exists()) {
+                            ToolchainResolver.resolveStyluaForSettings(
+                                project,
+                                StyluaConfigurationType.Manual,
+                                maybePath.pathString
+                            )?.queryVersion(project)
+                        } else {
+                            null
+                        }
+                    }
+                    setStyluaVersion(version)
+                } catch (e: Exception) {
+                    setStyluaVersion(Result.failure(e))
+                }
             }
-            setStyluaVersion(version)
-        } catch (e: Exception) {
-            setStyluaVersion(Result.failure(e))
         }
     }
-
-    private val styluaVersionLabelComponent = JBLabel()
 
     init {
         panel = panel {
@@ -94,9 +107,7 @@ class StyluaSettingsComponent(
                     ).component.apply {
                         addItemListener { e ->
                             if (e.stateChange == ItemEvent.SELECTED) {
-                                service.coroutineScope.launch(Dispatchers.IO) {
-                                    updateStyluaVersion(null)
-                                }
+                                updateStyluaVersion(null)
                             }
                         }
                     }
@@ -107,9 +118,7 @@ class StyluaSettingsComponent(
                     ).component.apply {
                         addItemListener { e ->
                             if (e.stateChange == ItemEvent.SELECTED) {
-                                service.coroutineScope.launch(Dispatchers.IO) {
-                                    updateStyluaVersion(styLuaPathComponent.text.toNioPathOrNull())
-                                }
+                                updateStyluaVersion(styLuaPathComponent.text.toNioPathOrNull())
                             }
                         }
                     }
@@ -122,7 +131,8 @@ class StyluaSettingsComponent(
             }.visibleIf(styluaManual.selected)
             rowsRange {
                 row("Version:") {
-                    cell(styluaVersionLabelComponent).align(AlignX.LEFT)
+                    label("").bindText(version).component
+                    cell(versionLoader).visibleIf(version.transform { it.isEmpty() }).component.apply { suspend() }
                 }.visibleIf(!styluaDisabled.selected)
                 buttonsGroup("Run:") {
                     row {
@@ -142,12 +152,11 @@ class StyluaSettingsComponent(
     }
 
     private fun setStyluaVersion(newVersion: Result<String>?) {
-        styluaVersionLabelComponent.text = newVersion?.fold({
+        version.set(newVersion?.fold({
             it
         }, {
             it.message ?: "Unknown error"
-        })
-        // styluaVersionLabel.bindTextIn() Experimental but suits my purpose I guess?
+        }) ?: "")
     }
 
     // TODO (AleksandrSl 18/05/2025):

@@ -5,15 +5,25 @@ import com.github.aleksandrsl.intellijluau.settings.StyluaConfigurationType
 import com.github.aleksandrsl.intellijluau.tools.foreman.ForemanCli
 import com.intellij.openapi.project.Project
 
-object ToolchainResolver {
 
+object ToolchainResolver {
     fun resolveStylua(project: Project): StyLuaCli? {
         val settings = ProjectSettingsState.getInstance(project)
-        return when (settings.styluaConfigurationType) {
-            StyluaConfigurationType.Auto -> if (ForemanCli.isForemanExecutableOnPath && ForemanCli.checkForForemanConfigIncludesTool(project, "stylua")) {
+        return resolveStyluaForSettings(project, settings.styluaConfigurationType, settings.styLuaPath)
+    }
+
+    fun resolveStyluaForSettings(
+        project: Project, configurationType: StyluaConfigurationType, maybePath: String?
+    ): StyLuaCli? {
+        return when (configurationType) {
+            StyluaConfigurationType.Auto -> if (ForemanCli.isForemanExecutableOnPath && ForemanCli.checkForForemanConfigIncludesTool(
+                    project, "stylua"
+                )
+            ) {
                 StyLuaCli("stylua")
             } else null
-            StyluaConfigurationType.Manual -> StyLuaCli(settings.styLuaPath)
+
+            StyluaConfigurationType.Manual -> if (maybePath != null) StyLuaCli(maybePath) else null
             StyluaConfigurationType.Disabled -> null
         }
     }

@@ -25,7 +25,7 @@ class ProjectSettingsComponent(
     private val applyAndSaveAsDefault: () -> Unit,
 ) {
     val panel: DialogPanel
-    private val lspSettings = if (LuauLspPlatformSupportChecker.isLspSupported) LuauLspSettings(
+    private val lspSettings = if (LuauLspPlatformSupportChecker.isLspSupported) LuauLspSettingsComponent(
         project,
         settings,
         service.coroutineScope

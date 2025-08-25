@@ -8,6 +8,7 @@ import com.github.aleksandrsl.intellijluau.tools.RojoCli
 import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.util.PlatformCompatibility
 import com.github.aleksandrsl.intellijluau.util.Version
+import com.github.aleksandrsl.intellijluau.util.withLoader
 import com.intellij.icons.AllIcons
 import com.intellij.ide.actions.RevealFileAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -46,7 +47,7 @@ import javax.swing.JLabel
 import javax.swing.JRadioButton
 import kotlin.io.path.exists
 
-private val LOG = logger<LuauLspSettings>()
+private val LOG = logger<LuauLspSettingsComponent>()
 
 @JvmInline
 value class InstalledLspVersions(val versions: List<Version.Semantic>)
@@ -81,7 +82,7 @@ typealias InstalledVersions = Loadable<InstalledLspVersions>
 // Important learning, when parent becomes visible it makes all the children visible as well, even if they were explicitly hidden.
 // The only escape is to use a predicate or observable
 // TODO (AleksandrSl 27/05/2025): Try to use AtomicActions more, since I've switched to them for versions. Now I use it only for the loader.
-class LuauLspSettings(
+class LuauLspSettingsComponent(
     private val project: com.intellij.openapi.project.Project,
     private val settings: ProjectSettingsState.State,
     private val coroutineScope: CoroutineScope,
@@ -279,17 +280,6 @@ class LuauLspSettings(
                     rojoVersionLabel.foreground = UIUtil.getErrorForeground()
                 }
             }
-        }
-    }
-
-    private suspend fun withLoader(loader: AnimatedIcon, f: suspend () -> Unit) {
-        try {
-            loader.isVisible = true
-            loader.resume()
-            f()
-        } finally {
-            loader.suspend()
-            loader.isVisible = false
         }
     }
 
