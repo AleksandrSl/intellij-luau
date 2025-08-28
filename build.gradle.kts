@@ -93,6 +93,7 @@ intellijPlatform {
 
         ideaVersion {
             sinceBuild = properties("pluginSinceBuild")
+            untilBuild = properties("pluginUntilBuild")
         }
     }
 
@@ -117,7 +118,7 @@ intellijPlatform {
                 types = listOf(IntelliJPlatformType.WebStorm)
                 channels = listOf(ProductRelease.Channel.RELEASE)
                 sinceBuild = properties("pluginSinceBuild")
-                untilBuild = "252.*"
+                untilBuild = properties("pluginUntilBuild")
             }
         }
     }
