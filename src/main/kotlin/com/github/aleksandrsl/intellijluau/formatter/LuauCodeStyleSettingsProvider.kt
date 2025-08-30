@@ -4,6 +4,7 @@ import com.github.aleksandrsl.intellijluau.LuauLanguage
 import com.intellij.application.options.CodeStyleAbstractConfigurable
 import com.intellij.application.options.CodeStyleAbstractPanel
 import com.intellij.application.options.TabbedLanguageCodeStylePanel
+import com.intellij.lang.Language
 import com.intellij.psi.codeStyle.CodeStyleConfigurable
 import com.intellij.psi.codeStyle.CodeStyleSettings
 import com.intellij.psi.codeStyle.CodeStyleSettingsProvider
@@ -15,7 +16,9 @@ class LuauCodeStyleSettingsProvider : CodeStyleSettingsProvider() {
         return LuauCodeStyleSettings(settings)
     }
 
-    override fun getConfigurableDisplayName() = LuauLanguage.INSTANCE.displayName
+    override fun getLanguage(): Language {
+        return LuauLanguage.INSTANCE
+    }
 
     override fun createConfigurable(
         settings: CodeStyleSettings,
