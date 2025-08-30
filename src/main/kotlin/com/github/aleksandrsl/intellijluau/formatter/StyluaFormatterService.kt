@@ -9,13 +9,16 @@ import com.intellij.codeInsight.actions.ReformatCodeProcessor
 import com.intellij.formatting.service.AsyncDocumentFormattingService
 import com.intellij.formatting.service.AsyncFormattingRequest
 import com.intellij.formatting.service.FormattingService
+import com.intellij.openapi.application.readAction
 import com.intellij.openapi.command.CommandProcessor
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.progress.runBlockingCancellable
 import com.intellij.psi.PsiFile
 import com.intellij.psi.formatter.FormatterUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.*
 
 private val LOG = logger<StyluaFormatterService>()
@@ -46,12 +49,18 @@ class StyluaFormatterService : AsyncDocumentFormattingService() {
             @Suppress("UnstableApiUsage")
             override fun run() {
                 try {
+                    // It's considered bad to run stuff under runBlockingCancellable,
+                    // but I don't know a better way here.
                     runBlockingCancellable {
-                        val stylua = ToolchainResolver.resolveStylua(project)
-                            ?: return@runBlockingCancellable request.onTextReady(request.documentText)
                         job = launch {
-                            val result = stylua.runFormatProcess(project, file, request.documentText.toByteArray())
-                            when (result) {
+                            // Consider making resolve a suspended function so that IO context is as late as possible.
+                            val stylua = withContext(Dispatchers.IO) { ToolchainResolver.resolveStylua(project) }
+                            val text = readAction { request.documentText }
+                            if (stylua == null) {
+                                request.onTextReady(text)
+                                return@launch
+                            }
+                            when (val result = stylua.runFormatProcess(project, file, text.toByteArray())) {
                                 is FormatResult.Success -> request.onTextReady(result.content)
                                 is FormatResult.StyluaError -> request.onError("Failed to format", result.msg)
                             }
