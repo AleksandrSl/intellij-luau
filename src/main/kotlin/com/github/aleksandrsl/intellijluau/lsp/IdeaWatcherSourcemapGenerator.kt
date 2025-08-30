@@ -1,8 +1,8 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.*
-import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
+import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -126,25 +126,26 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
         withContext(Dispatchers.IO) {
             try {
                 val output = SourcemapGeneratorCli.generate(project)
-
-                withContext(Dispatchers.EDT) {
-                    if (output.exitCode != 0) {
-                        notifyError("Exit code: ${output.exitCode}. ${if (output.stdout.isNotBlank()) "Output: ${output.stdout}" else ""}. ${if (output.stderr.isNotBlank()) "Error: ${output.stderr}" else ""}")
-                    }
+                if (output.exitCode != 0) {
+                    notifyError("Exit code: ${output.exitCode}. ${if (output.stdout.isNotBlank()) "Output: ${output.stdout}" else ""}. ${if (output.stderr.isNotBlank()) "Error: ${output.stderr}" else ""}")
                 }
             } catch (e: IOException) {
+                LOG.warn("Failed to generate sourcemap", e)
                 notifyError(e.message ?: "")
             } catch (e: InterruptedException) {
+                LOG.warn("Failed to generate sourcemap", e)
                 notifyError(e.message ?: "")
             }
         }
     }
 
-    private fun notifyError(message: String) {
-        LuauNotifications.pluginNotifications().createNotification(
-            LuauBundle.message("luau.sourcemap.generation.failed"), message, NotificationType.ERROR
-        ).addAction(NotificationAction.createSimple("Open settings") {
-            ShowSettingsUtil.getInstance().showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
-        }).notify(project)
+    private suspend fun notifyError(message: String) {
+        withContext(Dispatchers.EDT) {
+            LuauNotifications.pluginNotifications().createNotification(
+                LuauBundle.message("luau.sourcemap.generation.failed"), message, NotificationType.ERROR
+            ).addAction(NotificationAction.createSimple("Open settings") {
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
+            }).notify(project)
+        }
     }
 }
