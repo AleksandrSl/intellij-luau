@@ -80,6 +80,7 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
         platform["type"] = settings.platformType.value
         config["platform"] = platform
 
+        // Move this to the settings? and maybe make this depend on the libraries in the workspace
         config["ignoreGlobs"] = listOf("**/_Index/**")
         /*
          * Settings that are used by LSP, but I do not yet support
