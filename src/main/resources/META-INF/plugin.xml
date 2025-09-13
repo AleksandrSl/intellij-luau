@@ -114,6 +114,10 @@
                 implementation="com.github.aleksandrsl.intellijluau.codeInsight.template.LuauTemplateContext"/>
         <vcs.codeVisionLanguageContext language="Luau"
                                        implementationClass="com.github.aleksandrsl.intellijluau.hints.LuauCodeVisionContext"/>
+        <createFromTemplateHandler
+                implementation="com.github.aleksandrsl.intellijluau.template.LuauCreateFromTemplateHandler"/>
+        <!-- Have to match the name of the template without extentions as far as I get      -->
+        <internalFileTemplate name="Luau file" />
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"

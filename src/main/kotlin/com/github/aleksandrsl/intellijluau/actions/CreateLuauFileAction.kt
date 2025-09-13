@@ -20,7 +20,7 @@ class CreateLuauFileAction : CreateFileFromTemplateAction(
             .addKind(
                 "Source file",
                 LuauIcons.FILE,
-                if (ProjectSettingsState.getInstance(project).useLuauExtension) "Luau file.luau" else "Luau file.lua"
+                "Luau file"
             )
     }
 
