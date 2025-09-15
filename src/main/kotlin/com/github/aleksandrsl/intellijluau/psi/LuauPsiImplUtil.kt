@@ -31,6 +31,22 @@ fun processDeclarations(
     return element.id == null || processor.execute(element, state)
 }
 
+fun processDeclarations(
+    element: LuauFuncBody,
+    processor: PsiScopeProcessor,
+    state: ResolveState,
+    lastParent: PsiElement?,
+    place: PsiElement
+): Boolean {
+    element.parList.bindingList.forEach {
+        if (!processor.execute(it, state)) {
+            return false
+        }
+    }
+    return true
+}
+
+
 fun getDeclaredGenerics(element: LuauFuncBody): Collection<LuauNamedElement> = PsiTreeUtil.findChildrenOfType(
     element.funcTypeParams,
     LuauNamedElement::class.java
