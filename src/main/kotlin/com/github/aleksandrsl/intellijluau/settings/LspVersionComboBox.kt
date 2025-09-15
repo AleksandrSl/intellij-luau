@@ -11,6 +11,8 @@ import com.intellij.ui.GroupedComboBoxRenderer
 import com.intellij.ui.MutableCollectionComboBoxModel
 import com.intellij.ui.SimpleColoredComponent
 import com.intellij.ui.SimpleTextAttributes
+import com.intellij.ui.dsl.listCellRenderer.listCellRenderer
+import com.intellij.util.ui.UIUtil
 
 private val LOG = logger<LspVersionComboBox>()
 
@@ -35,64 +37,28 @@ class LspVersionComboBox(
         isSwingPopup = false // Use JBPopup instead of default SwingPopup
         model = MutableCollectionComboBoxModel()
 
-        // TODO (AleksandrSl 29/06/2025): When I drop support for 242 version I can use the listCellRenderer
-        //  Unfortunately I need the separator and it was only added in 243.
-        //          return listCellRenderer {
-        //                val isErrorValue =
-        //                    missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
-        //
-        //                value.let {
-        //                    if (it is Item.InstalledVersion && it.index == 0) {
-        //                        separator {
-        //                            text = LuauBundle.message("luau.settings.lsp.version.combobox.installed")
-        //                        }
-        //                    } else if (it is Item.VersionForDownload && it.index == 0) {
-        //                        separator {
-        //                            text = LuauBundle.message("luau.settings.lsp.version.combobox.download")
-        //                        }
-        //                    }
-        //                }
-        //                text(value.text) {
-        //                    if (isErrorValue) {
-        //                        foreground = UIUtil.getErrorForeground()
-        //                    }
-        //                }
-        //
-        //                // There seems to be a bug in the tooltip that shows them on every row
-        ////            if (isErrorValue) {
-        ////                toolTipText = LuauBundle.message("luau.settings.lsp.version.combobox.missing")
-        ////            }
-        //            }
-        renderer = object : GroupedComboBoxRenderer<Item>() {
-            override fun separatorFor(value: Item): ListSeparator? {
-                if (value is Item.InstalledVersion && value.index == 0) {
-                    return ListSeparator(LuauBundle.message("luau.settings.lsp.version.combobox.installed"))
-                }
-                if (value is Item.VersionForDownload && value.index == 0) {
-                    return ListSeparator(LuauBundle.message("luau.settings.lsp.version.combobox.download"))
-                }
-                return null
-            }
+        renderer = listCellRenderer {
+            val isErrorValue =
+                missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
 
-            override fun getText(item: Item): @NlsContexts.ListItem String {
-                return item.text
+            value.let {
+                if (it is Item.InstalledVersion && it.index == 0) {
+                    separator {
+                        text = LuauBundle.message("luau.settings.lsp.version.combobox.installed")
+                    }
+                } else if (it is Item.VersionForDownload && it.index == 0) {
+                    separator {
+                        text = LuauBundle.message("luau.settings.lsp.version.combobox.download")
+                    }
+                }
             }
-
-            override fun customize(
-                item: SimpleColoredComponent,
-                value: Item,
-                index: Int,
-                isSelected: Boolean,
-                cellHasFocus: Boolean
-            ) {
-                super.customize(item, value, index, isSelected, cellHasFocus)
-                val isErrorValue =
-                    missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
+            text(value.text) {
                 if (isErrorValue) {
-                    item.clear()
-                    item.append(getText(value), SimpleTextAttributes.ERROR_ATTRIBUTES)
+                    foreground = UIUtil.getErrorForeground()
                 }
+                toolTipText
             }
+            // I wanted to add a tooltip for the error row, but the tooltip is only for the whole component
         }
         setVersions(selectedVersion, installedVersions, versionsForDownload)
     }
