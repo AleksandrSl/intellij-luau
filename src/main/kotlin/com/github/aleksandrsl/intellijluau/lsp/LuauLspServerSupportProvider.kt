@@ -5,9 +5,9 @@ package com.github.aleksandrsl.intellijluau.lsp
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauFileType
 import com.github.aleksandrsl.intellijluau.LuauIcons
-import com.github.aleksandrsl.intellijluau.tools.LspCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.tools.LspCli
 import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -29,7 +29,11 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
         // fileType may be slow, but it's used in other lsp implementations, so should be fine.
         // It's ok to check the settings here, ts does that and prisma plugin PrismaLspServerActivationRule
         if (file.fileType == LuauFileType && ProjectSettingsState.getInstance(project).isLspEnabledAndMinimallyConfigured) {
-            serverStarter.ensureServerStarted(LuauLspServerDescriptor(project))
+            val shouldStartupLsp = LuauLspProjectService.getInstance(project).checkLsp()
+            if (shouldStartupLsp) {
+                serverStarter.ensureServerStarted(LuauLspServerDescriptor(project))
+            }
+            // In all other cases an action is required from the user to enable the lsp, for example, download it. Once the action is done, the check will be rerun and the lsp will be started.
         }
     }
 
@@ -47,6 +51,7 @@ class LuauLspServerSupportProvider : LspServerSupportProvider {
         }
 }
 
+// todo: Get rid of the project and pass the config
 private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDescriptor(
     project, LuauBundle.message("luau.lsp.name")
 ) {
@@ -174,12 +179,6 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
 //    }
 
     override fun createCommandLine(): GeneralCommandLine {
-        // A hacky way to check whether LSP configuration is correct and up to date and provide the feedback only once per LSP start.
-        // It would be ideal to do this before creating the descriptor, but the only entry point is fileOpened that is called for all the files open,
-        // whenever only one language server is created in the end.
-        // Another solution would be to call this check in the LspServerManager listener
-        LuauLspManager.getInstance().checkLsp(project)
-
         val lspConfiguration = project.getLspConfiguration()
         if (lspConfiguration !is LspConfiguration.Enabled) {
             throw IllegalStateException("Tried to created a Luau LSP with disabled configuration")

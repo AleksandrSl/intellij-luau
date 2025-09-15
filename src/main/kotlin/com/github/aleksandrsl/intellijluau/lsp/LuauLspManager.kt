@@ -4,25 +4,23 @@ import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauNotifications
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager.CheckLspResult.*
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager.Companion.robloxApiDocsPath
-import com.github.aleksandrsl.intellijluau.settings.*
+import com.github.aleksandrsl.intellijluau.settings.LspConfigurationType
+import com.github.aleksandrsl.intellijluau.settings.PlatformType
+import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.github.aleksandrsl.intellijluau.settings.RobloxSecurityLevel
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.google.gson.JsonSyntaxException
-import com.intellij.ide.BrowserUtil
 import com.intellij.ide.util.PropertiesComponent
-import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.EDT
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.application.PluginPathManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
-import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.SystemInfo
 import com.intellij.openapi.util.io.toNioPathOrNull
-import com.intellij.platform.ide.progress.withBackgroundProgress
 import com.intellij.util.concurrency.annotations.RequiresBackgroundThread
 import com.intellij.util.download.DownloadableFileService
 import com.intellij.util.io.HttpRequests
@@ -41,6 +39,7 @@ import kotlinx.serialization.json.Json
 import java.io.IOException
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.time.Duration.Companion.days
@@ -75,7 +74,10 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     // TODO (AleksandrSl 05/06/2025): Check, do I block request if they start concurrently?
     private val cacheMutex = Mutex() // To ensure thread-safe access to cache variables
     private val cacheDurationMs = 25.minutes.inWholeMilliseconds
+
+    // TODO (AleksandrSl 14/09/2025): Why the channel is unlimited?
     private val robloxApiUpdateChannel = Channel<Unit>(Channel.UNLIMITED)
+    private val downloadLocks = ConcurrentHashMap<Version.Semantic, Mutex>()
 
     init {
         coroutineScope.launch {
@@ -109,6 +111,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                     null
                 }
             }
+            // Return errors and handle them later? So I don't need a project here.
         } catch (e: IOException) {
             LuauNotifications.pluginNotifications().createNotification(
                 LuauBundle.message("luau.notification.content.could.not.reach.lsp.github.releases"),
@@ -149,41 +152,6 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             cacheExpirationTimeMs = System.currentTimeMillis() + cacheDurationMs
             LOG.debug("LSP versions cache updated. Expiration: $cacheExpirationTimeMs")
             newVersions
-        }
-    }
-
-    private suspend fun downloadLspWithNotification(version: Version.Semantic, project: Project): Path? {
-        val result = downloadLspSynchronously(version)
-        return withContext(Dispatchers.EDT) {
-            when (result) {
-                // TODO (AleksandrSl 19/05/2025): Join with Ok
-                is DownloadResult.AlreadyExists -> {
-                    LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.notification.lsp.download.ok"), NotificationType.INFORMATION
-                    ).notify(project)
-                    return@withContext result.baseDir
-                }
-
-                is DownloadResult.Ok -> {
-                    LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.notification.lsp.download.ok"), NotificationType.INFORMATION
-                    ).notify(project)
-                    return@withContext result.baseDir
-                }
-
-                is DownloadResult.Failed -> {
-                    LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.notification.lsp.download.error"), NotificationType.ERROR
-                    ).notify(project)
-                    return@withContext null
-                }
-            }
-        }
-    }
-
-    suspend fun downloadLsp(version: Version.Semantic): DownloadResult {
-        return withContext(Dispatchers.IO) {
-            return@withContext downloadLspSynchronously(version)
         }
     }
 
@@ -244,7 +212,7 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     /**
      * Check for updates once a day or if the files are missing
      */
-    private fun checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(securityLevel: RobloxSecurityLevel) {
+    internal fun checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(securityLevel: RobloxSecurityLevel) {
         val lastUpdateTime = LuauConfigurationCacheService.getInstance().state.lastApiDefinitionsUpdateTime
         val missingDeclarations = !getGlobalTypes(securityLevel).exists()
         val missingDocs = !robloxApiDocsPath.exists()
@@ -253,49 +221,61 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
         }
     }
 
-    private fun downloadLspSynchronously(version: Version.Semantic): DownloadResult {
+    suspend fun downloadLsp(version: Version.Semantic): DownloadResult {
         if (getInstalledVersions().contains(version)) {
             return DownloadResult.AlreadyExists(path(version))
         }
-        try {
-            val lspDownloadUrl = when {
-                SystemInfo.isWindows -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-win64.zip"
-                // TODO (AleksandrSl 10/05/2025): Check older macs and m1 support?
-                SystemInfo.isMac -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-macos.zip"
-                SystemInfo.isLinux && CpuArch.isArm64() -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux-arm64.zip"
-                SystemInfo.isLinux -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux.zip"
-                else -> throw UnsupportedOperationException("Unsupported operating system")
+
+        val lock = downloadLocks.computeIfAbsent(version) { Mutex() }
+
+        return lock.withLock {
+            if (getInstalledVersions().contains(version)) {
+                return@withLock DownloadResult.AlreadyExists(path(version))
             }
 
-            LOG.info("Downloading LSP from $lspDownloadUrl")
-            val service = DownloadableFileService.getInstance()
-            val descriptions = listOf(service.createFileDescription(lspDownloadUrl, "luau-lsp-$version.zip"))
-            val downloader = service.createDownloader(descriptions, LuauBundle.message("luau.lsp.downloading"))
-            val downloadDirectory = downloadPath().toFile()
-            val downloadResults = downloader.download(downloadDirectory)
-            val destination = path(version)
-
-            for (result in downloadResults) {
-                if (result.second.downloadUrl == lspDownloadUrl) {
-                    val archiveFile = result.first
-                    ZipUtil.extract(Path(archiveFile.path), destination, null)
-                    archiveFile.delete()
-
-                    // Make the file executable on Unix systems
-                    if (!SystemInfo.isWindows) {
-                        destination.resolve(getExecutableName()).toFile().setExecutable(true)
-                    }
-                } else {
-                    LOG.warn("Unknown download url: ${result.second.downloadUrl}")
+            try {
+                val lspDownloadUrl = when {
+                    SystemInfo.isWindows -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-win64.zip"
+                    // TODO (AleksandrSl 10/05/2025): Check older macs and m1 support?
+                    SystemInfo.isMac -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-macos.zip"
+                    SystemInfo.isLinux && CpuArch.isArm64() -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux-arm64.zip"
+                    SystemInfo.isLinux -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux.zip"
+                    else -> throw UnsupportedOperationException("Unsupported operating system")
                 }
-            }
 
-            LOG.info("Successfully downloaded LSP to $destination")
-            ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)
-                .settingsChanged(LspManagerChangedEvent.NewLspVersionDownloaded(version))
-            return DownloadResult.Ok(destination)
-        } catch (e: Exception) {
-            return DownloadResult.Failed(e.message)
+                LOG.info("Downloading LSP from $lspDownloadUrl")
+                val service = DownloadableFileService.getInstance()
+                val descriptions = listOf(service.createFileDescription(lspDownloadUrl, "luau-lsp-$version.zip"))
+                val downloader = service.createDownloader(descriptions, LuauBundle.message("luau.lsp.downloading"))
+                val downloadDirectory = downloadPath().toFile()
+                val destination = path(version)
+
+                withContext(Dispatchers.IO) {
+                    val downloadResults = downloader.download(downloadDirectory)
+
+                    for (result in downloadResults) {
+                        if (result.second.downloadUrl == lspDownloadUrl) {
+                            val archiveFile = result.first
+                            ZipUtil.extract(Path(archiveFile.path), destination, null)
+                            archiveFile.delete()
+
+                            // Make the file executable on Unix systems
+                            if (!SystemInfo.isWindows) {
+                                destination.resolve(getExecutableName()).toFile().setExecutable(true)
+                            }
+                        } else {
+                            LOG.warn("Unknown download url: ${result.second.downloadUrl}")
+                        }
+                    }
+                }
+
+                LOG.info("Successfully downloaded LSP to $destination")
+                ApplicationManager.getApplication().messageBus.syncPublisher(TOPIC)
+                    .settingsChanged(LspManagerChangedEvent.NewLspVersionDownloaded(version))
+                return@withLock DownloadResult.Ok(destination)
+            } catch (e: Exception) {
+                return@withLock DownloadResult.Failed(e.message)
+            }
         }
     }
 
@@ -309,7 +289,6 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     sealed class CheckLspResult {
         data class UpdateAvailable(val version: Version.Semantic) : CheckLspResult()
         data class BinaryMissing(val version: Version.Semantic) : CheckLspResult()
-        data class UpdateCache(val version: Version.Semantic) : CheckLspResult()
         data object ReadyToUse : CheckLspResult()
         data object LspIsNotConfigured : CheckLspResult()
     }
@@ -330,83 +309,18 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
     }
 
     // I want to check that LSP binary is downloaded according to the settings. If the binary is not there, I want to show the notification.
-// I want to check it only once before the LSP is started the first time or a project is open (in this case, it would be good to know it's a luau project).
-    fun checkLsp(project: Project) {
-        val settings = ProjectSettingsState.getInstance(project)
-        if (settings.state.platformType == PlatformType.Roblox) {
-            coroutineScope.launch {
-                checkAndUpdateRobloxApiDefinitionsAndDocsIfNeeded(ProjectSettingsState.getInstance(project).robloxSecurityLevel)
-            }
-        }
-        if (settings.lspConfigurationType != LspConfigurationType.Auto) return
-        coroutineScope.launch(Dispatchers.IO) {
-            val checkResult = withBackgroundProgress(project, LuauBundle.message("luau.lsp.check")) {
-                val versionsForDownload = getVersionsAvailableForDownload(project)
-                val installedVersions = getInstalledVersions()
-                return@withBackgroundProgress checkLsp(
-                    settings.lspVersion,
-                    installedVersions = installedVersions,
-                    versionsAvailableForDownload = versionsForDownload
-                )
-            }
-            LOG.debug("Check LSP result: $checkResult")
-            // TODO (AleksandrSl 17/05/2025): If I open several projects and get an update notification in every one. Can I update in one and then just close the rest? Looks like it's not straightforward at all.
-            when (checkResult) {
-                is BinaryMissing -> {
-                    LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.lsp.binary.missing.title"), NotificationType.WARNING
-                    ).addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.lsp.download")) {
-                        coroutineScope.launch {
-                            withBackgroundProgress(project, LuauBundle.message("luau.lsp.downloading")) {
-                                if (downloadLspWithNotification(checkResult.version, project) != null) {
-                                    checkLsp(project)
-                                }
-                            }
-                        }
-                    })
-                        .addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
-                            ShowSettingsUtil.getInstance()
-                                .showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
-                        }).apply { isSuggestionType = true }.notify(project)
-                }
-
-                LspIsNotConfigured -> {
-                    LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.lsp.not.configured.title"),
-                        LuauBundle.message("luau.lsp.not.configured.content"),
-                        NotificationType.INFORMATION
-                    )
-                        .addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.notification.actions.open.settings")) {
-                            ShowSettingsUtil.getInstance()
-                                .showSettingsDialog(project, ProjectSettingsConfigurable::class.java)
-                        }).notify(project)
-                }
-
-                ReadyToUse -> { // All good, maybe I want to return true or something
-                }
-
-                is UpdateAvailable -> {
-                    LuauNotifications.pluginNotifications().createNotification(
-                        LuauBundle.message("luau.lsp.update.available.title", checkResult.version.toString()),
-                        NotificationType.INFORMATION
-                    ).addAction(NotificationAction.createSimpleExpiring(LuauBundle.message("luau.lsp.update")) {
-                        coroutineScope.launch {
-                            withBackgroundProgress(project, LuauBundle.message("luau.lsp.downloading")) {
-                                if (downloadLspWithNotification(checkResult.version, project) != null) {
-                                    checkLsp(project)
-                                }
-                            }
-                        }
-                    })
-//                        There is also BrowseNotificationAction, not sure if it's the same
-                        .addAction(NotificationAction.createSimple(LuauBundle.message("luau.lsp.update.available.release.notes")) {
-                            BrowserUtil.browse("$LSP_RELEASE_NOTES_BASE_URL/${checkResult.version}")
-                        }).apply { isSuggestionType = true }.notify(project)
-                }
-
-                is UpdateCache -> updateLatestInstalledVersionCache(checkResult.version)
-            }
-        }
+    // I want to check it only once before the LSP is started the first time or a project is open (in this case, it would be good to know it's a luau project).
+    suspend fun checkLsp(lspVersion: Version): CheckLspResult {
+        val versionsForDownload = getVersionsAvailableForDownload(null)
+        val installedVersions = getInstalledVersions()
+        val checkResult = checkLsp(
+            lspVersion,
+            installedVersions = installedVersions,
+            versionsAvailableForDownload = versionsForDownload
+        )
+        LOG.debug("Check LSP result: $checkResult")
+        // TODO (AleksandrSl 17/05/2025): If I open several projects and get an update notification in every one. Can I update in one and then just close the rest? Looks like it's not straightforward at all.
+        return checkResult
     }
 
     interface LspManagerChangeListener {
@@ -446,9 +360,11 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                     } else {
                         val latestInstalledVersion = installedVersions.max()
                         if (latestVersion > latestInstalledVersion) UpdateAvailable(latestVersion) else {
-                            if (latestInstalledVersion != latestInstalledLspVersionCache) UpdateCache(
-                                latestInstalledVersion
-                            ) else ReadyToUse
+                            if (latestInstalledVersion != latestInstalledLspVersionCache) {
+                                // I returned this as an update cache result before, but I don't think it makes sense to pass to the outside world, since it's an implementation detail.
+                                updateLatestInstalledVersionCache(latestInstalledVersion)
+                                ReadyToUse
+                            } else ReadyToUse
                         }
                     }
                 }
@@ -464,7 +380,6 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             private set(value) {
                 PropertiesComponent.getInstance().setValue(LATEST_INSTALLED_LSP_VERSION_KEY, value.toString())
             }
-
 
         @RequiresBackgroundThread
         fun getInstalledVersions(): List<Version.Semantic> {
@@ -489,6 +404,10 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
             return getInstalledVersions().maxOrNull()?.also {
                 latestInstalledLspVersionCache = it
             }
+        }
+
+        fun composeReleaseNotesUrl(version: Version.Semantic): String {
+            return "${LSP_RELEASE_NOTES_BASE_URL}/${version}"
         }
 
         val basePath: Path

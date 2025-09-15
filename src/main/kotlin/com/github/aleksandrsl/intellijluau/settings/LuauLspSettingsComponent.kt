@@ -259,10 +259,6 @@ class LuauLspSettingsComponent(
             is LuauLspManager.CheckLspResult.UpdateAvailable -> {
                 showLspDownloadButton(result.version, isUpdate = true)
             }
-
-            is LuauLspManager.CheckLspResult.UpdateCache -> {
-                LuauLspManager.updateLatestInstalledVersionCache(result.version)
-            }
         }
     }
 
