@@ -291,7 +291,7 @@ method_name ::= simple_reference ('.' simple_reference &('.' | ':'))* (':' ID | 
 func_body ::= func_type_params? par_list (':' return_type)? block 'end' {
   pin = 2;
   implements=["com.github.aleksandrsl.intellijluau.psi.LuauGenericDeclaration"]
-  methods=[getDeclaredGenerics]
+  methods=[getDeclaredGenerics processDeclarations]
 }
 private parameter_with_recover ::= !(')' | '...') binding (',' !')' | &')') {
  pin = 1

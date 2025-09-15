@@ -51,4 +51,28 @@ class LuauCompletionTestCase : BasePlatformTestCase() {
             listOf()
         )
     }
+
+    fun `test completion inside function should include function parameter`() {
+        myFixture.configureByFiles("functionParameters.luau")
+        myFixture.complete(CompletionType.BASIC)
+        val lookupElementStrings = myFixture.lookupElementStrings
+        assertNotNull(lookupElementStrings)
+        assertContainsElements(
+            lookupElementStrings as Collection<String>,
+            listOf("c", "d", "foo", "bar")
+        )
+        assertDoesntContain(lookupElementStrings, listOf("a", "b"))
+    }
+
+    fun `test completion of nested functions`() {
+        myFixture.configureByFiles("nestedFunctions.luau")
+        myFixture.complete(CompletionType.BASIC)
+        val lookupElementStrings = myFixture.lookupElementStrings
+        assertNotNull(lookupElementStrings)
+        assertContainsElements(
+            lookupElementStrings as Collection<String>,
+            listOf("methodArg1", "methodArg2", "localFuncArg1", "localFuncArg2", "closureArg1", "closureArg2", "funcArg1", "funcArg2", "foo", "baz", "a", "bar")
+        )
+        assertDoesntContain(lookupElementStrings, listOf("outerArg1", "outerArg2", "closure"))
+    }
 }
