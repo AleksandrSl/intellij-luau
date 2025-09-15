@@ -16,6 +16,11 @@
 - Docs for Roblox APIs
 - Breadcrumbs and sticky lines
 - Live templates
+- VCS inlay hints
+- Default ignore globs for sourcemap generation (as in VS Code)
+- Use Foreman for StyLua if available
+- Ignore Packages
+- Improved completion: include function parameters in suggestions
 
 ### Fixed
 
@@ -33,11 +38,32 @@
 - Use silent process handler for sourcemap generators
 - Do not show LSP settings if IDE doesn't support LSP
 - Use a correct notification group for sourcemap related notifications
+- Do not run sourcemap generator when LSP is turned off
+- NullPointerException in settings
+- Missing registration for file template
+- Legacy configurable ID calculation mode
+- Parsing of type casts with optional values
+- Parsing of parenthesized generic type packs in function returns
+- Link to the LSP release notes
+- Restart sourcemap generation only when related settings are changed
+- Restart LSP only if it's running when Roblox docs are updated
+- Missing LSP errors in newer IDEs (including 2025.1)
+- Restart LSP only if the already selected version was downloaded
+- Warning for long-running processes
+- Return the correct version for the specific version in the settings
 
 ### Changed
 
-- LSP real version when using latest is no longer saved in persisted settings
+- Bump minimal supported IDE version
+- When using latest, the real LSP version is no longer saved in persisted settings
 - Use an LSP version from the LSP server info if available
+- Increase sourcemap generation timeout
+- Remove sourcemap generator start notification
+- Store LSP binaries in a directory preserved across IDE updates
+- Restructure formatting to provide clearer errors
+- Make update/install LSP notifications using buttons
+- Improve notifications text for the sourcemap generator
+- Improve error recovery for function definitions
 
 ## [0.1.0-eap] - 2025-06-12
 
