@@ -23,7 +23,7 @@ object SourcemapGeneratorCli {
             withExePath(exe)
             // Exclude the exe name
             addParameters(parts.drop(1))
-        }).runProcess(5000)
+        }).runProcess(10000)
     }
 
     fun createProcess(project: Project): OSProcessHandler {
