@@ -105,10 +105,10 @@ class LuauLspSettingsComponent(
     private val downloadLspButton = JButton().apply { isVisible = false }
     private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) "No binary specified" else "")
 
-    private val lspVersionBinding = object : MutableProperty<Version> {
+    private val lspVersionBinding = object : MutableProperty<Version?> {
         override fun get(): Version = Version.parse(settings.lspVersion)
 
-        override fun set(value: Version) {
+        override fun set(value: Version?) {
             settings.lspVersion = value.toString()
         }
     }
@@ -236,7 +236,7 @@ class LuauLspSettingsComponent(
         if (versionsForDownload.getOrEmpty().versions.isEmpty() || installedVersions !is Loadable.Loaded) {
             return
         }
-        val selectedVersion = lspVersionCombobox.getSelectedVersion()
+        val selectedVersion = lspVersionCombobox.getSelectedVersion() ?: return
         when (val result = LuauLspManager.checkLsp(
             selectedVersion,
             installedVersions = installedVersions.value.versions,

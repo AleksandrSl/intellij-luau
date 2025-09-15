@@ -156,8 +156,8 @@ class LspVersionComboBox(
     /**
      * Get the currently selected version
      */
-    fun getSelectedVersion(): Version {
-        return (selectedItem as? Item.VersionItem<*>)!!.version
+    fun getSelectedVersion(): Version? {
+        return (selectedItem as? Item.VersionItem<*>)?.version
     }
 
     sealed class Item {
