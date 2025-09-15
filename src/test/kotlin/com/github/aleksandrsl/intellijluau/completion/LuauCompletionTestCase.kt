@@ -75,4 +75,16 @@ class LuauCompletionTestCase : BasePlatformTestCase() {
         )
         assertDoesntContain(lookupElementStrings, listOf("outerArg1", "outerArg2", "closure"))
     }
+
+    fun `test completion should not include local declaration after the current one`() {
+        myFixture.configureByFiles("localDeclarations.luau")
+        myFixture.complete(CompletionType.BASIC)
+        val lookupElementStrings = myFixture.lookupElementStrings
+        assertNotNull(lookupElementStrings)
+        assertContainsElements(
+            lookupElementStrings as Collection<String>,
+            listOf("localVar1", "localFunc1", "globalFunc1", "globalFunc2")
+        )
+        assertDoesntContain(lookupElementStrings, listOf("localFunc2", "localVar2"))
+    }
 }
