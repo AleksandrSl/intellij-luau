@@ -160,7 +160,7 @@ class SourcemapGeneratorService(private val project: Project, private val corout
     }
 
     private suspend fun determineStrategy(settings: SourcemapRelevantSettings): SourcemapGenerator? {
-        if (!settings.lspSourcemapSupportEnabled || !project.hasLuauFiles()) {
+        if (!doesSourcemapGenerationMakeSense(settings)) {
             return null
         }
 
