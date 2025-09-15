@@ -140,12 +140,7 @@ class SourcemapGeneratorService(private val project: Project, private val corout
                     project
                 )
         } else if (generator != null) {
-            SourcemapGenerator.notifications()
-                .showProjectNotification(
-                    "${generator?.name} sourcemap generator started".capitalize(),
-                    NotificationType.INFORMATION,
-                    project
-                )
+            LOG.info("Starting ${generator?.name} sourcemap generator")
         }
     }
 
