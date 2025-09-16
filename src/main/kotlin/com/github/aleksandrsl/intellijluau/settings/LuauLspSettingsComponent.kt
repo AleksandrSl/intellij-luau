@@ -267,9 +267,13 @@ class LuauLspSettingsComponent(
             withLoader(rojoVersionLoader) {
                 try {
                     val version = withContext(Dispatchers.IO) {
-                        RojoCli.queryVersion()
+                        RojoCli.queryVersion(project)
                     }
-                    rojoVersion.set(version)
+                    if (version == null) {
+                        rojoVersion.set("No rojo installation found")
+                    } else {
+                        rojoVersion.set(version)
+                    }
                     rojoVersionLabel.foreground = UIUtil.getLabelForeground()
                 } catch (err: Exception) {
                     rojoVersion.set(err.message ?: "Failed to get rojo version")
