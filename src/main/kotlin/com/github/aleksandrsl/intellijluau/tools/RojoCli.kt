@@ -33,13 +33,14 @@ class RojoCli() {
     companion object {
         // Since I don't need any operations on the result, it's fine to get a string, not a Version.Semantic.
         // Also, it helps in case authors release weird non-semantic ones.
-        fun queryVersion(): String {
+        fun queryVersion(project: Project): String? {
             val firstLine = CapturingProcessHandler(GeneralCommandLine(listOf("rojo", "--version")).apply {
                 withParentEnvironmentType(GeneralCommandLine.ParentEnvironmentType.CONSOLE)
                 withCharset(Charsets.UTF_8)
-                // I don't expect a working directory being required to check the version, so I don't specify it
-            }).runProcess().stdoutLines.first()
-            return firstLine.substringAfter("Rojo ")
+                // We better have a working directory, otherwise it doesn't work with foreman
+                withWorkDirectory(project.basePath)
+            }).runProcess().stdoutLines.firstOrNull()
+            return firstLine?.substringAfter("Rojo ")
         }
     }
 }

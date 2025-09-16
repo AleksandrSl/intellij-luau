@@ -45,7 +45,7 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
 
         val version = withContext(Dispatchers.IO) {
             try {
-                RojoCli.queryVersion()
+                RojoCli.queryVersion(project)
             } catch (e: Exception) {
                 null
             }
@@ -92,7 +92,7 @@ class RojoSourcemapGenerator(private val project: Project, private val coroutine
 
             val version = withContext(Dispatchers.IO) {
                 try {
-                    RojoCli.queryVersion()
+                    RojoCli.queryVersion(project)
                 } catch (e: Exception) {
                     null
                 }
