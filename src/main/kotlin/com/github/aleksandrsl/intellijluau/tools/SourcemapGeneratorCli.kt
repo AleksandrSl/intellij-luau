@@ -5,7 +5,10 @@ import com.intellij.execution.configurations.GeneralCommandLine
 import com.intellij.execution.process.CapturingProcessHandler
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.execution.process.ProcessOutput
+import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
+
+private val LOG = logger<SourcemapGeneratorCli>()
 
 object SourcemapGeneratorCli {
     fun generate(project: Project): ProcessOutput {
@@ -23,7 +26,9 @@ object SourcemapGeneratorCli {
             withExePath(exe)
             // Exclude the exe name
             addParameters(parts.drop(1))
-        }).runProcess(10000)
+        }).also {
+            LOG.warn("Running sourcemap generator: ${it.commandLine}")
+        }.runProcess(10000)
     }
 
     fun createProcess(project: Project): OSProcessHandler {

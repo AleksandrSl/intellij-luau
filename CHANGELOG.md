@@ -4,6 +4,8 @@
 
 ## [Unreleased]
 
+## [0.1.0] - 2025-09-16
+
 ### Added
 
 - Breadcrumbs navigation for functions, methods, and type declarations
@@ -21,6 +23,9 @@
 - Use Foreman for StyLua if available
 - Ignore Packages
 - Improved completion: include function parameters in suggestions
+- Luau LSP integration
+- Formatting with StyLua
+- Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
 
 ### Fixed
 
@@ -73,5 +78,6 @@
 - Formatting with StyLua
 - Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
 
-[Unreleased]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0-eap...HEAD
+[Unreleased]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0-eap...v0.1.0
 [0.1.0-eap]: https://github.com/AleksandrSl/intellij-luau/commits/v0.1.0-eap

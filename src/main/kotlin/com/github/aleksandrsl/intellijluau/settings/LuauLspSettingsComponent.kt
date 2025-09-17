@@ -103,7 +103,7 @@ class LuauLspSettingsComponent(
     private lateinit var lspVersionsLoader: AnimatedIcon
     private val lspVersionStateLabelComponent = JBLabel().apply { isVisible = false }
     private val downloadLspButton = JButton().apply { isVisible = false }
-    private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) "No binary specified" else "")
+    private val lspVersionLabelComponent = JBLabel(if (settings.lspPath.isEmpty()) LuauBundle.message("luau.settings.lsp.no.binary.specified") else "")
 
     private val lspVersionBinding = object : MutableProperty<Version?> {
         override fun get(): Version = Version.parse(settings.lspVersion)
@@ -119,7 +119,7 @@ class LuauLspSettingsComponent(
             runWithModalProgressBlocking(project, LuauBundle.message("luau.lsp.downloading")) {
                 when (val result = lspManager.downloadLsp(version)) {
                     is LuauLspManager.DownloadResult.Failed -> {
-                        displayDownloadError("Failed to download $version: ${result.message}")
+                        displayDownloadError(LuauBundle.message("luau.lsp.download.failed", version, result.message ?: ""))
                     }
 
                     is LuauLspManager.DownloadResult.AlreadyExists, is LuauLspManager.DownloadResult.Ok -> {
@@ -139,7 +139,7 @@ class LuauLspSettingsComponent(
                 }
             }
         } catch (err: Exception) {
-            displayDownloadError("Failed to download $version: ${err.message}")
+            displayDownloadError(LuauBundle.message("luau.lsp.download.failed", version, err.message ?: ""))
         }
     }
 
@@ -191,7 +191,7 @@ class LuauLspSettingsComponent(
                 download(version)
             }
         }
-        downloadLspButton.text = if (isUpdate) "Update to $version" else "Download: $version"
+        downloadLspButton.text = if (isUpdate) LuauBundle.message("luau.lsp.update.to", version) else LuauBundle.message("luau.lsp.download.version", version)
         downloadLspButton.isVisible = true
         lspVersionStateLabelComponent.isVisible = false
     }
@@ -242,14 +242,14 @@ class LuauLspSettingsComponent(
             installedVersions = installedVersions.value.versions,
             versionsAvailableForDownload = versionsForDownload.getOrEmpty().versions,
         )) {
-            LuauLspManager.CheckLspResult.LspIsNotConfigured -> showLspMessage("Please select a version")
+            LuauLspManager.CheckLspResult.LspIsNotConfigured -> showLspMessage(LuauBundle.message("luau.lsp.please.select.version"))
             is LuauLspManager.CheckLspResult.BinaryMissing -> {
                 showLspDownloadButton(result.version, isUpdate = false)
             }
 
             LuauLspManager.CheckLspResult.ReadyToUse -> {
                 if (selectedVersion == Version.Latest) {
-                    showLspMessage("Up to date")
+                    showLspMessage(LuauBundle.message("luau.lsp.up.to.date"))
                 } else {
                     // Do nothing if not using the latest; there is no valuable info I can give
                     hideLspRelatedActions()
@@ -270,13 +270,13 @@ class LuauLspSettingsComponent(
                         RojoCli.queryVersion(project)
                     }
                     if (version == null) {
-                        rojoVersion.set("No rojo installation found")
+                        rojoVersion.set(LuauBundle.message("luau.settings.lsp.rojo.no.installation"))
                     } else {
                         rojoVersion.set(version)
                     }
                     rojoVersionLabel.foreground = UIUtil.getLabelForeground()
                 } catch (err: Exception) {
-                    rojoVersion.set(err.message ?: "Failed to get rojo version")
+                    rojoVersion.set(err.message ?: LuauBundle.message("luau.settings.lsp.rojo.failed.to.get.version"))
                     rojoVersionLabel.foreground = UIUtil.getErrorForeground()
                 }
             }
@@ -285,7 +285,7 @@ class LuauLspSettingsComponent(
 
     fun render(panel: Panel): Row {
         with(panel) {
-            return group("LSP") {
+            return group(LuauBundle.message("luau.settings.lsp.group.title")) {
                 buttonsGroup {
                     row {
                         lspDisabled = radioButton(
@@ -339,12 +339,12 @@ class LuauLspSettingsComponent(
                                 cell(lspVersionStateLabelComponent)
                                 // I empirically learned that icon will cancel coroutine passed to it if you unload it.
                                 lspVersionsLoader =
-                                    cell(AsyncProcessIcon("Loading")).visibleIf(lspVersionsForDownload.transform { it is Loadable.Loading }).component.apply { suspend() }
-                                contextHelp("Updates will be suggested if available as notifications when you open a project or you can check for them on this page.").visibleIf(
+                                    cell(AsyncProcessIcon(LuauBundle.message("luau.loading"))).visibleIf(lspVersionsForDownload.transform { it is Loadable.Loading }).component.apply { suspend() }
+                                contextHelp(LuauBundle.message("luau.settings.lsp.update.hint")).visibleIf(
                                     lspVersionCombobox.selectedValueIs(LspVersionComboBox.Item.LatestVersion)
                                 )
                                 actionButton(object :
-                                    DumbAwareAction("Open LSP Storage Folder", "", AllIcons.Actions.MenuOpen) {
+                                    DumbAwareAction(LuauBundle.message("luau.settings.lsp.open.storage.folder"), "", AllIcons.Actions.MenuOpen) {
                                     override fun actionPerformed(e: AnActionEvent) {
                                         val lspDir = LuauLspManager.lspStorageDirPath.toFile()
                                         if (lspDir.exists()) {
@@ -357,7 +357,7 @@ class LuauLspSettingsComponent(
                                 }).align(AlignX.RIGHT).enabled(PlatformCompatibility.isDirectoryOpenSupported())
                             }
                         }.enabledIf(lspAuto.selected)
-                    }.rowComment("Binaries are downloaded from <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a> when you select a version in the download section of combobox.")
+                    }.rowComment(LuauBundle.message("luau.settings.lsp.downloads.comment"))
                     row {
                         lspManual = radioButton(
                             LuauBundle.message("luau.settings.lsp.manual"), LspConfigurationType.Manual
@@ -365,10 +365,10 @@ class LuauLspSettingsComponent(
                     }
                 }.bind(settings::lspConfigurationType)
                 indent {
-                    row("Path to luau lsp:") {
+                    row(LuauBundle.message("luau.settings.lsp.path")) {
                         cell(lspPathComponent).align(AlignX.FILL).resizableColumn().bindText(settings::lspPath)
                     }
-                    row("Version:") {
+                    row(LuauBundle.message("luau.settings.lsp.version.label")) {
                         cell(lspVersionLabelComponent).align(AlignX.FILL).resizableColumn()
                     }
                 }.visibleIf(lspManual.selected)
@@ -381,16 +381,16 @@ class LuauLspSettingsComponent(
                 }.topGap(TopGap.SMALL).enabledIf(!lspDisabled.selected)
 
                 collapsibleGroup(LuauBundle.message("luau.settings.lsp.sourcemap.title")) {
-                    row("Sourcemap file:") {
+                    row(LuauBundle.message("luau.settings.lsp.sourcemap.file")) {
                         cell(sourcemapFileComponent).align(AlignX.FILL).resizableColumn()
                             .bindText(settings::lspSourcemapFile)
                     }
 
                     buttonsGroup {
-                        row("Sourcemap generation:") {
-                            radioButton("Disabled", LspSourcemapGenerationType.Disabled)
+                        row(LuauBundle.message("luau.settings.lsp.sourcemap.generation")) {
+                            radioButton(LuauBundle.message("luau.settings.lsp.sourcemap.disabled"), LspSourcemapGenerationType.Disabled)
                             sourcemapGenerationRojoRadio =
-                                radioButton("Rojo", LspSourcemapGenerationType.Rojo).component.apply {
+                                radioButton(LuauBundle.message("luau.settings.lsp.sourcemap.rojo"), LspSourcemapGenerationType.Rojo).component.apply {
                                     addItemListener { e ->
                                         if (e.stateChange == ItemEvent.SELECTED) {
                                             checkRojoVersion()
@@ -398,31 +398,31 @@ class LuauLspSettingsComponent(
                                     }
                                 }
                             sourcemapGenerationManulRadio =
-                                radioButton("Manual", LspSourcemapGenerationType.Manual).component
+                                radioButton(LuauBundle.message("luau.settings.lsp.sourcemap.manual"), LspSourcemapGenerationType.Manual).component
                         }
                     }.bind(settings::lspSourcemapGenerationType)
 
                     panel {
-                        row("Rojo version:") {
+                        row(LuauBundle.message("luau.settings.lsp.rojo.version")) {
                             rojoVersionLoader =
-                                cell(AsyncProcessIcon("Loading rojo version")).visibleIf(rojoVersion.transform { it.isEmpty() }).component.apply { suspend() }
+                                cell(AsyncProcessIcon(LuauBundle.message("luau.loading.rojo.version"))).visibleIf(rojoVersion.transform { it.isEmpty() }).component.apply { suspend() }
                             rojoVersionLabel = label("").bindText(rojoVersion).component
                         }
-                        row("Rojo project file:") {
+                        row(LuauBundle.message("luau.settings.lsp.rojo.project.file")) {
                             cell(rojoProjectFileComponent).align(AlignX.FILL).resizableColumn()
                                 .bindText(settings::lspRojoProjectFile)
                         }
                     }.visibleIf(sourcemapGenerationRojoRadio.selected)
 
                     panel {
-                        row("Sourcemap Generation Command:") {
+                        row(LuauBundle.message("luau.settings.lsp.sourcemap.command")) {
                             textField().bindText(settings::lspSourcemapGenerationCommand).align(AlignX.FILL)
                                 .resizableColumn()
-                        }.rowComment("Command will run from ${SourcemapGeneratorCli.workingDir(project)}")
+                        }.rowComment(LuauBundle.message("luau.settings.lsp.sourcemap.command.comment", SourcemapGeneratorCli.workingDir(project) ?: ""))
                         row {
-                            checkBox("Use IDEA file watcher").bindSelected(settings::lspSourcemapGenerationUseIdeaWatcher)
+                            checkBox(LuauBundle.message("luau.settings.lsp.sourcemap.use.idea.watcher")).bindSelected(settings::lspSourcemapGenerationUseIdeaWatcher)
                                 .comment(
-                                    "Enable if the generator doesn't have a builtin watcher, and the specified command will be run on every file creation/deletion"
+                                    LuauBundle.message("luau.settings.lsp.sourcemap.use.idea.watcher.comment")
                                 )
                         }
                     }.visibleIf(sourcemapGenerationManulRadio.selected)
@@ -441,7 +441,7 @@ class LuauLspSettingsComponent(
                         try {
                             Loadable.Loaded(DownloadableLspVersions(lspManager.getVersionsAvailableForDownload(project)))
                         } catch (err: Exception) {
-                            Loadable.Failed(err.message ?: "Failed to load versions")
+                            Loadable.Failed(err.message ?: LuauBundle.message("luau.lsp.failed.to.load.versions"))
                         }
                     )
                     lspInstalledVersions.set(Loadable.Loading)
@@ -451,7 +451,7 @@ class LuauLspSettingsComponent(
                                 Loadable.Loaded(InstalledLspVersions(LuauLspManager.getInstalledVersions()))
                             }
                         } catch (err: Exception) {
-                            Loadable.Failed(err.message ?: "Failed to get installed versions")
+                            Loadable.Failed(err.message ?: LuauBundle.message("luau.lsp.failed.to.get.installed.versions"))
                         })
                     lspVersionCombobox.setVersions(
                         installedVersions = lspInstalledVersions.get().getOrEmpty(),

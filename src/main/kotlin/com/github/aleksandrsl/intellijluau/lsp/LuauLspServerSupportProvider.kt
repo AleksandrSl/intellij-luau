@@ -87,6 +87,13 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
 
         // Move this to the settings? and maybe make this depend on the libraries in the workspace
         config["ignoreGlobs"] = listOf("**/_Index/**")
+
+        config["completion"] = HashMap<String?, Any?>().apply {
+            set("imports", HashMap<String?, Any?>().apply {
+                set("enabled", true)
+                set("suggestRequires", true)
+            })
+        }
         /*
          * Settings that are used by LSP, but I do not yet support
          *

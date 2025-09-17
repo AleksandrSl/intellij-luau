@@ -126,6 +126,7 @@ class IdeaWatcherSourcemapGenerator(private val project: Project, private val co
         withContext(Dispatchers.IO) {
             try {
                 val output = SourcemapGeneratorCli.generate(project)
+                LOG.warn("Sourcemap generation finished. Exit code: ${output.exitCode}. ${if (output.stdout.isNotBlank()) "Output: ${output.stdout}" else ""}. ${if (output.stderr.isNotBlank()) "Error: ${output.stderr}" else ""}. isTimeout: ${output.isTimeout}")
                 if (output.exitCode != 0) {
                     notifyError("Exit code: ${output.exitCode}. ${if (output.stdout.isNotBlank()) "Output: ${output.stdout}" else ""}. ${if (output.stderr.isNotBlank()) "Error: ${output.stderr}" else ""}")
                 }
