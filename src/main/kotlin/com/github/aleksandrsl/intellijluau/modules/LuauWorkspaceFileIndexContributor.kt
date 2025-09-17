@@ -3,12 +3,11 @@ package com.github.aleksandrsl.intellijluau.modules
 import com.intellij.platform.workspace.jps.entities.ModuleEntity
 import com.intellij.platform.workspace.storage.EntityStorage
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileIndexContributor
-import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileKind
 import com.intellij.workspaceModel.core.fileIndex.WorkspaceFileSetRegistrar
 
 @Suppress("UnstableApiUsage")
-class LuauWorkspaceFileIndexContributor: WorkspaceFileIndexContributor<ModuleEntity> {
-    private val CONFIG_FILES = listOf(
+class LuauWorkspaceFileIndexContributor : WorkspaceFileIndexContributor<ModuleEntity> {
+    private val CONFIG_FILES = setOf(
         WALLY_LOCK,
         WALLY_TOML,
         ROTRIVER_LOCK,
@@ -23,11 +22,18 @@ class LuauWorkspaceFileIndexContributor: WorkspaceFileIndexContributor<ModuleEnt
         registrar: WorkspaceFileSetRegistrar,
         storage: EntityStorage
     ) {
-        entity.contentRoots.forEach {
-                val rootDir = it.url.subTreeFileUrls
-                rootDir?.any { fileUrl -> fileUrl.fileName in CONFIG_FILES } ?: false
-            registrar.registerFileSet(it.url.append(PACKAGES_DIR_NAME), WorkspaceFileKind.EXTERNAL, entity, null)
-            registrar.registerExcludedRoot(it.url.append(PACKAGES_DIR_NAME), entity)
+        entity.contentRoots.forEach { contentRoot ->
+            registrar.registerExclusionCondition(
+                contentRoot.url,
+                { file ->
+                    file.name == PACKAGES_DIR_NAME && file.isDirectory && file.parent.children.any {
+                        CONFIG_FILES.contains(
+                            it.name
+                        )
+                    }
+                },
+                entity
+            )
         }
     }
 
