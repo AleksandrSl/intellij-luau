@@ -17,7 +17,7 @@ class LuauCreateFromTemplateHandler : DefaultCreateFromTemplateHandler() {
         templateText: String,
         props: Map<String?, Any?>
     ): PsiElement {
-        if (!template.isTemplateOfType(LuauFileType)) {
+        if (!isLuauTemplate(template)) {
             return super.createFromTemplate(project, directory, fileName, template, templateText, props)
         }
         // I want a different extension based on the settings (Legacy projects may use .lua extension).
@@ -34,9 +34,14 @@ class LuauCreateFromTemplateHandler : DefaultCreateFromTemplateHandler() {
 
     // See comment in createFromTemplate
     override fun checkAppendExtension(fileName: String?, template: FileTemplate): String? {
-        if (!template.isTemplateOfType(LuauFileType)) {
-            return super.checkAppendExtension(fileName, template)
+        if (isLuauTemplate(template)) {
+            return fileName
         }
-        return fileName
+        return super.checkAppendExtension(fileName, template)
     }
+
+    // I've tried isTemplateOfType first, but it seems to be using some indexes that are not yet available
+    // at the time some of the plugin tests made by the marketplace are done, so they fail.
+    // Making the check simple solves the problem as well.
+    private fun isLuauTemplate(template: FileTemplate) = template.extension == LuauFileType.defaultExtension
 }
