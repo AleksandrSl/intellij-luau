@@ -84,7 +84,7 @@
 - Formatting with StyLua
 - Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
 
-[Unreleased]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.1...HEAD
 [0.1.1]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0-eap...v0.1.0
 [0.1.0-eap]: https://github.com/AleksandrSl/intellij-luau/commits/v0.1.0-eap
