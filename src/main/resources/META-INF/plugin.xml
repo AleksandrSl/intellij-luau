@@ -9,6 +9,7 @@
              config-file="com.github.aleksandrsl.intellijluau-lsp.xml"
     >com.intellij.modules.ultimate
     </depends>
+    <depends optional="true" config-file="com.github.aleksandrsl.intellijluau-grazie.xml">tanvd.grazi</depends>
 
     <resource-bundle>messages.LuauBundle</resource-bundle>
 
@@ -109,6 +110,10 @@
         <defaultLiveTemplates file="/liveTemplates/luau.xml"/>
         <workspaceModel.fileIndexContributor
                 implementation="com.github.aleksandrsl.intellijluau.modules.LuauWorkspaceFileIndexContributor"/>
+        <spellchecker.support language="Luau"
+                              implementationClass="com.github.aleksandrsl.intellijluau.spellcheck.LuauSpellCheckingStrategy"/>
+        <spellchecker.bundledDictionaryProvider
+                implementation="com.github.aleksandrsl.intellijluau.spellcheck.LuauBundledDictionaryProvider"/>
         <liveTemplateContext
                 contextId="LUAU"
                 implementation="com.github.aleksandrsl.intellijluau.codeInsight.template.LuauTemplateContext"/>
@@ -117,7 +122,7 @@
         <createFromTemplateHandler
                 implementation="com.github.aleksandrsl.intellijluau.template.LuauCreateFromTemplateHandler"/>
         <!-- Have to match the name of the template without extentions as far as I get      -->
-        <internalFileTemplate name="Luau file" />
+        <internalFileTemplate name="Luau file"/>
     </extensions>
     <actions>
         <action id="com.github.aleksandrsl.intellijluau.actions.LuauExternalFormatAction"
