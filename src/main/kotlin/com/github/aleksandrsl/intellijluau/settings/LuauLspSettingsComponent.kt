@@ -6,12 +6,14 @@ import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
 import com.github.aleksandrsl.intellijluau.tools.LspCli
 import com.github.aleksandrsl.intellijluau.tools.RojoCli
 import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
+import com.github.aleksandrsl.intellijluau.util.INLAY_HINTS_SUPPORT_VERSION
 import com.github.aleksandrsl.intellijluau.util.PlatformCompatibility
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.github.aleksandrsl.intellijluau.util.withLoader
 import com.intellij.icons.AllIcons
 import com.intellij.ide.actions.RevealFileAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
@@ -112,6 +114,8 @@ class LuauLspSettingsComponent(
             settings.lspVersion = value.toString()
         }
     }
+
+    val ideBuild = ApplicationInfo.getInstance().build
 
     private fun download(version: Version.Semantic, afterSuccessfulDownload: () -> Unit = {}) {
         val lspManager = LuauLspManager.getInstance()
@@ -427,6 +431,58 @@ class LuauLspSettingsComponent(
                         }
                     }.visibleIf(sourcemapGenerationManulRadio.selected)
                 }.topGap(TopGap.NONE).enabledIf(sourcemapSupportCheckbox.selected.and(!lspDisabled.selected))
+
+
+                collapsibleGroup(LuauBundle.message("luau.settings.lsp.inlay.hints.title")) {
+                    if (INLAY_HINTS_SUPPORT_VERSION != null && INLAY_HINTS_SUPPORT_VERSION > ideBuild) {
+                        row {
+                            icon(AllIcons.General.Warning)
+                            text(LuauBundle.message("luau.settings.lsp.inlay.hints.version.warning"))
+                        }.topGap(TopGap.NONE)
+
+                    }
+
+                    row(LuauBundle.message("luau.settings.lsp.inlay.hints.parameter.names")) {
+                        comboBox(InlayHintsParameterNamesConfig.entries)
+                            .bindItem(settings::lspInlayHintsParameterNames.toNullableProperty())
+                    }.rowComment(LuauBundle.message("luau.settings.lsp.inlay.hints.parameter.names.comment"))
+
+                    row {
+                        checkBox(LuauBundle.message("luau.settings.lsp.inlay.hints.variable.types"))
+                            .bindSelected(settings::lspInlayHintsVariableTypes)
+                    }
+
+                    row {
+                        checkBox(LuauBundle.message("luau.settings.lsp.inlay.hints.parameter.types"))
+                            .bindSelected(settings::lspInlayHintsParameterTypes)
+                    }
+
+                    row {
+                        checkBox(LuauBundle.message("luau.settings.lsp.inlay.hints.function.return.types"))
+                            .bindSelected(settings::lspInlayHintsFunctionReturnTypes)
+                    }
+
+                    row {
+                        checkBox(LuauBundle.message("luau.settings.lsp.inlay.hints.hide.for.error.types"))
+                            .bindSelected(settings::lspInlayHintsHideForErrorTypes)
+                    }
+
+                    row {
+                        checkBox(LuauBundle.message("luau.settings.lsp.inlay.hints.hide.for.matching.parameter.names"))
+                            .bindSelected(settings::lspInlayHintsHideForMatchingParameterNames)
+                    }
+
+                    row(LuauBundle.message("luau.settings.lsp.inlay.hints.type.hint.max.length")) {
+                        intTextField(IntRange(1, 1000))
+                            .bindIntText(settings::lspInlayHintsTypeHintMaxLength)
+                    }.rowComment(LuauBundle.message("luau.settings.lsp.inlay.hints.type.hint.max.length.comment"))
+
+                    row {
+                        checkBox(LuauBundle.message("luau.settings.lsp.inlay.hints.make.insertable"))
+                            .bindSelected(settings::lspInlayHintsMakeInsertable)
+                    }.rowComment(LuauBundle.message("luau.settings.lsp.inlay.hints.make.insertable.comment"))
+                }.topGap(TopGap.SMALL).enabledIf(!lspDisabled.selected)
+
             }
         }
     }
