@@ -1,10 +1,10 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
-import com.github.aleksandrsl.intellijluau.tools.RojoCli
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.github.aleksandrsl.intellijluau.showProjectNotification
+import com.github.aleksandrsl.intellijluau.tools.RojoCli
 import com.intellij.execution.process.OSProcessHandler
 import com.intellij.notification.NotificationAction
 import com.intellij.notification.NotificationType

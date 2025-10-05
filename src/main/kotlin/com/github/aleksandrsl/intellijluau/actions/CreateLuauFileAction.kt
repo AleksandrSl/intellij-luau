@@ -2,7 +2,6 @@ package com.github.aleksandrsl.intellijluau.actions
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.LuauIcons
-import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
 import com.intellij.ide.actions.CreateFileFromTemplateAction
 import com.intellij.ide.actions.CreateFileFromTemplateDialog
 import com.intellij.openapi.project.DumbAware

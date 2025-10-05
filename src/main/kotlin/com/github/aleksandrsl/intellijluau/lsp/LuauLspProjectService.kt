@@ -36,7 +36,7 @@ class LuauLspProjectService(private val project: Project, private val coroutineS
     private var hasCheckedLsp = false
     private var shouldStartLsp = false
 
-//    todo : Should I somehow reset the check when the settings change?
+    //    todo : Should I somehow reset the check when the settings change?
     // Probably not, since if you've changed the settings to a custom version of the lsp if will be force downloaded.
     // If you turned the lsp off, it is fine to keep the state.
     fun checkLsp(force: Boolean = false): Boolean {
@@ -48,7 +48,8 @@ class LuauLspProjectService(private val project: Project, private val coroutineS
                     hasCheckedLsp = true
                     isChecking.set(false)
                     if (shouldStartLsp) {
-                        LspServerManager.getInstance(project).startServersIfNeeded(LuauLspServerSupportProvider::class.java)
+                        LspServerManager.getInstance(project)
+                            .startServersIfNeeded(LuauLspServerSupportProvider::class.java)
                     }
                 }
             }

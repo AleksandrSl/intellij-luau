@@ -5,12 +5,7 @@ import com.github.aleksandrsl.intellijluau.settings.LspVersionComboBox.Item
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.popup.ListSeparator
-import com.intellij.openapi.util.NlsContexts
-import com.intellij.ui.GroupedComboBoxRenderer
 import com.intellij.ui.MutableCollectionComboBoxModel
-import com.intellij.ui.SimpleColoredComponent
-import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.dsl.listCellRenderer.listCellRenderer
 import com.intellij.util.ui.UIUtil
 

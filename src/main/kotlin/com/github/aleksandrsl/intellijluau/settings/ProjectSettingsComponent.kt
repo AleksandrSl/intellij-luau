@@ -1,8 +1,8 @@
 package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
-import com.github.aleksandrsl.intellijluau.tools.LuauCliService
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspPlatformSupportChecker
+import com.github.aleksandrsl.intellijluau.tools.LuauCliService
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
