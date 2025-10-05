@@ -56,7 +56,6 @@ class LspVersionComboBox(
                 if (isErrorValue) {
                     foreground = UIUtil.getErrorForeground()
                 }
-                toolTipText
             }
             // I wanted to add a tooltip for the error row, but the tooltip is only for the whole component
         }
