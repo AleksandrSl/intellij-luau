@@ -1,7 +1,4 @@
 <idea-plugin>
-    <dependencies>
-        <plugin id="tanvd.grazi"/>
-    </dependencies>
     <extensions defaultExtensionNs="com.intellij.grazie">
         <!-- Python also enables LiteralProblemFilter from grazie. No Idea whether I need it or not. -->
         <textExtractor language="Luau"
