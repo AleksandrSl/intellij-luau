@@ -54,6 +54,14 @@ class LuauSettingsLspRestartListener(val project: Project) : ProjectSettingsConf
             || event.isChanged(ProjectSettingsState.State::platformType)
             || event.isChanged(ProjectSettingsState.State::lspSourcemapSupportEnabled)
             || event.isChanged(ProjectSettingsState.State::lspSourcemapFile)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsVariableTypes)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsParameterNames)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsParameterTypes)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsFunctionReturnTypes)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsHideForErrorTypes)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsHideForMatchingParameterNames)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsTypeHintMaxLength)
+            || event.isChanged(ProjectSettingsState.State::lspInlayHintsMakeInsertable)
         ) {
             project.restartLspServerAsyncIfNeeded("Project settings changed")
         }

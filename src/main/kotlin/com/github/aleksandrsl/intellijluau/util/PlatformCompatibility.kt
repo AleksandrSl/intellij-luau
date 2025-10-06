@@ -1,6 +1,7 @@
 package com.github.aleksandrsl.intellijluau.util
 
 import com.intellij.ide.actions.RevealFileAction
+import com.intellij.openapi.util.BuildNumber
 import java.lang.reflect.Method
 
 // TODO (AleksandrSl 12/06/2025): Check how this is done in other plugins, I have a feeling there is a better way.
@@ -29,3 +30,5 @@ object PlatformCompatibility {
         }
     }
 }
+
+val INLAY_HINTS_SUPPORT_VERSION = BuildNumber.fromString("252.26199.162")

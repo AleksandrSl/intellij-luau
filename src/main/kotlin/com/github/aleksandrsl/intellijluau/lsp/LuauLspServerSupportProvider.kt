@@ -71,7 +71,7 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
      * struct ClientConfiguration
      */
     override fun getWorkspaceConfiguration(item: ConfigurationItem): Any {
-        val settings = ProjectSettingsState.getInstance(project).state
+        val settings = ProjectSettingsState.getInstance(project)
         val config: MutableMap<String?, Any?> = HashMap()
 
         val sourcemap: MutableMap<String?, Any?> = HashMap()
@@ -84,6 +84,17 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
         val platform: MutableMap<String?, Any?> = HashMap()
         platform["type"] = settings.platformType.value
         config["platform"] = platform
+
+        val inlayHints: MutableMap<String?, Any?> = HashMap()
+        inlayHints["parameterNames"] = settings.lspInlayHintsParameterNames.value
+        inlayHints["variableTypes"] = settings.lspInlayHintsVariableTypes
+        inlayHints["parameterTypes"] = settings.lspInlayHintsParameterTypes
+        inlayHints["functionReturnTypes"] = settings.lspInlayHintsFunctionReturnTypes
+        inlayHints["hideHintsForErrorTypes"] = settings.lspInlayHintsHideForErrorTypes
+        inlayHints["hideHintsForMatchingParameterNames"] = settings.lspInlayHintsHideForMatchingParameterNames
+        inlayHints["typeHintMaxLength"] = settings.lspInlayHintsTypeHintMaxLength
+        inlayHints["makeInsertable"] = settings.lspInlayHintsMakeInsertable
+        config["inlayHints"] = inlayHints
 
         // Move this to the settings? and maybe make this depend on the libraries in the workspace
         config["ignoreGlobs"] = listOf("**/_Index/**")
@@ -103,17 +114,6 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
          * bool workspace = false;
          * /// Whether to use expressive DM types in the diagnostics typechecker
          * bool strictDatamodelTypes = false;
-         *
-         * inlayHints
-         * InlayHintsParameterNamesConfig parameterNames = InlayHintsParameterNamesConfig::None;
-         * bool variableTypes = false;
-         * bool parameterTypes = false;
-         * bool functionReturnTypes = false;
-         * bool hideHintsForErrorTypes = false;
-         * bool hideHintsForMatchingParameterNames = true;
-         * size_t typeHintMaxLength = 50;
-         * /// Whether type inlay hints should be made insertable
-         * bool makeInsertable = true;
          *
          * hover
          * bool enabled = true;

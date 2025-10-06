@@ -1,6 +1,5 @@
 package com.github.aleksandrsl.intellijluau.tools
 
-import com.github.aleksandrsl.intellijluau.lsp.SourcemapGeneratorService
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project

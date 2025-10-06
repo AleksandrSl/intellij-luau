@@ -65,6 +65,16 @@ data class DefaultState(
     override var lspSourcemapFile: String = ShareableProjectSettingsStateDefaults.lspSourcemapFile,
     override var lspRojoProjectFile: String = ShareableProjectSettingsStateDefaults.lspRojoProjectFile,
 
+    override val lspInlayHintsParameterNames: InlayHintsParameterNamesConfig = ShareableProjectSettingsStateDefaults.lspInlayHintsParameterNames,
+    override val lspInlayHintsVariableTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsVariableTypes,
+    override val lspInlayHintsParameterTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsParameterTypes,
+    override val lspInlayHintsFunctionReturnTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsFunctionReturnTypes,
+    override val lspInlayHintsHideForErrorTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsHideForErrorTypes,
+    override val lspInlayHintsHideForMatchingParameterNames: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsHideForMatchingParameterNames,
+    override val lspInlayHintsTypeHintMaxLength: Int = ShareableProjectSettingsStateDefaults.lspInlayHintsTypeHintMaxLength,
+    override val lspInlayHintsMakeInsertable: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsMakeInsertable,
+
+
     override var styLuaPath: String = ShareableProjectSettingsStateDefaults.styLuaPath,
     override var runStyLua: RunStyluaOption = ShareableProjectSettingsStateDefaults.runStyLua,
     override var robloxSecurityLevel: RobloxSecurityLevel = ShareableProjectSettingsStateDefaults.robloxSecurityLevel,
