@@ -10,7 +10,7 @@ intelliJPlatform = "2.9.0"
 qodana = "2025.2.1"
 kover = "0.9.1"
 grammarkit = "2022.3.2.2"
-serialization = "2.2.20"
+serialization = "2.2.21"
 kotlinx-serialization-json = "1.9.0"
 
 [libraries]
