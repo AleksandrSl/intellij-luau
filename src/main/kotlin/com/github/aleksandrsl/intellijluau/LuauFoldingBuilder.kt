@@ -10,6 +10,9 @@ import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiRecursiveElementVisitor
+import com.intellij.psi.util.PsiTreeUtil.skipWhitespacesAndCommentsBackward
+import com.intellij.psi.util.PsiTreeUtil.skipWhitespacesAndCommentsForward
+import com.intellij.psi.util.startOffset
 
 class LuauFoldingBuilder : FoldingBuilderEx(), DumbAware {
     override fun buildFoldRegions(root: PsiElement, document: Document, quick: Boolean): Array<FoldingDescriptor> {
@@ -21,15 +24,15 @@ class LuauFoldingBuilder : FoldingBuilderEx(), DumbAware {
                 val node = element.node
                 when (node.elementType) {
                     LuauTypes.BLOCK -> {
-                        val prev = node.treePrev
-                        val next = node.treeNext
+                        val prev = skipWhitespacesAndCommentsBackward(element)
+                        val next = skipWhitespacesAndCommentsForward(element)
                         if (prev != null && next != null) {
                             val l = prev.startOffset + prev.textLength
-                            val r = next.startOffset
+                            val r = element.textRange.endOffset
 
                             val range = TextRange(l, r)
                             if (range.length > 0) {
-                                list.add(FoldingDescriptor(element, range))
+                                list.add(FoldingDescriptor(node, range))
                             }
                         }
                     }
@@ -37,8 +40,7 @@ class LuauFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     LuauTypes.TABLE_CONSTRUCTOR -> {
                         list.add(
                             FoldingDescriptor(
-                                node,
-                                TextRange(node.startOffset, node.startOffset + node.textLength)
+                                node, TextRange(node.startOffset, node.startOffset + node.textLength)
                             )
                         )
                     }
@@ -46,8 +48,7 @@ class LuauFoldingBuilder : FoldingBuilderEx(), DumbAware {
                     LuauTypes.BLOCK_COMMENT -> {
                         list.add(
                             FoldingDescriptor(
-                                node,
-                                TextRange(node.startOffset, node.startOffset + node.textLength)
+                                node, TextRange(node.startOffset, node.startOffset + node.textLength)
                             )
                         )
                     }
