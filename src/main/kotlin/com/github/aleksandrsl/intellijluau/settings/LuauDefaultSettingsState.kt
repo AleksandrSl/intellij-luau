@@ -41,6 +41,8 @@ class LuauDefaultSettingsState : PersistentStateComponent<ShareableProjectSettin
         internalState.runStyLua = state.runStyLua
         internalState.robloxSecurityLevel = state.robloxSecurityLevel
         internalState.customDefinitionsPaths = state.customDefinitionsPaths
+        internalState.companionPluginEnabled = state.companionPluginEnabled
+        internalState.companionPluginPort = state.companionPluginPort
         val propertiesComponent = PropertiesComponent.getInstance()
         propertiesComponent.setValue(DEFAULT_SETTINGS_SET_KEY, true)
     }
@@ -72,4 +74,6 @@ data class DefaultState(
     override var useLuauExtension: Boolean = ShareableProjectSettingsStateDefaults.useLuauExtension,
     override var platformType: PlatformType = ShareableProjectSettingsStateDefaults.platformType,
     override var styluaConfigurationType: StyluaConfigurationType = ShareableProjectSettingsStateDefaults.styluaConfigurationType,
+    override var companionPluginEnabled: Boolean = ShareableProjectSettingsStateDefaults.companionPluginEnabled,
+    override var companionPluginPort: Int = ShareableProjectSettingsStateDefaults.companionPluginPort,
 ) : ShareableProjectSettingsState

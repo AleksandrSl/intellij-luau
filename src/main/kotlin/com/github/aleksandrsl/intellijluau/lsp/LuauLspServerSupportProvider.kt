@@ -19,8 +19,18 @@ import com.intellij.platform.lsp.api.ProjectWideLspServerDescriptor
 import com.intellij.platform.lsp.api.lsWidget.LspServerWidgetItem
 import org.eclipse.lsp4j.ClientCapabilities
 import org.eclipse.lsp4j.ConfigurationItem
+import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
+import org.eclipse.lsp4j.services.LanguageServer
 
 private val LOG = logger<LuauLspServerSupportProvider>()
+
+interface LuauLanguageServer : LanguageServer {
+    @JsonNotification("\$/plugin/full")
+    fun pluginFull(params: Any)
+
+    @JsonNotification("\$/plugin/clear")
+    fun pluginClear()
+}
 
 class LuauLspServerSupportProvider : LspServerSupportProvider {
     override fun fileOpened(
@@ -56,6 +66,8 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
     project, LuauBundle.message("luau.lsp.name")
 ) {
     override fun isSupportedFile(file: VirtualFile) = file.fileType == LuauFileType
+
+    override val lsp4jServerClass = LuauLanguageServer::class.java
 
     override val clientCapabilities: ClientCapabilities
         get() = super.clientCapabilities.apply {
