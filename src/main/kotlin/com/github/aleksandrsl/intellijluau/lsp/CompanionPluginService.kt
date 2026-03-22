@@ -136,9 +136,9 @@ class CompanionPluginService(private val project: Project, private val coroutine
     override fun dispose() {
         messageBusConnection?.disconnect()
         messageBusConnection = null
-        operationQueue.trySend(Operation.Stop)
-        operationQueue.close()
+        server?.stop()
         server = null
+        operationQueue.close()
     }
 
     private sealed class Operation {

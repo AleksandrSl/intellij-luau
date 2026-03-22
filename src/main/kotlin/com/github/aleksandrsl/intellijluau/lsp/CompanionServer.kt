@@ -86,20 +86,10 @@ class CompanionServer(
                 return
             }
 
-            val lspServer = getLuauLspServer()
-            if (lspServer == null) {
+            if (!sendLspNotification { it.pluginFull(tree) }) {
                 LOG.debug("LSP server not available, ignoring /full request")
-                exchange.sendResponse(200, "OK")
-                return
             }
-
-            try {
-                lspServer.pluginFull(tree)
-                exchange.sendResponse(200, "OK")
-            } catch (e: Exception) {
-                LOG.warn("Failed to send $/plugin/full notification", e)
-                exchange.sendResponse(500, "Failed to send notification to LSP")
-            }
+            exchange.sendResponse(200, "OK")
         }
     }
 
@@ -110,20 +100,10 @@ class CompanionServer(
                 return
             }
 
-            val lspServer = getLuauLspServer()
-            if (lspServer == null) {
+            if (!sendLspNotification { it.pluginClear() }) {
                 LOG.debug("LSP server not available, ignoring /clear request")
-                exchange.sendResponse(200, "OK")
-                return
             }
-
-            try {
-                lspServer.pluginClear()
-                exchange.sendResponse(200, "OK")
-            } catch (e: Exception) {
-                LOG.warn("Failed to send $/plugin/clear notification", e)
-                exchange.sendResponse(500, "Failed to send notification to LSP")
-            }
+            exchange.sendResponse(200, "OK")
         }
     }
 
@@ -162,12 +142,36 @@ class CompanionServer(
         }
     }
 
-    private fun getLuauLspServer(): LuauLanguageServer? {
-        val server = LspServerManager.getInstance(project)
+    /**
+     * Send a notification to the Luau LSP server.
+     * Uses reflection to support both old (lsp4jServer, 2024.x) and new (sendNotification, 2025.x+) IntelliJ APIs.
+     */
+    private fun sendLspNotification(action: (LuauLanguageServer) -> Unit): Boolean {
+        val lspServer = LspServerManager.getInstance(project)
             .getServersForProvider(LuauLspServerSupportProvider::class.java)
-            .firstOrNull() ?: return null
-        @Suppress("UNCHECKED_CAST", "DEPRECATION")
-        return server.lsp4jServer as? LuauLanguageServer
+            .firstOrNull() ?: return false
+
+        try {
+            val sendNotification = lspServer.javaClass.getMethod(
+                "sendNotification",
+                kotlin.jvm.functions.Function1::class.java
+            )
+            val callback: (org.eclipse.lsp4j.services.LanguageServer) -> Unit = { languageServer ->
+                (languageServer as? LuauLanguageServer)?.let(action)
+            }
+            sendNotification.invoke(lspServer, callback)
+        } catch (_: NoSuchMethodException) {
+            // Fallback for older IntelliJ versions with lsp4jServer
+            try {
+                val getLsp4jServer = lspServer.javaClass.getMethod("getLsp4jServer")
+                val server = getLsp4jServer.invoke(lspServer) as? LuauLanguageServer ?: return false
+                action(server)
+            } catch (e: Throwable) {
+                LOG.warn("Failed to access LSP server API", e)
+                return false
+            }
+        }
+        return true
     }
 
     private fun HttpExchange.sendResponse(code: Int, body: String) {
@@ -180,11 +184,11 @@ class CompanionServer(
     private inline fun HttpExchange.use(block: () -> Unit) {
         try {
             block()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             LOG.warn("Unhandled error in companion server", e)
             try {
                 sendResponse(500, "Internal Server Error")
-            } catch (_: Exception) {
+            } catch (_: Throwable) {
                 // Response may have already been sent
             }
         }

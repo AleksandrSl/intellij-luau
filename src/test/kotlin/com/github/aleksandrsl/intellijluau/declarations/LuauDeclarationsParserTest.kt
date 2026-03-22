@@ -9,7 +9,7 @@ class LuauDeclarationsParserTest : TestCase() {
 
     fun `test parser processes valid luau file`() {
         val declarations = javaClass.classLoader.getResource("declarations/globalTypes.RobloxScriptSecurity.d.luau")
-            ?.let { parser.parse(it.path) }
+            ?.let { parser.parse(it.toURI().path) }
 
         assertNotNull(declarations)
         assertTrue(declarations!!.enums.isNotEmpty())
@@ -137,7 +137,7 @@ end""".trimIndent()
 
         assertNotNull(testFilePath)
         val startTime = System.currentTimeMillis()
-        val declarations = parser.parse(testFilePath!!.path)
+        val declarations = parser.parse(testFilePath!!.toURI().path)
         val duration = System.currentTimeMillis() - startTime
 
         assertTrue(duration < 500)
