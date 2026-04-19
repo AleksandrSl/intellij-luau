@@ -13,16 +13,20 @@ import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.*
+import me.saket.bytesize.kilobytes
 import me.saket.bytesize.megabytes
 import org.apache.http.HttpHeaders
 import org.apache.http.HttpStatus
+import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.net.InetSocketAddress
+import java.nio.charset.StandardCharsets
 import java.util.zip.GZIPInputStream
 
 private val LOG = logger<CompanionServer>()
 
 private val MAX_BODY_SIZE = 3.megabytes
+private val BUFFER_SIZE = 8.kilobytes
 
 @Serializable
 private data class FullRequest(
@@ -61,15 +65,11 @@ class CompanionServer(
                 return
             }
 
-            val contentLength = exchange.requestHeaders.getFirst(HttpHeaders.CONTENT_LENGTH)?.toLongOrNull() ?: 0
-            if (contentLength > MAX_BODY_SIZE.inWholeBytes) {
+            val body = try {
+                 readRequestBody(exchange)
+            } catch (_: BodyTooLargeException) {
                 exchange.sendResponse(HttpStatus.SC_REQUEST_TOO_LONG, "Request body too large. Limit: $MAX_BODY_SIZE")
                 return
-            }
-
-            val body = try {
-                val inputStream = decompressIfNeeded(exchange)
-                inputStream.bufferedReader().readText()
             } catch (e: Exception) {
                 LOG.debug("Failed to read request body", e)
                 exchange.sendResponse(HttpStatus.SC_BAD_REQUEST, "Failed to read request body")
@@ -139,6 +139,30 @@ class CompanionServer(
         }
     }
 
+    private fun readRequestBody(exchange: HttpExchange): String {
+        val contentLength = exchange.requestHeaders.getFirst(HttpHeaders.CONTENT_LENGTH)?.toLongOrNull()
+        if (contentLength != null && contentLength > MAX_BODY_SIZE.inWholeBytes) {
+            throw BodyTooLargeException()
+        }
+
+        val inputStream = decompressIfNeeded(exchange)
+        val output = ByteArrayOutputStream()
+        val buffer = ByteArray(BUFFER_SIZE.inWholeBytes.toInt())
+
+        inputStream.use { stream ->
+            while (true) {
+                val read = stream.read(buffer)
+                if (read <= 0) break
+                output.write(buffer, 0, read)
+                if (output.size().toLong() > MAX_BODY_SIZE.inWholeBytes) {
+                    throw BodyTooLargeException()
+                }
+            }
+        }
+
+        return output.toString(StandardCharsets.UTF_8)
+    }
+
     private fun decompressIfNeeded(exchange: HttpExchange): InputStream {
         val encoding = exchange.requestHeaders.getFirst(HttpHeaders.CONTENT_ENCODING)
         return if (encoding != null && encoding.equals("gzip", ignoreCase = true)) {
@@ -165,7 +189,13 @@ class CompanionServer(
             val callback: (org.eclipse.lsp4j.services.LanguageServer) -> Unit = { languageServer ->
                 (languageServer as? LuauLanguageServer)?.let(action)
             }
-            sendNotification.invoke(lspServer, callback)
+            try {
+                sendNotification.invoke(lspServer, callback)
+                return true
+            } catch (e: Throwable) {
+                LOG.warn("Failed to invoke LSP sendNotification API", e)
+                return false
+            }
         } catch (_: NoSuchMethodException) {
             // Fallback for older IntelliJ versions with lsp4jServer
             try {
@@ -182,21 +212,25 @@ class CompanionServer(
 
     private fun HttpExchange.sendResponse(code: Int, body: String) {
         val bytes = body.toByteArray()
+        responseHeaders.add(HttpHeaders.CONTENT_TYPE, "text/plain; charset=utf-8")
         sendResponseHeaders(code, bytes.size.toLong())
-        responseBody.write(bytes)
-        responseBody.close()
+        responseBody.use { it.write(bytes) }
     }
 
     private inline fun HttpExchange.use(block: () -> Unit) {
         try {
             block()
-        } catch (e: Throwable) {
+        } catch (e: Exception) {
             LOG.warn("Unhandled error in the companion server", e)
             try {
                 sendResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error")
             } catch (_: Throwable) {
                 // Response may have already been sent
             }
+        } finally {
+            close()
         }
     }
+
+    private class BodyTooLargeException : Exception()
 }
