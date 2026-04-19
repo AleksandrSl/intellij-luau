@@ -3,9 +3,6 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.LuauFileType
-import com.google.gson.JsonParser
-import com.google.gson.Strictness
-import com.google.gson.stream.JsonReader
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -14,6 +11,8 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.*
 import me.saket.bytesize.megabytes
 import org.apache.http.HttpHeaders
 import org.apache.http.HttpStatus
@@ -25,7 +24,10 @@ private val LOG = logger<CompanionServer>()
 
 private val MAX_BODY_SIZE = 3.megabytes
 
-private const val MAX_BODY_LENGTH = 500
+@Serializable
+private data class FullRequest(
+    val tree: JsonElement? = null,
+)
 
 class CompanionServer(
     private val project: Project,
@@ -74,18 +76,17 @@ class CompanionServer(
                 return
             }
 
-            val jsonObject = try {
-                val reader = JsonReader(body.reader())
-                reader.strictness = Strictness.LENIENT
-                JsonParser.parseReader(reader).asJsonObject
+            val request = try {
+                Json.decodeFromString<FullRequest>(body)
             } catch (e: Exception) {
-                val preview = if (body.length > MAX_BODY_LENGTH) body.substring(0, MAX_BODY_LENGTH) + "..." else body
+                val preview = if (body.length > 500) body.substring(0, 500) + "..." else body
                 LOG.warn("Failed to parse JSON body (length=${body.length}): $preview", e)
                 exchange.sendResponse(HttpStatus.SC_BAD_REQUEST, "Invalid JSON")
                 return
             }
 
-            val tree = jsonObject.get("tree")
+            // TODO (AleksandrSl 19/04/2026): Tree could be made required
+            val tree = request.tree
             if (tree == null) {
                 exchange.sendResponse(HttpStatus.SC_BAD_REQUEST, "Missing 'tree' property")
                 return
@@ -124,10 +125,10 @@ class CompanionServer(
                     FileTypeIndex.getFiles(LuauFileType, GlobalSearchScope.projectScope(project))
                         .map { it.path }
                 }
-                val json = com.google.gson.JsonObject().apply {
-                    val array = com.google.gson.JsonArray()
-                    files.forEach { array.add(it) }
-                    add("files", array)
+                val json = buildJsonObject {
+                    putJsonArray("files") {
+                        files.forEach { add(it) }
+                    }
                 }
                 exchange.responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json")
                 exchange.sendResponse(HttpStatus.SC_OK, json.toString())
