@@ -5,6 +5,7 @@ import com.github.aleksandrsl.intellijluau.showProjectNotification
 import com.github.aleksandrsl.intellijluau.settings.PlatformType
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsConfigurable
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState
+import com.intellij.notification.NotificationGroup
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.Disposable
@@ -153,7 +154,7 @@ class CompanionPluginService(private val project: Project, private val coroutine
         @JvmStatic
         fun getInstance(project: Project): CompanionPluginService = project.service()
 
-        fun notifications() =
+        fun notifications(): NotificationGroup =
             NotificationGroupManager.getInstance().getNotificationGroup("Luau companion plugin")
     }
 }
