@@ -14,6 +14,7 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBRadioButton
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.layout.selected
+import javax.swing.JCheckBox
 import javax.swing.JComponent
 
 private val LOG = logger<ProjectSettingsComponent>()
@@ -72,6 +73,18 @@ class ProjectSettingsComponent(
                             RobloxSecurityLevel.RobloxScriptSecurity,
                         )
                     ).bindItem(settings::robloxSecurityLevel.toNullableProperty())
+                }
+                lateinit var companionCheckbox: JCheckBox
+                row {
+                    companionCheckbox = checkBox("Enable Roblox Studio Companion Plugin")
+                        .bindSelected(settings::companionPluginEnabled)
+                        .comment("Starts an HTTP server for the Roblox Studio companion plugin to send DataModel information")
+                        .component
+                }
+                row("Companion Plugin Port:") {
+                    intTextField(IntRange(1024, 65535))
+                        .bindIntText(settings::companionPluginPort)
+                        .enabledIf(companionCheckbox.selected)
                 }
             }.visibleIf(isRobloxRadioButton.selected)
             lspSettings?.render(this)
