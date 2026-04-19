@@ -15,6 +15,7 @@ import com.intellij.psi.search.GlobalSearchScope
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
 import me.saket.bytesize.megabytes
+import org.apache.http.HttpHeaders
 import org.apache.http.HttpStatus
 import java.io.InputStream
 import java.net.InetSocketAddress
@@ -58,7 +59,7 @@ class CompanionServer(
                 return
             }
 
-            val contentLength = exchange.requestHeaders.getFirst("Content-Length")?.toLongOrNull() ?: 0
+            val contentLength = exchange.requestHeaders.getFirst(HttpHeaders.CONTENT_LENGTH)?.toLongOrNull() ?: 0
             if (contentLength > MAX_BODY_SIZE.inWholeBytes) {
                 exchange.sendResponse(HttpStatus.SC_REQUEST_TOO_LONG, "Request body too large. Limit: $MAX_BODY_SIZE")
                 return
@@ -128,7 +129,7 @@ class CompanionServer(
                     files.forEach { array.add(it) }
                     add("files", array)
                 }
-                exchange.responseHeaders.add("Content-Type", "application/json")
+                exchange.responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json")
                 exchange.sendResponse(HttpStatus.SC_OK, json.toString())
             } catch (e: Exception) {
                 LOG.warn("Failed to get file paths", e)
@@ -138,7 +139,7 @@ class CompanionServer(
     }
 
     private fun decompressIfNeeded(exchange: HttpExchange): InputStream {
-        val encoding = exchange.requestHeaders.getFirst("Content-Encoding")
+        val encoding = exchange.requestHeaders.getFirst(HttpHeaders.CONTENT_ENCODING)
         return if (encoding != null && encoding.equals("gzip", ignoreCase = true)) {
             GZIPInputStream(exchange.requestBody)
         } else {
@@ -189,7 +190,7 @@ class CompanionServer(
         try {
             block()
         } catch (e: Throwable) {
-            LOG.warn("Unhandled error in companion server", e)
+            LOG.warn("Unhandled error in the companion server", e)
             try {
                 sendResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error")
             } catch (_: Throwable) {
