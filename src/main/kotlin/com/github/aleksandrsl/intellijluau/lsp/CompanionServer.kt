@@ -14,13 +14,17 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
+import me.saket.bytesize.megabytes
+import org.apache.http.HttpStatus
 import java.io.InputStream
 import java.net.InetSocketAddress
 import java.util.zip.GZIPInputStream
 
 private val LOG = logger<CompanionServer>()
 
-private const val MAX_BODY_SIZE = 3 * 1024 * 1024 // 3MB
+private val MAX_BODY_SIZE = 3.megabytes
+
+private const val MAX_BODY_LENGTH = 500
 
 class CompanionServer(
     private val project: Project,
@@ -50,13 +54,13 @@ class CompanionServer(
     private fun handleFull(exchange: HttpExchange) {
         exchange.use {
             if (exchange.requestMethod != "POST") {
-                exchange.sendResponse(405, "Method Not Allowed")
+                exchange.sendResponse(HttpStatus.SC_METHOD_NOT_ALLOWED, "Method Not Allowed")
                 return
             }
 
             val contentLength = exchange.requestHeaders.getFirst("Content-Length")?.toLongOrNull() ?: 0
-            if (contentLength > MAX_BODY_SIZE) {
-                exchange.sendResponse(413, "Request body too large. Limit: ${MAX_BODY_SIZE / 1024 / 1024}MB")
+            if (contentLength > MAX_BODY_SIZE.inWholeBytes) {
+                exchange.sendResponse(HttpStatus.SC_REQUEST_TOO_LONG, "Request body too large. Limit: $MAX_BODY_SIZE")
                 return
             }
 
@@ -65,7 +69,7 @@ class CompanionServer(
                 inputStream.bufferedReader().readText()
             } catch (e: Exception) {
                 LOG.debug("Failed to read request body", e)
-                exchange.sendResponse(400, "Failed to read request body")
+                exchange.sendResponse(HttpStatus.SC_BAD_REQUEST, "Failed to read request body")
                 return
             }
 
@@ -74,48 +78,48 @@ class CompanionServer(
                 reader.strictness = Strictness.LENIENT
                 JsonParser.parseReader(reader).asJsonObject
             } catch (e: Exception) {
-                val preview = if (body.length > 500) body.substring(0, 500) + "..." else body
+                val preview = if (body.length > MAX_BODY_LENGTH) body.substring(0, MAX_BODY_LENGTH) + "..." else body
                 LOG.warn("Failed to parse JSON body (length=${body.length}): $preview", e)
-                exchange.sendResponse(400, "Invalid JSON")
+                exchange.sendResponse(HttpStatus.SC_BAD_REQUEST, "Invalid JSON")
                 return
             }
 
             val tree = jsonObject.get("tree")
             if (tree == null) {
-                exchange.sendResponse(400, "Missing 'tree' property")
+                exchange.sendResponse(HttpStatus.SC_BAD_REQUEST, "Missing 'tree' property")
                 return
             }
 
             if (!sendLspNotification { it.pluginFull(tree) }) {
                 LOG.debug("LSP server not available, ignoring /full request")
             }
-            exchange.sendResponse(200, "OK")
+            exchange.sendResponse(HttpStatus.SC_OK, "OK")
         }
     }
 
     private fun handleClear(exchange: HttpExchange) {
         exchange.use {
             if (exchange.requestMethod != "POST") {
-                exchange.sendResponse(405, "Method Not Allowed")
+                exchange.sendResponse(HttpStatus.SC_METHOD_NOT_ALLOWED, "Method Not Allowed")
                 return
             }
 
             if (!sendLspNotification { it.pluginClear() }) {
                 LOG.debug("LSP server not available, ignoring /clear request")
             }
-            exchange.sendResponse(200, "OK")
+            exchange.sendResponse(HttpStatus.SC_OK, "OK")
         }
     }
 
     private fun handleGetFilePaths(exchange: HttpExchange) {
         exchange.use {
             if (exchange.requestMethod != "GET") {
-                exchange.sendResponse(405, "Method Not Allowed")
+                exchange.sendResponse(HttpStatus.SC_METHOD_NOT_ALLOWED, "Method Not Allowed")
                 return
             }
 
             try {
-                val files = runReadAction<List<String>> {
+                val files = runReadAction {
                     FileTypeIndex.getFiles(LuauFileType, GlobalSearchScope.projectScope(project))
                         .map { it.path }
                 }
@@ -125,10 +129,10 @@ class CompanionServer(
                     add("files", array)
                 }
                 exchange.responseHeaders.add("Content-Type", "application/json")
-                exchange.sendResponse(200, json.toString())
+                exchange.sendResponse(HttpStatus.SC_OK, json.toString())
             } catch (e: Exception) {
                 LOG.warn("Failed to get file paths", e)
-                exchange.sendResponse(500, "Failed to get file paths")
+                exchange.sendResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Failed to get file paths")
             }
         }
     }
@@ -187,7 +191,7 @@ class CompanionServer(
         } catch (e: Throwable) {
             LOG.warn("Unhandled error in companion server", e)
             try {
-                sendResponse(500, "Internal Server Error")
+                sendResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Internal Server Error")
             } catch (_: Throwable) {
                 // Response may have already been sent
             }

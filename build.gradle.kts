@@ -39,6 +39,7 @@ repositories {
 // Dependencies are managed with Gradle version catalog - read more: https://docs.gradle.org/current/userguide/platforms.html#sub:version-catalog
 dependencies {
     implementation(libs.serialization)
+    implementation(libs.bytesize)
     testImplementation(libs.junit)
     testImplementation(libs.opentest4j)
 
