@@ -4,8 +4,6 @@ package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.LuauFileType
 import com.google.gson.JsonParser
-import com.google.gson.Strictness
-import com.google.gson.stream.JsonReader
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -17,7 +15,6 @@ import com.sun.net.httpserver.HttpServer
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.putJsonArray
-
 import me.saket.bytesize.kilobytes
 import me.saket.bytesize.megabytes
 import org.apache.http.HttpHeaders
@@ -66,7 +63,7 @@ class CompanionServer(
             }
 
             val body = try {
-                 readRequestBody(exchange)
+                readRequestBody(exchange)
             } catch (_: BodyTooLargeException) {
                 exchange.sendResponse(HttpStatus.SC_REQUEST_TOO_LONG, "Request body too large. Limit: $MAX_BODY_SIZE")
                 return
@@ -77,6 +74,11 @@ class CompanionServer(
             }
 
             val jsonObject = try {
+                // GSON is used for easier interop with LSP which expects it.
+                // TODO (AleksandrSl 20/04/2026): Consider creating a DTO that validates structure and then serialized to GSON.
+                //  On one hand, doing that adds unneccessary coupling between this plugin, LSP and Studio plugin, on the other malformed messages cause cryptic error on IDE side.
+                //  If you look at the logs it's obvious that message is malformed, but the surfaced error is obscure, missing com.google.gson.JsonSyntaxException: java.lang.IllegalStateException: Expected a string but was NULL at line 1 column 118 path $.id
+                //  probably LSP responds with malformed message
                 JsonParser.parseString(body).asJsonObject
             } catch (e: Exception) {
                 val preview = if (body.length > 500) body.substring(0, 500) + "..." else body
@@ -121,8 +123,7 @@ class CompanionServer(
 
             try {
                 val files = runReadAction {
-                    FileTypeIndex.getFiles(LuauFileType, GlobalSearchScope.projectScope(project))
-                        .map { it.path }
+                    FileTypeIndex.getFiles(LuauFileType, GlobalSearchScope.projectScope(project)).map { it.path }
                 }
                 val json = buildJsonObject {
                     putJsonArray("files") {
@@ -180,14 +181,13 @@ class CompanionServer(
      * Uses reflection to support both old (lsp4jServer, 2024.x) and new (sendNotification, 2025.x+) IntelliJ APIs.
      */
     private fun sendLspNotification(action: (LuauLanguageServer) -> Unit): Boolean {
-        val lspServer = LspServerManager.getInstance(project)
-            .getServersForProvider(LuauLspServerSupportProvider::class.java)
-            .firstOrNull() ?: return false
+        val lspServer =
+            LspServerManager.getInstance(project).getServersForProvider(LuauLspServerSupportProvider::class.java)
+                .firstOrNull() ?: return false
 
         try {
             val sendNotification = lspServer.javaClass.getMethod(
-                "sendNotification",
-                kotlin.jvm.functions.Function1::class.java
+                "sendNotification", kotlin.jvm.functions.Function1::class.java
             )
             val callback: (org.eclipse.lsp4j.services.LanguageServer) -> Unit = { languageServer ->
                 (languageServer as? LuauLanguageServer)?.let(action)
