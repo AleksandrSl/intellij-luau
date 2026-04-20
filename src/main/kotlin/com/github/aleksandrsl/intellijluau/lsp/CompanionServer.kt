@@ -3,6 +3,9 @@
 package com.github.aleksandrsl.intellijluau.lsp
 
 import com.github.aleksandrsl.intellijluau.LuauFileType
+import com.google.gson.JsonParser
+import com.google.gson.Strictness
+import com.google.gson.stream.JsonReader
 import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
@@ -11,8 +14,10 @@ import com.intellij.psi.search.FileTypeIndex
 import com.intellij.psi.search.GlobalSearchScope
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpServer
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.putJsonArray
+
 import me.saket.bytesize.kilobytes
 import me.saket.bytesize.megabytes
 import org.apache.http.HttpHeaders
@@ -27,11 +32,6 @@ private val LOG = logger<CompanionServer>()
 
 private val MAX_BODY_SIZE = 3.megabytes
 private val BUFFER_SIZE = 8.kilobytes
-
-@Serializable
-private data class FullRequest(
-    val tree: JsonElement? = null,
-)
 
 class CompanionServer(
     private val project: Project,
@@ -76,8 +76,8 @@ class CompanionServer(
                 return
             }
 
-            val request = try {
-                Json.decodeFromString<FullRequest>(body)
+            val jsonObject = try {
+                JsonParser.parseString(body).asJsonObject
             } catch (e: Exception) {
                 val preview = if (body.length > 500) body.substring(0, 500) + "..." else body
                 LOG.warn("Failed to parse JSON body (length=${body.length}): $preview", e)
@@ -85,8 +85,7 @@ class CompanionServer(
                 return
             }
 
-            // TODO (AleksandrSl 19/04/2026): Tree could be made required
-            val tree = request.tree
+            val tree = jsonObject.get("tree")
             if (tree == null) {
                 exchange.sendResponse(HttpStatus.SC_BAD_REQUEST, "Missing 'tree' property")
                 return
