@@ -25,10 +25,10 @@ import org.eclipse.lsp4j.services.LanguageServer
 private val LOG = logger<LuauLspServerSupportProvider>()
 
 interface LuauLanguageServer : LanguageServer {
-    @JsonNotification("\$/plugin/full")
+    @JsonNotification("$/plugin/full")
     fun pluginFull(params: Any)
 
-    @JsonNotification("\$/plugin/clear")
+    @JsonNotification("$/plugin/clear")
     fun pluginClear()
 }
 
