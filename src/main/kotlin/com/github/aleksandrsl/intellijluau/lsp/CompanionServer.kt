@@ -131,7 +131,11 @@ class CompanionServer(
                     }
                 }
                 exchange.responseHeaders.add(HttpHeaders.CONTENT_TYPE, "application/json")
-                exchange.sendResponse(HttpStatus.SC_OK, json.toString())
+                exchange.sendResponse(
+                    HttpStatus.SC_OK,
+                    json.toString(),
+                    contentType = "application/json; charset=utf-8",
+                )
             } catch (e: Exception) {
                 LOG.warn("Failed to get file paths", e)
                 exchange.sendResponse(HttpStatus.SC_INTERNAL_SERVER_ERROR, "Failed to get file paths")
@@ -210,9 +214,15 @@ class CompanionServer(
         return true
     }
 
-    private fun HttpExchange.sendResponse(code: Int, body: String) {
-        val bytes = body.toByteArray()
-        responseHeaders.add(HttpHeaders.CONTENT_TYPE, "text/plain; charset=utf-8")
+    private fun HttpExchange.sendResponse(
+        code: Int,
+        body: String,
+        contentType: String? = "text/plain; charset=utf-8",
+    ) {
+        val bytes = body.toByteArray(StandardCharsets.UTF_8)
+        if (contentType != null && responseHeaders[HttpHeaders.CONTENT_TYPE].isNullOrEmpty()) {
+            responseHeaders.add(HttpHeaders.CONTENT_TYPE, contentType)
+        }
         sendResponseHeaders(code, bytes.size.toLong())
         responseBody.use { it.write(bytes) }
     }
