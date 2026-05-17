@@ -6,8 +6,13 @@
         <notificationGroup id="Luau sourcemap generation"
                            displayType="BALLOON"
                            key="luau.notification.group.sourcemap.name"/>
+        <notificationGroup id="Luau companion plugin"
+                           displayType="BALLOON"
+                           key="luau.notification.group.companion.name"/>
         <backgroundPostStartupActivity
                 implementation="com.github.aleksandrsl.intellijluau.lsp.SourcemapGeneratorStartupActivity"/>
+        <backgroundPostStartupActivity
+                implementation="com.github.aleksandrsl.intellijluau.lsp.CompanionPluginStartupActivity"/>
     </extensions>
     <projectListeners>
         <listener

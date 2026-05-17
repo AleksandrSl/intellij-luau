@@ -88,6 +88,12 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val lspSourcemapFile
         get() = internalState.lspSourcemapFile
 
+    val companionPluginEnabled
+        get() = internalState.companionPluginEnabled
+
+    val companionPluginPort
+        get() = internalState.companionPluginPort
+
     override fun getState(): State {
         return internalState
     }
@@ -118,6 +124,8 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         internalState.customDefinitionsPaths = defaults.customDefinitionsPaths
         internalState.useLuauExtension = defaults.useLuauExtension
         internalState.platformType = defaults.platformType
+        internalState.companionPluginEnabled = defaults.companionPluginEnabled
+        internalState.companionPluginPort = defaults.companionPluginPort
     }
 
     data class State(
@@ -138,6 +146,8 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var useLuauExtension: Boolean = ShareableProjectSettingsStateDefaults.useLuauExtension,
         override var platformType: PlatformType = ShareableProjectSettingsStateDefaults.platformType,
         override var styluaConfigurationType: StyluaConfigurationType = ShareableProjectSettingsStateDefaults.styluaConfigurationType,
+        override var companionPluginEnabled: Boolean = ShareableProjectSettingsStateDefaults.companionPluginEnabled,
+        override var companionPluginPort: Int = ShareableProjectSettingsStateDefaults.companionPluginPort,
     ) : ShareableProjectSettingsState
 
     companion object {
@@ -166,6 +176,8 @@ interface ShareableProjectSettingsState {
     val customDefinitionsPaths: List<String>
     val useLuauExtension: Boolean
     val platformType: PlatformType
+    val companionPluginEnabled: Boolean
+    val companionPluginPort: Int
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabledAndMinimallyConfigured: Boolean
@@ -191,6 +203,8 @@ data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsStat
     override val customDefinitionsPaths: List<String> = listOf()
     override val useLuauExtension: Boolean = true
     override val platformType: PlatformType = PlatformType.Standard
+    override val companionPluginEnabled: Boolean = false
+    override val companionPluginPort: Int = 3667
 }
 
 enum class PlatformType(val value: String) {
