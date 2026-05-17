@@ -40,6 +40,7 @@ class CompanionServer(
         val httpServer = HttpServer.create(InetSocketAddress("127.0.0.1", port), 0)
         httpServer.createContext("/full") { exchange -> handleFull(exchange) }
         httpServer.createContext("/clear") { exchange -> handleClear(exchange) }
+        // Works in tandem with Roblox Script Sync to match real files with instances in Studio without Rojo help.
         httpServer.createContext("/get-file-paths") { exchange -> handleGetFilePaths(exchange) }
         httpServer.start()
         server = httpServer

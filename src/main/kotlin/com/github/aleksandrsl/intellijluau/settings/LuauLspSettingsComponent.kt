@@ -43,6 +43,7 @@ import java.awt.event.ItemEvent
 import java.nio.file.Path
 import javax.swing.AbstractAction
 import javax.swing.JButton
+import javax.swing.JCheckBox
 import javax.swing.JLabel
 import javax.swing.JRadioButton
 import kotlin.io.path.exists
@@ -427,6 +428,21 @@ class LuauLspSettingsComponent(
                         }
                     }.visibleIf(sourcemapGenerationManulRadio.selected)
                 }.topGap(TopGap.NONE).enabledIf(sourcemapSupportCheckbox.selected.and(!lspDisabled.selected))
+
+                group("Roblox Studio Companion Plugin") {
+                    lateinit var companionCheckbox: JCheckBox
+                    row {
+                        companionCheckbox = checkBox("Enable Roblox Studio Companion Plugin")
+                            .bindSelected(settings::companionPluginEnabled)
+                            .comment("Starts an HTTP server for the Roblox Studio companion plugin to send DataModel information")
+                            .component
+                    }
+                    row("Companion Plugin Port:") {
+                        intTextField(IntRange(1024, 65535))
+                            .bindIntText(settings::companionPluginPort)
+                            .enabledIf(companionCheckbox.selected)
+                    }
+                }
             }
         }
     }
