@@ -22,8 +22,15 @@ Plugin works both with `.luau` and `.lua` and may conflict with other Lua plugin
 
 ### Install the plugin
 
-- Launch the IDE and open the plugin settings at `File | Settings | Plugins`
-- Search for "Luau" and install it
+- Using the IDE built-in plugin system:
+
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "intellij-luau"</kbd> >
+  <kbd>Install</kbd>
+
+- Manually:
+
+  Download the [latest release](https://github.com/AleksandrSl/intellij-luau/releases/latest) and install it manually using
+  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
 
 ### Configure the plugin
 
@@ -44,17 +51,21 @@ Once you saved the default configuration, you will be prompted to apply them whe
 
 <!-- Plugin description end -->
 
-## Installation
+### Luau Language Server Companion
 
-- Using the IDE built-in plugin system:
-  
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>Marketplace</kbd> > <kbd>Search for "intellij-luau"</kbd> >
-  <kbd>Install</kbd>
-  
-- Manually:
+You can use [companion plugin](https://create.roblox.com/store/asset/10913122509/Luau-Language-Server-Companion) to get information about DataModels that are not save on FS either temporarily (while the project is not saved) or at all.
 
-  Download the [latest release](https://github.com/AleksandrSl/intellij-luau/releases/latest) and install it manually using
-  <kbd>Settings/Preferences</kbd> > <kbd>Plugins</kbd> > <kbd>⚙️</kbd> > <kbd>Install plugin from disk...</kbd>
+1. Install companion plugin to Studio
+2. Turn on "Enable Roblox Studio Companion Plugin". This will start and HTTP server, communicating with the Studio plugin. You can configure port in the same settings (make sure to match it in the plugin settings in Studio).
+
+
+### Roblox Script Sync
+
+It just works without any need for LSP. However, LSP enhances the experience. 
+If you have sourcemap support enabled in this plugin and a running sync, LSP will generate sourcemap on the fly without any help from Rojo.
+
+In my limited testing everything works as expected. However, I noticed that Studio Luau Language Server Companion 
+sometimes misses calls to the LSP to update the sourcemap, reconnecting the companion plugin fixes it. 
 
 ---
 Plugin based on the [IntelliJ Platform Plugin Template][template].
