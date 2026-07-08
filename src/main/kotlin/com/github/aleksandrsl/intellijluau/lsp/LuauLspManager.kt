@@ -239,7 +239,14 @@ class LuauLspManager(private val coroutineScope: CoroutineScope) {
                     // TODO (AleksandrSl 10/05/2025): Check older macs and m1 support?
                     SystemInfo.isMac -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-macos.zip"
                     SystemInfo.isLinux && CpuArch.isArm64() -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux-arm64.zip"
-                    SystemInfo.isLinux -> "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux.zip"
+                    SystemInfo.isLinux -> {
+                        // https://github.com/JohnnyMorganz/luau-lsp/releases/tag/1.53.0 The name of the artifact has been changed
+                        if (version >= Version.parse("1.53.0")) {
+                            "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux-x86_64.zip"
+                        } else {
+                            "$LSP_DOWNLOAD_BASE_URL/$version/luau-lsp-linux.zip"
+                        }
+                    }
                     else -> throw UnsupportedOperationException("Unsupported operating system")
                 }
 
