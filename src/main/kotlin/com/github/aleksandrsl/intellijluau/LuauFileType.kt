@@ -5,11 +5,12 @@ import javax.swing.Icon
 
 object LuauFileType : LanguageFileType(LuauLanguage.INSTANCE) {
     override fun getName(): String {
+        // Must match the name in plugin.xml
         return "Luau File"
     }
 
     override fun getDescription(): String {
-        return "Luau config file"
+        return LuauBundle.message("luau.fileType.description")
     }
 
     override fun getDefaultExtension(): String {
