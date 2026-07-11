@@ -94,8 +94,10 @@ class LuauLspSettingsComponent(
     private val rojoVersion = AtomicProperty("")
     private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(Loadable.Idle)
     private val lspInstalledVersions = AtomicProperty<InstalledVersions>(Loadable.Idle)
-    private fun getDoesLspStorageFolderExist() = LuauLspManager.lspStorageDirPath.exists()
-    private val doesLspStorageFolderExist = AtomicBooleanProperty(getDoesLspStorageFolderExist())
+    private suspend fun getDoesLspStorageFolderExist() =
+        withContext(Dispatchers.IO) { LuauLspManager.lspStorageDirPath.exists() }
+
+    private val doesLspStorageFolderExist = AtomicBooleanProperty(false)
 
     private lateinit var sourcemapGenerationManulRadio: JBRadioButton
     private lateinit var sourcemapGenerationRojoRadio: JBRadioButton
@@ -121,6 +123,7 @@ class LuauLspSettingsComponent(
         val lspManager = LuauLspManager.getInstance()
         return try {
             runWithModalProgressBlocking(project, LuauBundle.message("luau.lsp.downloading")) {
+                doesLspStorageFolderExist.set(getDoesLspStorageFolderExist())
                 when (val result = lspManager.downloadLsp(version)) {
                     is LuauLspManager.DownloadResult.Failed -> {
                         displayDownloadError("Failed to download $version: ${result.message}")
@@ -133,7 +136,6 @@ class LuauLspSettingsComponent(
                                 Loadable.Loaded(InstalledLspVersions(it.getOrEmpty().versions + version))
                             }
                             updateLspVersionActions(lspVersionsForDownload.get(), updatedInstalledLspVersions)
-                            doesLspStorageFolderExist.set(getDoesLspStorageFolderExist())
                             lspVersionCombobox.setVersions(
                                 installedVersions = updatedInstalledLspVersions.getOrEmpty(),
                                 versionsForDownload = lspVersionsForDownload.get().getOrEmpty()
@@ -360,7 +362,8 @@ class LuauLspSettingsComponent(
                                     }
                                     // TODO (AleksandrSl 24/05/2025): Should I show something if it's not available? I'd like to show a copyable path, but i'm yet to fond a good way.
                                     //  Both contextualHelp and rowComment are not copyable.
-                                }).align(AlignX.RIGHT).enabledIf(doesLspStorageFolderExist.transform { it && PlatformCompatibility.isDirectoryOpenSupported() })
+                                }).align(AlignX.RIGHT)
+                                    .enabledIf(doesLspStorageFolderExist.transform { it && PlatformCompatibility.isDirectoryOpenSupported() })
                             }
                         }.enabledIf(lspAuto.selected)
                     }.rowComment("Binaries are downloaded from <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a> when you select a version in the download section of combobox.")
@@ -453,36 +456,37 @@ class LuauLspSettingsComponent(
     }
 
     private fun loadVersions() {
-        if (lspAuto.isSelected) {
-            coroutineScope.launch {
-                withLoader(lspVersionsLoader) {
-                    lspVersionsForDownload.set(Loadable.Loading)
-                    val lspManager = LuauLspManager.getInstance()
-                    lspVersionsForDownload.set(
-                        try {
-                            Loadable.Loaded(DownloadableLspVersions(lspManager.getVersionsAvailableForDownload(project)))
-                        } catch (err: Exception) {
-                            Loadable.Failed(err.message ?: "Failed to load versions")
+        if (!lspAuto.isSelected) return
+
+        coroutineScope.launch {
+            withLoader(lspVersionsLoader) {
+                doesLspStorageFolderExist.set(getDoesLspStorageFolderExist())
+                lspVersionsForDownload.set(Loadable.Loading)
+                val lspManager = LuauLspManager.getInstance()
+                lspVersionsForDownload.set(
+                    try {
+                        Loadable.Loaded(DownloadableLspVersions(lspManager.getVersionsAvailableForDownload(project)))
+                    } catch (err: Exception) {
+                        Loadable.Failed(err.message ?: "Failed to load versions")
+                    }
+                )
+                lspInstalledVersions.set(Loadable.Loading)
+                lspInstalledVersions.set(
+                    try {
+                        withContext(Dispatchers.IO) {
+                            Loadable.Loaded(InstalledLspVersions(LuauLspManager.getInstalledVersions()))
                         }
-                    )
-                    lspInstalledVersions.set(Loadable.Loading)
-                    lspInstalledVersions.set(
-                        try {
-                            withContext(Dispatchers.IO) {
-                                Loadable.Loaded(InstalledLspVersions(LuauLspManager.getInstalledVersions()))
-                            }
-                        } catch (err: Exception) {
-                            Loadable.Failed(err.message ?: "Failed to get installed versions")
-                        })
-                    lspVersionCombobox.setVersions(
-                        installedVersions = lspInstalledVersions.get().getOrEmpty(),
-                        versionsForDownload = lspVersionsForDownload.get().getOrEmpty()
-                    )
-                    updateLspVersionActions(
-                        versionsForDownload = lspVersionsForDownload.get(),
-                        installedVersions = lspInstalledVersions.get()
-                    )
-                }
+                    } catch (err: Exception) {
+                        Loadable.Failed(err.message ?: "Failed to get installed versions")
+                    })
+                lspVersionCombobox.setVersions(
+                    installedVersions = lspInstalledVersions.get().getOrEmpty(),
+                    versionsForDownload = lspVersionsForDownload.get().getOrEmpty()
+                )
+                updateLspVersionActions(
+                    versionsForDownload = lspVersionsForDownload.get(),
+                    installedVersions = lspInstalledVersions.get()
+                )
             }
         }
     }

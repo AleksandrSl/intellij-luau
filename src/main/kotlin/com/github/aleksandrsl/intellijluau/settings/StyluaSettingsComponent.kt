@@ -54,13 +54,9 @@ class StyluaSettingsComponent(
                 if (text.isEmpty()) {
                     return
                 }
-                val maybePath = text.toNioPathOrNull()
-                if (maybePath == null || !maybePath.exists()) {
-                    return
-                }
                 // I guess this will launch in project scope, so the coroutine will finish even if I close the settings.
                 // Not sure if I should about it or not.
-                updateStyluaVersion(maybePath)
+                updateStyluaVersion(text.toNioPathOrNull())
             }
         })
     }
