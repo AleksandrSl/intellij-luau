@@ -36,12 +36,18 @@ class LspVersionComboBox(
     init {
         isSwingPopup = false // Use JBPopup instead of default SwingPopup
         model = MutableCollectionComboBoxModel()
+        // component will use this to get the baseline size for the item, otherwise it will use getSelectedItem()
+        // which can be null on the first render. I still think that I may have written the initializer stupidly,
+        // and there is a better fix, but it doesn't justify spending time on it.
+        // The null checks inside the listCellRenderer are kept just in case we lose little with them;
+        // the error is transient
+        prototypeDisplayValue = Item.InstalledVersion(Version.Semantic(0, 0, 0), 0)
 
         renderer = listCellRenderer {
             val isErrorValue =
                 missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
 
-            value.let {
+            value?.let {
                 if (it is Item.InstalledVersion && it.index == 0) {
                     separator {
                         text = LuauBundle.message("luau.settings.lsp.version.combobox.installed")
@@ -52,7 +58,7 @@ class LspVersionComboBox(
                     }
                 }
             }
-            text(value.text) {
+            text(value?.text ?: "") {
                 if (isErrorValue) {
                     foreground = UIUtil.getErrorForeground()
                 }
