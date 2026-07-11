@@ -15,6 +15,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.EDT
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.observable.properties.AtomicBooleanProperty
 import com.intellij.openapi.observable.properties.AtomicProperty
 import com.intellij.openapi.observable.util.transform
 import com.intellij.openapi.project.DumbAwareAction
@@ -93,6 +94,8 @@ class LuauLspSettingsComponent(
     private val rojoVersion = AtomicProperty("")
     private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(Loadable.Idle)
     private val lspInstalledVersions = AtomicProperty<InstalledVersions>(Loadable.Idle)
+    private fun getDoesLspStorageFolderExist() = LuauLspManager.lspStorageDirPath.exists()
+    private val doesLspStorageFolderExist = AtomicBooleanProperty(getDoesLspStorageFolderExist())
 
     private lateinit var sourcemapGenerationManulRadio: JBRadioButton
     private lateinit var sourcemapGenerationRojoRadio: JBRadioButton
@@ -130,6 +133,7 @@ class LuauLspSettingsComponent(
                                 Loadable.Loaded(InstalledLspVersions(it.getOrEmpty().versions + version))
                             }
                             updateLspVersionActions(lspVersionsForDownload.get(), updatedInstalledLspVersions)
+                            doesLspStorageFolderExist.set(getDoesLspStorageFolderExist())
                             lspVersionCombobox.setVersions(
                                 installedVersions = updatedInstalledLspVersions.getOrEmpty(),
                                 versionsForDownload = lspVersionsForDownload.get().getOrEmpty()
@@ -347,15 +351,16 @@ class LuauLspSettingsComponent(
                                 actionButton(object :
                                     DumbAwareAction("Open LSP Storage Folder", "", AllIcons.Actions.MenuOpen) {
                                     override fun actionPerformed(e: AnActionEvent) {
-                                        val lspDir = LuauLspManager.lspStorageDirPath.toFile()
+                                        val lspDir = LuauLspManager.lspStorageDirPath
                                         if (lspDir.exists()) {
-                                            // Could also use ShowFilePathAction
                                             RevealFileAction.openDirectory(lspDir)
+                                        } else {
+                                            LOG.warn("LSP storage folder does not exist at $lspDir")
                                         }
                                     }
                                     // TODO (AleksandrSl 24/05/2025): Should I show something if it's not available? I'd like to show a copyable path, but i'm yet to fond a good way.
                                     //  Both contextualHelp and rowComment are not copyable.
-                                }).align(AlignX.RIGHT).enabled(PlatformCompatibility.isDirectoryOpenSupported())
+                                }).align(AlignX.RIGHT).enabledIf(doesLspStorageFolderExist.transform { it && PlatformCompatibility.isDirectoryOpenSupported() })
                             }
                         }.enabledIf(lspAuto.selected)
                     }.rowComment("Binaries are downloaded from <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a> when you select a version in the download section of combobox.")
