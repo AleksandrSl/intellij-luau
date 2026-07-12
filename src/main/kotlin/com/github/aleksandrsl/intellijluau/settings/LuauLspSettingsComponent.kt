@@ -94,10 +94,6 @@ class LuauLspSettingsComponent(
     private val rojoVersion = AtomicProperty("")
     private val lspVersionsForDownload = AtomicProperty<VersionsForDownload>(Loadable.Idle)
     private val lspInstalledVersions = AtomicProperty<InstalledVersions>(Loadable.Idle)
-    private suspend fun getDoesLspStorageFolderExist() =
-        withContext(Dispatchers.IO) { LuauLspManager.lspStorageDirPath.exists() }
-
-    private val doesLspStorageFolderExist = AtomicBooleanProperty(false)
 
     private lateinit var sourcemapGenerationManulRadio: JBRadioButton
     private lateinit var sourcemapGenerationRojoRadio: JBRadioButton
@@ -123,7 +119,6 @@ class LuauLspSettingsComponent(
         val lspManager = LuauLspManager.getInstance()
         return try {
             runWithModalProgressBlocking(project, LuauBundle.message("luau.lsp.downloading")) {
-                doesLspStorageFolderExist.set(getDoesLspStorageFolderExist())
                 when (val result = lspManager.downloadLsp(version)) {
                     is LuauLspManager.DownloadResult.Failed -> {
                         displayDownloadError("Failed to download $version: ${result.message}")
@@ -363,7 +358,11 @@ class LuauLspSettingsComponent(
                                     // TODO (AleksandrSl 24/05/2025): Should I show something if it's not available? I'd like to show a copyable path, but i'm yet to fond a good way.
                                     //  Both contextualHelp and rowComment are not copyable.
                                 }).align(AlignX.RIGHT)
-                                    .enabledIf(doesLspStorageFolderExist.transform { it && PlatformCompatibility.isDirectoryOpenSupported() })
+                                    .enabledIf(lspInstalledVersions.transform {
+                                        ((it as? Loadable.Loaded<InstalledLspVersions>)?.value?.versions?.isNotEmpty()
+                                            ?: false)
+                                                && PlatformCompatibility.isDirectoryOpenSupported()
+                                    })
                             }
                         }.enabledIf(lspAuto.selected)
                     }.rowComment("Binaries are downloaded from <a href='https://github.com/JohnnyMorganz/luau-lsp/releases/latest'>GitHub</a> when you select a version in the download section of combobox.")
@@ -460,7 +459,6 @@ class LuauLspSettingsComponent(
 
         coroutineScope.launch {
             withLoader(lspVersionsLoader) {
-                doesLspStorageFolderExist.set(getDoesLspStorageFolderExist())
                 lspVersionsForDownload.set(Loadable.Loading)
                 val lspManager = LuauLspManager.getInstance()
                 lspVersionsForDownload.set(
