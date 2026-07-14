@@ -1,15 +1,21 @@
 [versions]
 junit = "4.13.2"
+junit-jupiter = "5.11.0"
 bytesize = "2.2.0"
 kotlinx-serialization-json = "1.9.0"
+kotlinx-coroutines = "1.10.2"
 kotlin = "2.2.20"
 changelog = "2.5.0"
 serialization = "2.2.20"
+kodein = "7.22.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
 serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinx-serialization-json" }
 bytesize = { group = "me.saket.bytesize", name = "bytesize", version.ref = "bytesize" }
+kotlinx-coroutines = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-core-jvm", version.ref = "kotlinx-coroutines" }
+kodein-di = { group = "org.kodein.di", name = "kodein-di-jvm", version.ref = "kodein" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version.ref = "changelog" }
