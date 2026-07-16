@@ -30,6 +30,8 @@ class LuauCompletionTestCase : BasePlatformTestCase() {
             "local",
             "function",
             "local function",
+            "const",
+            "const function",
             "while",
             "for",
             "export type",

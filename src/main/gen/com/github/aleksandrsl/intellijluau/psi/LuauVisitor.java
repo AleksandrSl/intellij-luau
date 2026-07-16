@@ -70,6 +70,19 @@ public class LuauVisitor extends PsiElementVisitor {
     visitExpression(o);
   }
 
+  public void visitConstDefStatement(@NotNull LuauConstDefStatement o) {
+    visitStatement(o);
+  }
+
+  public void visitConstFuncDefStatement(@NotNull LuauConstFuncDefStatement o) {
+    visitNamedElement(o);
+    // visitStatement(o);
+  }
+
+  public void visitConstSoftKeyword(@NotNull LuauConstSoftKeyword o) {
+    visitSoftKeyword(o);
+  }
+
   public void visitContinueSoftKeyword(@NotNull LuauContinueSoftKeyword o) {
     visitSoftKeyword(o);
   }

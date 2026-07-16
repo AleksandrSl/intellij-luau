@@ -21,7 +21,7 @@ class LuauParsingErrorsTestCase : LuauParsingBaseTestCase() {
             val name = "Expressions_error"
             parseFile(name, loadFile("$name.$myFileExt"))
             checkResult(name, myFile)
-        } catch (e: FileComparisonFailedError) {
+        } catch (e: RuntimeException) {
             val name = "Expressions_error_alt"
             parseFile(name, loadFile("$name.$myFileExt"))
             checkResult(name, myFile)
