@@ -16,6 +16,9 @@ class LuauTextExtractor : TextExtractor() {
         val elementType = PsiUtilCore.getElementType(root) ?: return null
 
         if (TextContent.TextDomain.LITERALS in allowedDomains && elementType == LuauTypes.STRING) {
+            // Shouldn't happen in practice because we do not consider incomplete strings on lexer level, but shouldn't hurt.
+            if (root.textLength < 2) return null
+
             return TextContentBuilder.FromPsi
                 // I tried using indents and suffix removal, but it seems to ignore the trailing symbols.
                 // Manual removal of quotes is not ideal.
