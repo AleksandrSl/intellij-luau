@@ -4,12 +4,16 @@
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-16
+
 ### Added
+
 - Support for parsing the `const` keyword (`const` declarations and `const function` definitions)
 - Spellcheck and grammar checking for Luau code via Grazie
 - Support for `textDocument/inlayHint` settings for LSP servers supporting protocol version 2025.2.2+
 
 ### Fixed
+
 - Incorrect URL used to download the Linux LSP binary for versions starting from 1.53.0
 - Incorrect file type name shown for Luau files
 - Possible `NullPointerException` in the LSP version selector
@@ -17,11 +21,13 @@
 - Quotation marks incorrectly included in spellcheck/grammar checks
 
 ### Changed
+
 - Move code folding arrows to the parent statement (function/if/loop) instead of the block itself, closer to VS Code behavior
 
 ## [0.2.0] - 2026-05-17
 
 ### Added
+
 - Support for Roblox Studio Companion Plugin. See [README](https://github.com/AleksandrSl/intellij-luau/blob/main/README.md#roblox-studio-companion-plugin) for more details. By @BigTows
 
 ## [0.1.1] - 2025-09-18
@@ -104,7 +110,9 @@
 - Formatting with StyLua
 - Initial scaffold created from [IntelliJ Platform Plugin Template](https://github.com/JetBrains/intellij-platform-plugin-template)
 
-[Unreleased]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.1...HEAD
-[0.1.1]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0...v0.1.1
-[0.1.0]: https://github.com/AleksandrSl/intellij-luau/compare/v0.1.0-eap...v0.1.0
-[0.1.0-eap]: https://github.com/AleksandrSl/intellij-luau/commits/v0.1.0-eap
+[Unreleased]: https://github.com/AleksandrSl/intellij-luau/compare/0.3.0...HEAD
+[0.3.0]: https://github.com/AleksandrSl/intellij-luau/compare/0.2.0...0.3.0
+[0.2.0]: https://github.com/AleksandrSl/intellij-luau/compare/0.1.1...0.2.0
+[0.1.1]: https://github.com/AleksandrSl/intellij-luau/compare/0.1.0...0.1.1
+[0.1.0]: https://github.com/AleksandrSl/intellij-luau/compare/0.1.0-eap...0.1.0
+[0.1.0-eap]: https://github.com/AleksandrSl/intellij-luau/commits/0.1.0-eap
