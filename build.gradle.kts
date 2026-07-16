@@ -36,6 +36,7 @@ dependencies {
 
     // IntelliJ Platform Gradle Plugin Dependencies Extension - read more: https://plugins.jetbrains.com/docs/intellij/tools-intellij-platform-gradle-plugin-dependencies-extension.html
     intellijPlatform {
+        bundledPlugins("tanvd.grazi".split(','))
         // This version determines the sinceBuild unless sinceBuild is not explicitly defined.
         intellijIdeaUltimate("2026.1")
         testFramework(TestFrameworkType.Platform)
