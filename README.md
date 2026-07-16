@@ -1,6 +1,6 @@
 # intellij-luau
 
-![Build](https://github.com/AleksandrSl/intellij-luau/workflows/Build/badge.svg)
+[![Build](https://github.com/AleksandrSl/intellij-luau/actions/workflows/build.yml/badge.svg)](https://github.com/AleksandrSl/intellij-luau/actions/workflows/build.yml)
 [![Version](https://img.shields.io/jetbrains/plugin/v/24957-luau.svg)](https://plugins.jetbrains.com/plugin/24957-luau)
 [![Downloads](https://img.shields.io/jetbrains/plugin/d/24957-luau.svg)](https://plugins.jetbrains.com/plugin/24957-luau)
 
