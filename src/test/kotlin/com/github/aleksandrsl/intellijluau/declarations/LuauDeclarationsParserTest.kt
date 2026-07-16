@@ -1,6 +1,6 @@
 package com.github.aleksandrsl.intellijluau.declarations
 
-import com.intellij.platform.testFramework.assertion.collectionAssertion.CollectionAssertions.assertEqualsUnordered
+import com.intellij.testFramework.utils.module.assertEqualsUnordered
 import com.jetbrains.rd.util.firstOrNull
 import junit.framework.TestCase
 
