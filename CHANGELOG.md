@@ -5,6 +5,23 @@
 ## [Unreleased]
 
 ### Added
+- Support for parsing the `const` keyword (`const` declarations and `const function` definitions)
+- Spellcheck and grammar checking for Luau code via Grazie
+- Support for `textDocument/inlayHint` settings for LSP servers supporting protocol version 2025.2.2+
+
+### Fixed
+- Incorrect URL used to download the Linux LSP binary for versions starting from 1.53.0
+- Incorrect file type name shown for Luau files
+- Possible `NullPointerException` in the LSP version selector
+- "Show LSP storage" button no longer stays enabled when there is no LSP storage to show
+- Quotation marks incorrectly included in spellcheck/grammar checks
+
+### Changed
+- Move code folding arrows to the parent statement (function/if/loop) instead of the block itself, closer to VS Code behavior
+
+## [0.2.0] - 2026-05-17
+
+### Added
 - Support for Roblox Studio Companion Plugin. See [README](https://github.com/AleksandrSl/intellij-luau/blob/main/README.md#roblox-studio-companion-plugin) for more details. By @BigTows
 
 ## [0.1.1] - 2025-09-18
