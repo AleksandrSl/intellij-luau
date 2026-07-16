@@ -1,7 +1,7 @@
 package com.github.aleksandrsl.intellijluau.parser
 
-import com.intellij.platform.testFramework.core.FileComparisonFailedError
 import com.intellij.psi.PsiFile
+import junit.framework.AssertionFailedError
 
 
 class LuauParsingErrorsTestCase : LuauParsingBaseTestCase() {
@@ -21,7 +21,7 @@ class LuauParsingErrorsTestCase : LuauParsingBaseTestCase() {
             val name = "Expressions_error"
             parseFile(name, loadFile("$name.$myFileExt"))
             checkResult(name, myFile)
-        } catch (e: RuntimeException) {
+        } catch (e: AssertionFailedError) {
             val name = "Expressions_error_alt"
             parseFile(name, loadFile("$name.$myFileExt"))
             checkResult(name, myFile)
