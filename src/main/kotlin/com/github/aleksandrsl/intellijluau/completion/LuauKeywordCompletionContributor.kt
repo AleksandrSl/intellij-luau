@@ -24,6 +24,8 @@ class LuauKeywordCompletionContributor : CompletionContributor(), DumbAware {
                 "local",
                 "local function",
                 "function",
+                "const",
+                "const function",
                 "while",
                 "for",
                 "export type",

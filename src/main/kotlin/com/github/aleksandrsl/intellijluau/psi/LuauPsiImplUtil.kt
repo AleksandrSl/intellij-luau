@@ -57,6 +57,13 @@ fun getDeclaredGenerics(element: LuauFunctionType): Collection<LuauNamedElement>
     LuauNamedElement::class.java
 )
 
+fun getPresentation(element: LuauConstFuncDefStatement): ItemPresentation {
+    return PresentationData().apply {
+        presentableText = element.id?.text ?: "no name provided"
+        setIcon(AllIcons.Nodes.Function)
+    }
+}
+
 fun getPresentation(element: LuauFuncDefStatement): ItemPresentation {
     return PresentationData().apply {
         // Let's mimic Kotlin text

@@ -23,6 +23,9 @@ public interface LuauTypes {
   IElementType COMPOUND_OP_STATEMENT = new LuauElementType("COMPOUND_OP_STATEMENT");
   IElementType COMPUTED_KEY = new LuauElementType("COMPUTED_KEY");
   IElementType CONCAT_EXPR = new LuauElementType("CONCAT_EXPR");
+  IElementType CONST_DEF_STATEMENT = new LuauElementType("CONST_DEF_STATEMENT");
+  IElementType CONST_FUNC_DEF_STATEMENT = new LuauElementType("CONST_FUNC_DEF_STATEMENT");
+  IElementType CONST_SOFT_KEYWORD = new LuauElementType("CONST_SOFT_KEYWORD");
   IElementType CONTINUE_SOFT_KEYWORD = new LuauElementType("CONTINUE_SOFT_KEYWORD");
   IElementType DIV_EXPR = new LuauElementType("DIV_EXPR");
   IElementType DO_STATEMENT = new LuauElementType("DO_STATEMENT");
@@ -236,6 +239,15 @@ public interface LuauTypes {
       }
       else if (type == CONCAT_EXPR) {
         return new LuauConcatExprImpl(node);
+      }
+      else if (type == CONST_DEF_STATEMENT) {
+        return new LuauConstDefStatementImpl(node);
+      }
+      else if (type == CONST_FUNC_DEF_STATEMENT) {
+        return new LuauConstFuncDefStatementImpl(node);
+      }
+      else if (type == CONST_SOFT_KEYWORD) {
+        return new LuauConstSoftKeywordImpl(node);
       }
       else if (type == CONTINUE_SOFT_KEYWORD) {
         return new LuauContinueSoftKeywordImpl(node);

@@ -162,7 +162,7 @@ private statement_recover ::= !(
 )
 
 // It's funny that rust don't allow let as the top level statement, we do though, so local is here.
-private statement_first ::= 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | export_soft_keyword | type_soft_keyword | ID | '(' | '@'
+private statement_first ::= 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | export_soft_keyword | type_soft_keyword | const_soft_keyword | ID | '(' | '@'
 private last_statement_first ::= 'return' | 'break' | continue_soft_keyword
 
 // TODO (AleksandrSl 26/03/2025): What is the lazy parsing thing?
@@ -182,7 +182,7 @@ assignment_statement ::= var_list '=' exp_list { pin = 2 }
 compound_op_statement ::= lvalue compound_op expression { pin = 2 }
 // Alternative here is to use `external my_external_rule ::= parseMyExternalRule false 10`
 expression_statement ::= <<parseExprStatement index_or_call_expr>>
-private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
+private def_statement ::= local_func_def_statement | method_def_statement | func_def_statement | local_def_statement | const_func_def_statement | const_def_statement
 return_statement ::= 'return' exp_list? { pin = 1 }
 // Though break and continue can only be inside the cycle, I can't create a separate cycle_block.
 // Since many things can be nested inside the cycle. Though functions for example cannot have continue
@@ -216,6 +216,7 @@ type_declaration_statement ::= export_soft_keyword? type_soft_keyword ID ('<' ge
 }
 export_soft_keyword ::= 'export'
 continue_soft_keyword ::= 'continue'
+const_soft_keyword ::= 'const'
 type_soft_keyword ::= 'type'
 typeof_soft_keyword ::= 'typeof'
 
@@ -253,6 +254,13 @@ private attribute_recover ::= !(statement_first | exp_first)
 // TODO (AleksandrSl 05/04/2025): Do I need to somehow propagate "locality" to the binding that create the variable?
 //  In lua the do declare this as a scope and declaration, but named element is onlt the ID itself
 local_def_statement ::= 'local' binding_list ('=' exp_list)? { pin = 1 }
+const_func_def_statement ::= const_soft_keyword 'function' ID func_body {
+  pin = 2
+  methods=[getPresentation]
+  extends="com.github.aleksandrsl.intellijluau.psi.LuauNamedElementImpl"
+  implements="com.github.aleksandrsl.intellijluau.psi.LuauNamedElement"
+}
+const_def_statement ::= const_soft_keyword binding_list '=' exp_list { pin = 2 }
 func_def_statement ::= attributes? 'function' ID func_body {
   pin = 2
   methods=[getPresentation]

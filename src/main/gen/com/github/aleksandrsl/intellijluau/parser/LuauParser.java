@@ -627,6 +627,46 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
+  // const_soft_keyword binding_list '=' exp_list
+  public static boolean const_def_statement(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "const_def_statement")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, CONST_DEF_STATEMENT, "<const def statement>");
+    r = const_soft_keyword(b, l + 1);
+    r = r && binding_list(b, l + 1);
+    p = r; // pin = 2
+    r = r && report_error_(b, consumeToken(b, ASSIGN));
+    r = p && exp_list(b, l + 1) && r;
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
+  // const_soft_keyword 'function' ID func_body
+  public static boolean const_func_def_statement(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "const_func_def_statement")) return false;
+    boolean r, p;
+    Marker m = enter_section_(b, l, _NONE_, CONST_FUNC_DEF_STATEMENT, "<const func def statement>");
+    r = const_soft_keyword(b, l + 1);
+    r = r && consumeTokens(b, 1, FUNCTION, ID);
+    p = r; // pin = 2
+    r = r && func_body(b, l + 1);
+    exit_section_(b, l, m, r, p, null);
+    return r || p;
+  }
+
+  /* ********************************************************** */
+  // 'const'
+  public static boolean const_soft_keyword(PsiBuilder b, int l) {
+    if (!recursion_guard_(b, l, "const_soft_keyword")) return false;
+    boolean r;
+    Marker m = enter_section_(b, l, _NONE_, CONST_SOFT_KEYWORD, "<const soft keyword>");
+    r = consumeToken(b, "const");
+    exit_section_(b, l, m, r, false, null);
+    return r;
+  }
+
+  /* ********************************************************** */
   // 'continue'
   public static boolean continue_soft_keyword(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "continue_soft_keyword")) return false;
@@ -638,7 +678,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // local_func_def_statement | method_def_statement | func_def_statement | local_def_statement
+  // local_func_def_statement | method_def_statement | func_def_statement | local_def_statement | const_func_def_statement | const_def_statement
   static boolean def_statement(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "def_statement")) return false;
     boolean r;
@@ -646,6 +686,8 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = method_def_statement(b, l + 1);
     if (!r) r = func_def_statement(b, l + 1);
     if (!r) r = local_def_statement(b, l + 1);
+    if (!r) r = const_func_def_statement(b, l + 1);
+    if (!r) r = const_def_statement(b, l + 1);
     return r;
   }
 
@@ -2707,7 +2749,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
   }
 
   /* ********************************************************** */
-  // 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | export_soft_keyword | type_soft_keyword | ID | '(' | '@'
+  // 'local' | 'do' | 'while' | 'repeat' | 'function' | 'if' | 'for' | export_soft_keyword | type_soft_keyword | const_soft_keyword | ID | '(' | '@'
   static boolean statement_first(PsiBuilder b, int l) {
     if (!recursion_guard_(b, l, "statement_first")) return false;
     boolean r;
@@ -2720,6 +2762,7 @@ public class LuauParser implements PsiParser, LightPsiParser {
     if (!r) r = consumeTokenFast(b, FOR);
     if (!r) r = export_soft_keyword(b, l + 1);
     if (!r) r = type_soft_keyword(b, l + 1);
+    if (!r) r = const_soft_keyword(b, l + 1);
     if (!r) r = consumeTokenFast(b, ID);
     if (!r) r = consumeTokenFast(b, LPAREN);
     if (!r) r = consumeTokenFast(b, AT);

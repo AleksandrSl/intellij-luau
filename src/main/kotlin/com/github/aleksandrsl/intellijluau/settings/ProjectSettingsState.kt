@@ -73,6 +73,9 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val useLuauExtension
         get() = internalState.useLuauExtension
 
+    val platformType
+        get() = internalState.platformType
+
     val lspRojoProjectFile
         get() = internalState.lspRojoProjectFile
 
@@ -87,6 +90,31 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
 
     val lspSourcemapFile
         get() = internalState.lspSourcemapFile
+
+    val lspInlayHintsParameterNames
+        get() = internalState.lspInlayHintsParameterNames
+
+    val lspInlayHintsVariableTypes
+        get() = internalState.lspInlayHintsVariableTypes
+
+    val lspInlayHintsParameterTypes
+        get() = internalState.lspInlayHintsParameterTypes
+
+    val lspInlayHintsFunctionReturnTypes
+        get() = internalState.lspInlayHintsFunctionReturnTypes
+
+    val lspInlayHintsHideForErrorTypes
+        get() = internalState.lspInlayHintsHideForErrorTypes
+
+    val lspInlayHintsHideForMatchingParameterNames
+        get() = internalState.lspInlayHintsHideForMatchingParameterNames
+
+    val lspInlayHintsTypeHintMaxLength
+        get() = internalState.lspInlayHintsTypeHintMaxLength
+
+    val lspInlayHintsMakeInsertable
+        get() = internalState.lspInlayHintsMakeInsertable
+
 
     val companionPluginEnabled
         get() = internalState.companionPluginEnabled
@@ -118,6 +146,15 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         internalState.lspSourcemapFile = defaults.lspSourcemapFile
         internalState.lspRojoProjectFile = defaults.lspRojoProjectFile
 
+        internalState.lspInlayHintsParameterNames = defaults.lspInlayHintsParameterNames
+        internalState.lspInlayHintsVariableTypes = defaults.lspInlayHintsVariableTypes
+        internalState.lspInlayHintsParameterTypes = defaults.lspInlayHintsParameterTypes
+        internalState.lspInlayHintsFunctionReturnTypes = defaults.lspInlayHintsFunctionReturnTypes
+        internalState.lspInlayHintsHideForErrorTypes = defaults.lspInlayHintsHideForErrorTypes
+        internalState.lspInlayHintsHideForMatchingParameterNames = defaults.lspInlayHintsHideForMatchingParameterNames
+        internalState.lspInlayHintsTypeHintMaxLength = defaults.lspInlayHintsTypeHintMaxLength
+        internalState.lspInlayHintsMakeInsertable = defaults.lspInlayHintsMakeInsertable
+
         internalState.styLuaPath = defaults.styLuaPath
         internalState.runStyLua = defaults.runStyLua
         internalState.robloxSecurityLevel = defaults.robloxSecurityLevel
@@ -138,6 +175,15 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var lspSourcemapGenerationCommand: String = ShareableProjectSettingsStateDefaults.lspSourcemapGenerationCommand,
         override var lspSourcemapFile: String = ShareableProjectSettingsStateDefaults.lspSourcemapFile,
         override var lspRojoProjectFile: String = ShareableProjectSettingsStateDefaults.lspRojoProjectFile,
+
+        override var lspInlayHintsParameterNames: InlayHintsParameterNamesConfig = ShareableProjectSettingsStateDefaults.lspInlayHintsParameterNames,
+        override var lspInlayHintsVariableTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsVariableTypes,
+        override var lspInlayHintsParameterTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsParameterTypes,
+        override var lspInlayHintsFunctionReturnTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsFunctionReturnTypes,
+        override var lspInlayHintsHideForErrorTypes: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsHideForErrorTypes,
+        override var lspInlayHintsHideForMatchingParameterNames: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsHideForMatchingParameterNames,
+        override var lspInlayHintsTypeHintMaxLength: Int = ShareableProjectSettingsStateDefaults.lspInlayHintsTypeHintMaxLength,
+        override var lspInlayHintsMakeInsertable: Boolean = ShareableProjectSettingsStateDefaults.lspInlayHintsMakeInsertable,
 
         override var styLuaPath: String = ShareableProjectSettingsStateDefaults.styLuaPath,
         override var runStyLua: RunStyluaOption = ShareableProjectSettingsStateDefaults.runStyLua,
@@ -170,6 +216,15 @@ interface ShareableProjectSettingsState {
     val lspSourcemapGenerationUseIdeaWatcher: Boolean
     val lspSourcemapGenerationCommand: String
 
+    val lspInlayHintsParameterNames: InlayHintsParameterNamesConfig
+    val lspInlayHintsVariableTypes: Boolean
+    val lspInlayHintsParameterTypes: Boolean
+    val lspInlayHintsFunctionReturnTypes: Boolean
+    val lspInlayHintsHideForErrorTypes: Boolean
+    val lspInlayHintsHideForMatchingParameterNames: Boolean
+    val lspInlayHintsTypeHintMaxLength: Int
+    val lspInlayHintsMakeInsertable: Boolean
+
     val styLuaPath: String
     val runStyLua: RunStyluaOption
     val robloxSecurityLevel: RobloxSecurityLevel
@@ -196,6 +251,16 @@ data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsStat
     override val lspSourcemapFile: String = "sourcemap.json"
     override val lspRojoProjectFile: String = DEFAULT_ROJO_PROJECT_FILE
 
+    override val lspInlayHintsParameterNames: InlayHintsParameterNamesConfig = InlayHintsParameterNamesConfig.Literals
+    override val lspInlayHintsVariableTypes: Boolean = false
+    override val lspInlayHintsParameterTypes: Boolean = false
+    override val lspInlayHintsFunctionReturnTypes: Boolean = false
+    override val lspInlayHintsHideForErrorTypes: Boolean = false
+    override val lspInlayHintsHideForMatchingParameterNames: Boolean = true
+    override val lspInlayHintsTypeHintMaxLength: Int = 50
+    override val lspInlayHintsMakeInsertable: Boolean = true
+
+
     override val styLuaPath: String = ""
     override val styluaConfigurationType: StyluaConfigurationType = StyluaConfigurationType.Auto
     override val runStyLua: RunStyluaOption = RunStyluaOption.Disabled
@@ -205,6 +270,10 @@ data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsStat
     override val platformType: PlatformType = PlatformType.Standard
     override val companionPluginEnabled: Boolean = false
     override val companionPluginPort: Int = 3667
+}
+
+enum class InlayHintsParameterNamesConfig(val value: String) {
+    None("none"), Literals("literals"), All("all")
 }
 
 enum class PlatformType(val value: String) {

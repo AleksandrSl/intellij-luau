@@ -1,0 +1,7 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij.grazie">
+        <!-- Python also enables LiteralProblemFilter from grazie. No Idea whether I need it or not. -->
+        <textExtractor language="Luau"
+                       implementationClass="com.github.aleksandrsl.intellijluau.spellcheck.LuauTextExtractor"/>
+    </extensions>
+</idea-plugin>

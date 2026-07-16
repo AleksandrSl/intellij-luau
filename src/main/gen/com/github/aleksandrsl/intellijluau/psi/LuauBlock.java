@@ -17,6 +17,12 @@ public interface LuauBlock extends LuauElement {
   List<LuauCompoundOpStatement> getCompoundOpStatementList();
 
   @NotNull
+  List<LuauConstDefStatement> getConstDefStatementList();
+
+  @NotNull
+  List<LuauConstFuncDefStatement> getConstFuncDefStatementList();
+
+  @NotNull
   List<LuauDoStatement> getDoStatementList();
 
   @NotNull

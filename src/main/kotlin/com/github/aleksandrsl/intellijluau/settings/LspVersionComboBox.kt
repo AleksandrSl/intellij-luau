@@ -5,12 +5,7 @@ import com.github.aleksandrsl.intellijluau.settings.LspVersionComboBox.Item
 import com.github.aleksandrsl.intellijluau.util.Version
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.popup.ListSeparator
-import com.intellij.openapi.util.NlsContexts
-import com.intellij.ui.GroupedComboBoxRenderer
 import com.intellij.ui.MutableCollectionComboBoxModel
-import com.intellij.ui.SimpleColoredComponent
-import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.dsl.listCellRenderer.listCellRenderer
 import com.intellij.util.ui.UIUtil
 
@@ -36,12 +31,18 @@ class LspVersionComboBox(
     init {
         isSwingPopup = false // Use JBPopup instead of default SwingPopup
         model = MutableCollectionComboBoxModel()
+        // component will use this to get the baseline size for the item, otherwise it will use getSelectedItem()
+        // which can be null on the first render. I still think that I may have written the initializer stupidly,
+        // and there is a better fix, but it doesn't justify spending time on it.
+        // The null checks inside the listCellRenderer are kept just in case we lose little with them;
+        // the error is transient
+        prototypeDisplayValue = Item.InstalledVersion(Version.Semantic(0, 0, 0), 0)
 
         renderer = listCellRenderer {
             val isErrorValue =
                 missingVersion != null && (value as? Item.InstalledVersion)?.version == missingVersion
 
-            value.let {
+            value?.let {
                 if (it is Item.InstalledVersion && it.index == 0) {
                     separator {
                         text = LuauBundle.message("luau.settings.lsp.version.combobox.installed")
@@ -52,11 +53,10 @@ class LspVersionComboBox(
                     }
                 }
             }
-            text(value.text) {
+            text(value?.text ?: "") {
                 if (isErrorValue) {
                     foreground = UIUtil.getErrorForeground()
                 }
-                toolTipText
             }
             // I wanted to add a tooltip for the error row, but the tooltip is only for the whole component
         }

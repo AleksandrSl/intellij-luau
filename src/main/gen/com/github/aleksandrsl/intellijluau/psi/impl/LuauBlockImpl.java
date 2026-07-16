@@ -47,6 +47,18 @@ public class LuauBlockImpl extends LuauBlockImplMixin implements LuauBlock {
 
   @Override
   @NotNull
+  public List<LuauConstDefStatement> getConstDefStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauConstDefStatement.class);
+  }
+
+  @Override
+  @NotNull
+  public List<LuauConstFuncDefStatement> getConstFuncDefStatementList() {
+    return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauConstFuncDefStatement.class);
+  }
+
+  @Override
+  @NotNull
   public List<LuauDoStatement> getDoStatementList() {
     return PsiTreeUtil.getChildrenOfTypeAsList(this, LuauDoStatement.class);
   }

@@ -1,8 +1,8 @@
 package com.github.aleksandrsl.intellijluau.settings
 
 import com.github.aleksandrsl.intellijluau.LuauBundle
-import com.github.aleksandrsl.intellijluau.tools.LuauCliService
 import com.github.aleksandrsl.intellijluau.settings.ProjectSettingsState.State
+import com.github.aleksandrsl.intellijluau.tools.LuauCliService
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.Topic
@@ -77,6 +77,7 @@ class ProjectSettingsConfigurable(val project: Project) : Configurable {
 
     companion object {
         const val CONFIGURABLE_ID = "settings.luau"
+
         @Topic.ProjectLevel
         val TOPIC = Topic.create(
             "Luau settings changes",
