@@ -54,7 +54,7 @@ intellijPlatform {
 tasks {
     prepareSandbox {
         from(layout.projectDirectory.dir("/src/main/resources/typeDeclarations")) {
-            into(intellijPlatform.projectName.map { "$it/typeDeclarations" })
+             into(pluginName.map { "$it/typeDeclarations" })
         }
     }
 }
