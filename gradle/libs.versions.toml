@@ -7,7 +7,7 @@ kotlinx-coroutines = "1.10.2"
 kotlin = "2.2.20"
 changelog = "2.5.0"
 serialization = "2.2.20"
-kodein = "7.22.0"
+kodein = "7.32.0"
 
 [libraries]
 junit = { group = "junit", name = "junit", version.ref = "junit" }
