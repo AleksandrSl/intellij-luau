@@ -22,7 +22,7 @@ jobs:
           ref: dev
 
       - name: actions-template-sync
-        uses: AndreasAugustin/actions-template-sync@v2.5.2
+        uses: AndreasAugustin/actions-template-sync@v2.5.3
         with:
           source_repo_path: JetBrains/intellij-platform-plugin-template
           upstream_branch: tags/${{ inputs.release_tag }}
