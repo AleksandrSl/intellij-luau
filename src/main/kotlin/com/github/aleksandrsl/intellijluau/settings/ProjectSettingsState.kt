@@ -122,6 +122,9 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val companionPluginPort
         get() = internalState.companionPluginPort
 
+    val newTypeSolverEnabled
+        get() = internalState.newTypeSolverEnabled
+
     override fun getState(): State {
         return internalState
     }
@@ -163,6 +166,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         internalState.platformType = defaults.platformType
         internalState.companionPluginEnabled = defaults.companionPluginEnabled
         internalState.companionPluginPort = defaults.companionPluginPort
+        internalState.newTypeSolverEnabled = defaults.newTypeSolverEnabled
     }
 
     data class State(
@@ -194,6 +198,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var styluaConfigurationType: StyluaConfigurationType = ShareableProjectSettingsStateDefaults.styluaConfigurationType,
         override var companionPluginEnabled: Boolean = ShareableProjectSettingsStateDefaults.companionPluginEnabled,
         override var companionPluginPort: Int = ShareableProjectSettingsStateDefaults.companionPluginPort,
+        override var newTypeSolverEnabled: Boolean = ShareableProjectSettingsStateDefaults.newTypeSolverEnabled,
     ) : ShareableProjectSettingsState
 
     companion object {
@@ -233,6 +238,7 @@ interface ShareableProjectSettingsState {
     val platformType: PlatformType
     val companionPluginEnabled: Boolean
     val companionPluginPort: Int
+    val newTypeSolverEnabled: Boolean
 
     // Used mostly to turn off features that are replaced by LSP, so the check is superfluous and checks that intention was to use LSP
     val isLspEnabledAndMinimallyConfigured: Boolean
@@ -270,6 +276,7 @@ data object ShareableProjectSettingsStateDefaults : ShareableProjectSettingsStat
     override val platformType: PlatformType = PlatformType.Standard
     override val companionPluginEnabled: Boolean = false
     override val companionPluginPort: Int = 3667
+    override val newTypeSolverEnabled: Boolean = false
 }
 
 enum class InlayHintsParameterNamesConfig(val value: String) {

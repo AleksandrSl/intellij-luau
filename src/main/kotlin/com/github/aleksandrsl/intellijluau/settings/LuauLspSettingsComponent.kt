@@ -535,6 +535,15 @@ class LuauLspSettingsComponent(
                     }
                 }
 
+                group("Luau v2 TypeSolver") {
+                    row {
+                        checkBox("Enable Luau V2 TypeSolver")
+                            .bindSelected(settings::newTypeSolverEnabled)
+                            .comment("Uses new v2 type solver")
+                            .component
+                    }
+                }
+
             }
         }
     }
