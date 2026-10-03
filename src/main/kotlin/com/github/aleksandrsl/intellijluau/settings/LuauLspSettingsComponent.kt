@@ -529,7 +529,7 @@ class LuauLspSettingsComponent(
 
                 collapsibleGroup("FFlags") {
                     row {
-                        comment("Experimental Luau features and limits. Only the values that differ from the defaults are saved. The LSP is restarted when they change. Start typing in the table to search for a flag.")
+                        comment("Experimental Luau features and limits. Start typing in the table to search for a flag.")
                     }
                     row {
                         cell(fflagsPanel.component).resizableColumn().align(AlignX.FILL).bind(
@@ -565,7 +565,7 @@ class LuauLspSettingsComponent(
         val configuration = project.getLspConfiguration() as? LspConfiguration.Enabled
         val executable = configuration?.executablePath
         if (configuration == null || !configuration.isReady || executable == null || !executable.exists()) {
-            fflagsPanel.setLoadError("Flags are listed by the LSP. Download or configure the LSP and reopen the settings to see the available flags.")
+            fflagsPanel.setLoadError("Can't load LSP flags. Download or configure the LSP and reopen the settings to see the available flags. Flags shown are those already saved in settings")
             return
         }
         fflagsPanel.setLoading()
