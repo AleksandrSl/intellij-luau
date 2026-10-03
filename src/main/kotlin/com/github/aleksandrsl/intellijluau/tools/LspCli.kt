@@ -22,6 +22,11 @@ class LspCli(private val project: Project, private val lspConfiguration: LspConf
             withCharset(Charsets.UTF_8)
             withExePath(lspConfiguration.executablePath.toString())
             addParameter("lsp")
+            if (lspConfiguration.useNewLuauTypeSolver)
+            {
+                addParameter("--flag")
+                addParameter("LuauSolverV2=true")
+            }
             // Maybe it makes sense to check for existence here as well, but since these files are partially
             // user-configured, it's good that they see the errors if the files are missing
             lspConfiguration.definitions.forEach {

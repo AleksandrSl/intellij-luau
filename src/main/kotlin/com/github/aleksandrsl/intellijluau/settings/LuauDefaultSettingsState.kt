@@ -43,6 +43,7 @@ class LuauDefaultSettingsState : PersistentStateComponent<ShareableProjectSettin
         internalState.customDefinitionsPaths = state.customDefinitionsPaths
         internalState.companionPluginEnabled = state.companionPluginEnabled
         internalState.companionPluginPort = state.companionPluginPort
+        internalState.newTypeSolverEnabled = state.newTypeSolverEnabled
         val propertiesComponent = PropertiesComponent.getInstance()
         propertiesComponent.setValue(DEFAULT_SETTINGS_SET_KEY, true)
     }
@@ -86,4 +87,5 @@ data class DefaultState(
     override var styluaConfigurationType: StyluaConfigurationType = ShareableProjectSettingsStateDefaults.styluaConfigurationType,
     override var companionPluginEnabled: Boolean = ShareableProjectSettingsStateDefaults.companionPluginEnabled,
     override var companionPluginPort: Int = ShareableProjectSettingsStateDefaults.companionPluginPort,
+    override var newTypeSolverEnabled: Boolean = ShareableProjectSettingsStateDefaults.newTypeSolverEnabled,
 ) : ShareableProjectSettingsState

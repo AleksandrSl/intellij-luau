@@ -508,6 +508,8 @@ sealed class LspConfiguration() {
             }
         val docs: List<Path>
             get() = if (settings.state.platformType == PlatformType.Roblox) listOf(robloxApiDocsPath) else emptyList()
+        val useNewLuauTypeSolver
+            get() = settings.newTypeSolverEnabled
         abstract val isReady: Boolean
         private val customDeclarations: List<Path>
             get() = settings.customDefinitionsPaths.mapNotNull { it.toNioPathOrNull() }
