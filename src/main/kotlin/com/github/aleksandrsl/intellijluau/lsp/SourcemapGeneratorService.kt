@@ -15,6 +15,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.project.Project
 import com.intellij.util.messages.MessageBusConnection
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
@@ -66,6 +67,9 @@ class SourcemapGeneratorService(private val project: Project, private val corout
                         is Operation.UpdateStrategy -> updateGeneratorBasedOnSettings(op.change)
                         is Operation.Stop -> stop()
                     }
+                } catch (e: CancellationException) {
+                    // Never swallow the cancellation, it has to stop the loop.
+                    throw e
                 } catch (e: Exception) {
                     LOG.error("Error processing operation: $op", e)
                 }
