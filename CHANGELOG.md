@@ -4,6 +4,16 @@
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-10-03
+
+### Added
+
+- FFlags settings: list the Luau FFlags known to the LSP, change their values and pass them to the server. Only the values that differ from the defaults are saved, the LSP is restarted when they change. Includes the new type solver (`LuauSolverV2`), inspired by the "Enable Luau V2 TypeSolver" option from #169 by @BhaskarPanja93
+
+### Fixed
+
+- Errors on startup when the sourcemap generator checks for Luau files before the project is indexed
+
 ## [0.3.0] - 2026-07-16
 
 ### Added
