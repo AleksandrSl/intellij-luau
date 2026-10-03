@@ -115,6 +115,8 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
     val lspInlayHintsMakeInsertable
         get() = internalState.lspInlayHintsMakeInsertable
 
+    val lspFFlags
+        get() = internalState.lspFFlags
 
     val companionPluginEnabled
         get() = internalState.companionPluginEnabled
@@ -194,6 +196,7 @@ class ProjectSettingsState : PersistentStateComponent<ProjectSettingsState.State
         override var styluaConfigurationType: StyluaConfigurationType = ShareableProjectSettingsStateDefaults.styluaConfigurationType,
         override var companionPluginEnabled: Boolean = ShareableProjectSettingsStateDefaults.companionPluginEnabled,
         override var companionPluginPort: Int = ShareableProjectSettingsStateDefaults.companionPluginPort,
+        var lspFFlags: Map<String, String> = emptyMap(),
     ) : ShareableProjectSettingsState
 
     companion object {

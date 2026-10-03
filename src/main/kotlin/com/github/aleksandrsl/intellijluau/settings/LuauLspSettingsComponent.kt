@@ -3,6 +3,7 @@ package com.github.aleksandrsl.intellijluau.settings
 import com.github.aleksandrsl.intellijluau.LuauBundle
 import com.github.aleksandrsl.intellijluau.lsp.LspConfiguration
 import com.github.aleksandrsl.intellijluau.lsp.LuauLspManager
+import com.github.aleksandrsl.intellijluau.lsp.getLspConfiguration
 import com.github.aleksandrsl.intellijluau.tools.LspCli
 import com.github.aleksandrsl.intellijluau.tools.RojoCli
 import com.github.aleksandrsl.intellijluau.tools.SourcemapGeneratorCli
@@ -15,6 +16,8 @@ import com.intellij.ide.actions.RevealFileAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationInfo
 import com.intellij.openapi.application.EDT
+import com.intellij.openapi.application.ModalityState
+import com.intellij.openapi.application.asContextElement
 import com.intellij.openapi.diagnostic.logger
 import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
 import com.intellij.openapi.observable.properties.AtomicProperty
@@ -51,6 +54,9 @@ import javax.swing.JRadioButton
 import kotlin.io.path.exists
 
 private val LOG = logger<LuauLspSettingsComponent>()
+
+// The settings dialog is modal, the default EDT dispatcher postpones the work until the dialog is closed.
+private val settingsDialogEdt get() = Dispatchers.EDT + ModalityState.any().asContextElement()
 
 @JvmInline
 value class InstalledLspVersions(val versions: List<Version.Semantic>)
@@ -90,6 +96,7 @@ class LuauLspSettingsComponent(
     private val settings: ProjectSettingsState.State,
     private val coroutineScope: CoroutineScope,
 ) {
+    private val fflagsPanel = LspFFlagsPanel()
     private lateinit var rojoVersionLabel: JLabel
     private lateinit var rojoVersionLoader: AnimatedIcon
     private val rojoVersion = AtomicProperty("")
@@ -520,6 +527,20 @@ class LuauLspSettingsComponent(
                     }.rowComment(LuauBundle.message("luau.settings.lsp.inlay.hints.make.insertable.comment"))
                 }.topGap(TopGap.SMALL).enabledIf(!lspDisabled.selected)
 
+                collapsibleGroup("FFlags") {
+                    row {
+                        comment("Experimental Luau features and limits. Only the values that differ from the defaults are saved. The LSP is restarted when they change. Start typing in the table to search for a flag.")
+                    }
+                    row {
+                        cell(fflagsPanel.component).resizableColumn().align(AlignX.FILL).bind(
+                            { fflagsPanel.overrides },
+                            { _, value -> fflagsPanel.overrides = value },
+                            settings::lspFFlags.toMutableProperty()
+                        )
+                    }
+                    loadFlags()
+                }.topGap(TopGap.SMALL).enabledIf(!lspDisabled.selected)
+
                 group("Roblox Studio Companion Plugin") {
                     lateinit var companionCheckbox: JCheckBox
                     row {
@@ -535,6 +556,28 @@ class LuauLspSettingsComponent(
                     }
                 }
 
+            }
+        }
+    }
+
+    private fun loadFlags() {
+        // Flags are listed by the saved LSP. If it's not yet downloaded or configured, we show only the recorded flags.
+        val configuration = project.getLspConfiguration() as? LspConfiguration.Enabled
+        val executable = configuration?.executablePath
+        if (configuration == null || !configuration.isReady || executable == null || !executable.exists()) {
+            fflagsPanel.setLoadError("Flags are listed by the LSP. Download or configure the LSP and reopen the settings to see the available flags.")
+            return
+        }
+        fflagsPanel.setLoading()
+        coroutineScope.launch(Dispatchers.IO) {
+            try {
+                val flags = LspCli(project, configuration).queryFlags()
+                withContext(settingsDialogEdt) { fflagsPanel.setAvailableFlags(flags) }
+            } catch (err: Exception) {
+                LOG.warn("Failed to load LSP flags", err)
+                withContext(settingsDialogEdt) {
+                    fflagsPanel.setLoadError("Could not list the flags (the LSP may be too old): ${err.message}")
+                }
             }
         }
     }
