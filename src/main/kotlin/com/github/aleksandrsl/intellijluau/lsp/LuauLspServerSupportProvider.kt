@@ -78,6 +78,15 @@ private class LuauLspServerDescriptor(project: Project) : ProjectWideLspServerDe
             textDocument.diagnostic = null
         }
 
+    /**
+     * luau-lsp applies `fflags` (flag name to a stringified value) from the initialization options, before the workspaces are created.
+     * Flags are applied only once, so the server has to be restarted when they change.
+     */
+    override fun createInitializationOptions(): Any? {
+        val fflags = ProjectSettingsState.getInstance(project).lspFFlags
+        return if (fflags.isEmpty()) null else mapOf("fflags" to fflags)
+    }
+
     /*
      * See https://github.com/JohnnyMorganz/luau-lsp/blob/248ed7bd11dde2059d8fe00235776895738c5a16/src/include/LSP/ClientConfiguration.hpp for details
      * struct ClientConfiguration

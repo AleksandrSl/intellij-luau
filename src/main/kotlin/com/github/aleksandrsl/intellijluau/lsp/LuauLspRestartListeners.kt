@@ -62,6 +62,7 @@ class LuauSettingsLspRestartListener(val project: Project) : ProjectSettingsConf
             || event.isChanged(ProjectSettingsState.State::lspInlayHintsHideForMatchingParameterNames)
             || event.isChanged(ProjectSettingsState.State::lspInlayHintsTypeHintMaxLength)
             || event.isChanged(ProjectSettingsState.State::lspInlayHintsMakeInsertable)
+            || event.isChanged(ProjectSettingsState.State::lspFFlags)
         ) {
             project.restartLspServerAsyncIfNeeded("Project settings changed")
         }
